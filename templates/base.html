@@ -6,11 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WinGetty - {{ title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css')}}">
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+
+
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
 </head>
 
-<body class="h-screen  flex flex-col bg-gray-100" >
+<body class="h-screen  flex flex-col bg-gray-200">
     <nav class="flex items-center justify-between flex-wrap bg-white p-4 drop-shadow-md sticky">
         <div class="flex flex-row items-center flex-shrink-0 text-neutral-900 mr-6">
             <img src="{{ url_for('static', filename='img/wingetty.png')}}" alt="Logo" class="h-10 mr-2">
@@ -31,25 +34,26 @@
                     class="block mt-4 lg:inline-block lg:mt-0 text-neutral-700 hover:text-blue-600 mr-4 transition-colors duration-500">
                     Packages
                 </a>
-                
+
             </div>
             <div>
                 <a href="https://github.com/thilojaeggi/wingetty"
-                    class="inline-block text-sm px-4 py-2 leading-none border rounded text-black border-black hover:border-transparent hover:text-blue-600 hover:bg-white mt-4 lg:mt-0">Visit GitHub Repo</a>
+                    class="inline-block text-sm px-4 py-2 leading-none border rounded text-black border-black hover:border-transparent hover:text-blue-600 hover:bg-white mt-4 lg:mt-0">Visit
+                    GitHub Repo</a>
             </div>
         </div>
     </nav>
     <main class="h-full p-4">
         {% block content %}{% endblock %}
-        
+
 
 
     </main>
 
-    <footer >
-        <p class="text-center text-gray-500">&copy; 2023 Thilo Jaeggi</p>
+    <footer>
+        <p class="text-center text-gray-500 p-2"  
+        >&copy; 2023 Thilo Jaeggi - <a class="hover:text-blue-600" href="https://github.com/thilojaeggi/wingetty">https://github.com/thilojaeggi/wingetty</a></p>
     </footer>
-   
 
 </body>
 

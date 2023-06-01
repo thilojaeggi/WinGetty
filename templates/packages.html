@@ -74,20 +74,22 @@
                             Packages added here will instantly be available to all clients.
                         </p>
         
-                        <form class="mt-5" x-data="{'fileChosen': false}">
-                            <div>
-                                <label for="identifier" class="block  text-gray-700 capitalize ">Identifier</label>
-                                <input name="identifier" placeholder="" type="text" class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-                            </div>
+                        <form class="mt-5" x-data="{'fileChosen': false}" action="{{ url_for('add_package') }}" method="POST" enctype="multipart/form-data">
+                            
         
                             <div class="mt-2">
                                 <label for="name" class="block  text-gray-700 capitalize ">Name</label>
-                                <input name="name" placeholder="" type="text" class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                                <input required name="name" placeholder="" type="text" class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                             </div>
 
                             <div class="mt-2">
                                 <label for="publisher" class="block text-gray-700 capitalize ">Publisher</label>
-                                <input name="publisher" placeholder="" type="text" class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                                <input required name="publisher" placeholder="" type="text" class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                            </div>
+
+                            <div>
+                                <label for="identifier" class="block  text-gray-700 capitalize ">Identifier</label>
+                                <input required name="identifier" placeholder="" type="text" class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                             </div>
                             
                             <div class="mt-2">
@@ -111,7 +113,7 @@
                             </div>
 
                             <div class="flex justify-end mt-6">
-                                <button type="button" class="px-3 py-2 tracking-wide text-white capitalize transition-colors duration-200 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
+                                <button type="submit" class="px-3 py-2 tracking-wide text-white capitalize transition-colors duration-200 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
                                     Add Package
                                 </button>
                             </div>
@@ -190,9 +192,10 @@
                             <td class="pl-3 py-4 text-sm font-medium whitespace-nowrap">
                                 <div
                                     class="inline px-3 py-1  text-sm font-normal rounded-full  gap-x-2 {{ 'bg-emerald-100/60 text-emerald-500' if package.versions|length > 0 else 'bg-red-100/60 text-red-500' }}  ">
-                                    {{ package.versions[0].version if package.versions|length > 0 else 'No versions' }}
+                                    {{ 'Version ' + package.versions[0].package_version if package.versions|length > 0 else 'No versions' }}
                                 </div>
                             </td>
+
                             <td class="px-4 py-4 text-sm whitespace-nowrap flex flex-row justify-center">
                                 <a href="{{ url_for('package', identifier=package.package_identifier) }}"
                                     class="px-1  py-1 text-gray-500 transition-colors duration-200 rounded-lg  hover:bg-gray-100">

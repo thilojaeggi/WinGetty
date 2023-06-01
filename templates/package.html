@@ -18,154 +18,134 @@
 <div class="sm:flex sm:items-center sm:justify-between">
     <div>
         <div class="flex items-center gap-x-3">
-            <h2 class="text-lg font-medium text-gray-800 ">{{ package.package_name }} (<span class="text-gray-500 text-md">{{package.package_identifier}}</span>)</h2>
-
-            <span class="px-3 py-1 text-xs text-blue-600 {{ 'bg-emerald-100/60 text-emerald-500' if package.versions|length > 0 else 'bg-red-100/60 text-red-500' }} rounded-full "> {{ package.versions[0].version if
+            <h2 class="text-3xl font-medium text-gray-800 ">{{ package.package_name }} <span
+                    class="text-gray-500 text-base">{{package.package_identifier}}</span></h2>
+            <span
+                class="px-3 py-1 mt-1 text-xs text-blue-600 {{ 'bg-emerald-100/60 text-emerald-500' if package.versions|length > 0 else 'bg-red-100/60 text-red-500' }} rounded-full ">
+                {{ 'Version ' + package.versions[0].package_version if
                 package.versions|length > 0 else 'No versions' }}
             </span>
         </div>
 
     </div>
 
-    <div class="flex items-center mt-4 gap-x-3">
-
-
-        <button
-            class="flex items-center justify-center w-1/2 px-5 py-2 text-sm tracking-wide text-white transition-colors duration-200 bg-blue-600 rounded-lg shrink-0 sm:w-auto gap-x-2 hover:bg-blue-500">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="w-5 h-5">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-
-            <span>Add package</span>
-        </button>
-    </div>
 </div>
 
-<div class="mt-6 md:flex md:items-center md:justify-between">
+<div class="flex flex-col md:flex-row h-96 gap-x-4 gap-y-12">
+    <div class="h-full w-full max-w-screen-sm	">
+        <h3 class="text-2xl mb-1">Info</h3>
+        <div class="bg-white/70 rounded-md h-full p-2 w-full flex flex-col space-y-2">
+            <form class="mt-5 flex flex-col h-full" x-data="{'fileChosen': false}" action="{{ url_for('add_package') }}" method="POST" enctype="multipart/form-data">
+                            
+        
+                <div class="mt-2">
+                    <label for="name" class="block  text-gray-700 capitalize ">Name</label>
+                    <input required name="name" placeholder="" type="text" class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                </div>
 
+                <div class="mt-2">
+                    <label for="publisher" class="block text-gray-700 capitalize ">Publisher</label>
+                    <input required name="publisher" placeholder="" type="text" class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                </div>
 
-    <div class="relative flex items-center mt-4 md:mt-0">
-        <span class="absolute">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="w-5 h-5 mx-3 text-gray-400 ">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-            </svg>
-        </span>
+                <div>
+                    <label for="identifier" class="block  text-gray-700 capitalize ">Identifier</label>
+                    <input required name="identifier" placeholder="" type="text" class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                </div>
 
-        <input type="text" placeholder="Search"
-            class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-200 rounded-lg md:w-80 placeholder-gray-400/70 pl-11 rtl:pr-11 rtl:pl-5  focus:border-blue-400  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
-    </div>
-</div>
-
-<div class="flex flex-col mt-2">
-    <div class=" overflow-x-auto">
-        <div class="inline-block w-full align-middle ">
-            <div class="overflow-hidden border border-gray-200 md:rounded-lg">
-                <table class="min-w-full divide-y divide-gray-200 ">
-                    <thead class="bg-gray-50 ">
-                        <tr>
-                            <th scope="col"
-                                class="pl-3 py-3.5  text-sm font-normal text-left rtl:text-right text-gray-500">
-                                Name
-                            </th>
-
-                            <th scope="col"
-                                class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500">
-                                Identifier
-                            </th>
-
-                            <th scope="col"
-                                class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500">
-                                Publisher</th>
-
-                            <th scope="col"
-                                class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500">
-                                Latest Version</th>
-
-                            <th scope="col" class="relative py-3.5 px-4">
-                                <span class="sr-only">Edit</span>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% for package in packages %}
-                        <tr>
-
-
-                            <td class="px-4 py-4 text-md whitespace-nowrap">
-                                <h4 class="text-gray-700 font-semibold ">{{ package.package_name }}</h4>
-                            </td>
-                            <td class="px-4 py-4 text-md whitespace-nowrap">
-                                <h4 class="text-gray-700 ">{{ package.package_identifier }}</h4>
-                            </td>
-
-                            <td class="px-4 py-4 text-md whitespace-nowrap">
-                                <h4 class="text-gray-700 ">{{ package.publisher }}</h4>
-                            </td>
-
-                            <td class="pl-3 py-4 text-sm font-medium whitespace-nowrap">
-                                <div
-                                    class="inline px-3 py-1  text-sm font-normal rounded-full  gap-x-2 {{ 'bg-emerald-100/60 text-emerald-500' if package.versions|length > 0 else 'bg-red-100/60 text-red-500' }}  ">
-                                    {{ package.versions[0].version if package.versions|length > 0 else 'No version' }}
-                                </div>
-                            </td>
-                            <td class="px-4 py-4 text-sm whitespace-nowrap flex flex-row justify-center">
-                                <a href="{{ url_for('package', identifier=package.package_identifier) }}"
-                                    class="px-1  py-1 text-gray-500 transition-colors duration-200 rounded-lg  hover:bg-gray-100">
-                                    <?xml version="1.0" ?><svg class="feather feather-edit" fill="none" height="24"
-                                        stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                        stroke-width="2" viewBox="0 0 24 24" width="24"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                    </svg>
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-
-
-
-
-                    </tbody>
-                </table>
-            </div>
+                <div class=" grow flex flex-row justify-end ">
+                    <button type="submit" class="self-end		 px-3 py-2 tracking-wide text-white capitalize transition-colors duration-200 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
+                        Update Metadata
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
-</div>
 
-<div class="mt-6 sm:flex sm:items-center sm:justify-between ">
-    <div class="text-sm text-gray-500">
-        Page <span class="font-medium text-gray-700 ">1 of 10</span>
+    <div class="h-full w-full max-w-screen-sm">
+        <div class="flex flex-row">
+            <h3 class="text-2xl mb-1">Versions</h3>
+            <button class="bg-blue-600 hover:bg-blue-500 transition-colors duration-200 p-0.25 rounded-md text-white h-min self-end ml-2 mb-1.5"><svg
+                    class="h-6 " xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+            </button>
+        </div>
+        <div class="bg-white/70 rounded-md h-full p-2 flex flex-col overflow-y-auto space-y-2">
+            {% if package.versions|length == 0%}
+            <div class="h-full w-full flex flex-col justify-center items-center">
+                <p class="text-gray-500 text-center">No versions, consider adding at least one</p>
+            </div>
+            {% endif %}
+            {% for version in package.versions %}
+            <div class="bg-white drop-shadow-md rounded-md p-2 flex flex-col cursor-pointer"
+                x-data="{ expanded: false }" @click="expanded = true">
+
+                <div class="flex flex-row justify-between">
+                    <p class="font-bold text-xl">{{version.package_version}}</p>
+                    <p class="text-gray-700">{{version.date_added or ""}}</p>
+
+                </div>
+                <div>
+                    <div class="flex flex-col" x-show="expanded" x-collapse>
+                        <h3 class="text-xl font-bold">Info</h3>
+                        <div class="flex flex-row">
+                            <div class="flex flex-col">
+                                <p>Default locale</p>
+                                <p>Package locale</p>
+                                <p>Date added</p>
+                            </div>
+                            <div class="flex flex-col ml-2">
+                                <p>{{version.default_locale}}</p>
+                                <p>{{version.package_locale}}</p>
+                                <p>{{version.date_added}}</p>
+                            </div>
+
+
+                        </div>
+
+                        <h3 class="text-xl font-bold">Installers</h3>
+                        <div class="flex flex-row">
+                            <div class="bg-gray-100 p-1.5 flex flex-col rounded-md w-1/2">
+                                {% if version.installers|length == 0%}
+                                <p class="text-gray-500">No installers, consider adding one</p>
+                                {% endif %}
+                                {% for installer in version.installers %}
+                                <div class="flex flex-row p-2 bg-white rounded-md justify-between"
+                                    @click="navigator.clipboard.writeText('{{installer.installer_url}}');">
+                                    <p class="font-bold">{{installer.architecture}}</p>
+                                    <div class="flex flex-row space-x-2 group">
+                                        <svg class="group-hover:stroke-blue-500 h-6 w-6"
+                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                                        </svg>
+                                        <p class="group-hover:text-blue-600">Copy link </p>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <button
+                                class="bg-blue-600 hover:bg-blue-500 transition-colors duration-200 p-0.5 rounded-md text-white h-min self-end ml-2"><svg
+                                    class="h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {%endfor%}
+                <div class="flex flex-grow"></div>
+            </div>
+
+        </div>
+
     </div>
 
-    <div class="flex items-center mt-4 gap-x-4 sm:mt-0">
-        <a href="#"
-            class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
-            </svg>
 
-            <span>
-                previous
-            </span>
-        </a>
 
-        <a href="#"
-            class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
-            <span>
-                Next
-            </span>
-
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
-            </svg>
-        </a>
-    </div>
-</div>
-{% endblock %}
+    {% endblock %}
