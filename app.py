@@ -116,7 +116,6 @@ def add_package():
     identifier = request.form['identifier']
     publisher = request.form['publisher']
     # Get file
-    
     file = request.files['file']
     version = request.form['version']
 
