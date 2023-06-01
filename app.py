@@ -16,6 +16,7 @@ with app.app_context():
     db.create_all()
 
 class Package(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
     package_identifier = db.Column(db.String(255), unique=True, nullable=False, primary_key=True)
     package_name = db.Column(db.String(255), nullable=False)
     publisher = db.Column(db.String(255), nullable=False)
@@ -74,8 +75,8 @@ class Package(db.Model):
 
 class PackageVersion(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    package_identifier = db.Column(db.String(50), db.ForeignKey('package.package_identifier'))
-    package_version = db.Column(db.String(50))
+    package_identifier = db.Column(db.String(50), db.ForeignKey('package.package_identifier'), primary_key=True)
+    package_version = db.Column(db.String(50), primary_key=True)
     default_locale = db.Column(db.String(50))
     package_locale = db.Column(db.String(50))
     short_description = db.Column(db.String(50))
@@ -84,9 +85,10 @@ class PackageVersion(db.Model):
 
 class Installer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    package_version_id = db.Column(db.Integer, db.ForeignKey('package_version.id'))
-    architecture = db.Column(db.String(50))
+    package_version_id = db.Column(db.Integer, db.ForeignKey('package_version.id'), primary_key=True)
+    architecture = db.Column(db.String(50), primary_key=True)
     installer_type = db.Column(db.String(50))
+    
     installer_url = db.Column(db.String(100))
     installer_sha256 = db.Column(db.String(100))
     scope = db.Column(db.String(50))
@@ -134,6 +136,24 @@ def add_package():
     db.session.add(package)
     db.session.commit()
     return redirect(url_for('index'))
+
+@app.route('/update_package_info', methods=['POST'])
+def update_package():
+    id = request.form['id']
+    name = request.form['name']
+    identifier = request.form['identifier']
+    publisher = request.form['publisher']
+
+    package = Package.query.filter_by(id=id).first()
+    if package is None:
+        return redirect(request.referrer)
+    
+    package.package_name = name
+    package.package_identifier = identifier
+    package.publisher = publisher
+    db.session.commit()
+    return redirect(request.referrer)
+
     
 @app.route('/add_package_version', methods=['POST'])
 def add_package_version():
