@@ -2,6 +2,7 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import hashlib
 
 app = Flask(__name__)
 
@@ -124,13 +125,62 @@ def add_package():
     if file and version:
         print("File and version found")
         file.save(os.path.join(basedir, 'static', 'packages', file.filename))
+        # Get file hash
+        hash = calculate_sha256(os.path.join(basedir, 'static', 'packages', file.filename))
         package_version = PackageVersion(package_version=version, package_locale="en-US", short_description=name,package_identifier=identifier)
-        installer = Installer(architecture="x64", installer_type="msi", installer_url=url_for('static', filename=f'packages/{file.filename}', _external=True, _scheme='https'), installer_sha256="123", scope="user")        
+        installer = Installer(architecture="x64", installer_type="msi", installer_url='https://thilojaeggi-psychic-tribble-jrg579jpj935p64-5000.preview.app.github.dev/static/packages/' + file.filename, installer_sha256=hash, scope="user")        
         package_version.installers.append(installer)
         package.versions.append(package_version)
     db.session.add(package)
     db.session.commit()
     return redirect(url_for('index'))
+    
+@app.route('/add_package_version', methods=['POST'])
+def add_package_version():
+    package_identifier = request.form['package_identifier']
+    package_version = request.form['package_version']
+    package_locale = request.form['package_locale']
+    short_description = request.form['short_description']
+
+    package = Package.query.filter_by(package_identifier=package_identifier).first()
+    if package is None:
+        return redirect(request.referrer)
+
+    
+    package_version = PackageVersion(package_version=package_version, package_locale=package_locale, short_description=short_description)
+    package.versions.append(package_version)
+    db.session.commit()
+    return redirect(request.referrer)
+
+
+
+@app.route('/add_installer', methods=['POST'])
+def add_installer():
+    package_identifier = request.form['package_identifier']
+    package_version = request.form['package_version']
+    architecture = request.form['architecture']
+    installer_type = request.form['installer_type']
+    file = request.files['file']
+    scope = request.form['scope']
+
+    package = Package.query.filter_by(package_identifier=package_identifier).first()
+    if package is None:
+        return redirect(request.referrer)
+    
+    package_version = PackageVersion.query.filter_by(package_version=package_version).first()
+    if package_version is None:
+        return redirect(request.referrer)
+    
+    if file:
+        file.save(os.path.join(basedir, 'static', 'packages', file.filename))
+        # Get file hash
+        hash = calculate_sha256(os.path.join(basedir, 'static', 'packages', file.filename))
+        installer = Installer(architecture=architecture, installer_type=installer_type, installer_url='https://thilojaeggi-psychic-tribble-jrg579jpj935p64-5000.preview.app.github.dev/static/packages/' + file.filename, installer_sha256=hash, scope=scope)
+        package_version.installers.append(installer)
+        db.session.commit()
+
+    
+    return redirect(request.referrer)
     
 
 
@@ -157,17 +207,19 @@ def manifestSearch():
 
     maximum_results = request_data.get('MaximumResults')
     fetch_all_manifests = request_data.get('FetchAllManifests')
-
+        
     query = request_data.get('Query')
-    keyword = query.get('KeyWord')
-    match_type = query.get('MatchType')
+    if query is not None:
+        keyword = query.get('KeyWord')
+        match_type = query.get('MatchType')
 
     inclusions = request_data.get('Inclusions')
     if inclusions is not None:
         package_match_field = inclusions[0].get('PackageMatchField')
         request_match = inclusions[0].get('RequestMatch')
-        keyword_inclusion = request_match.get('KeyWord')
-        match_type_inclusion = request_match.get('MatchType')
+        if query is None:
+            keyword = request_match.get('KeyWord')
+            match_type = request_match.get('MatchType')
 
     filters = request_data.get('Filters')
     if filters is not None:
@@ -205,3 +257,12 @@ def manifestSearch():
     print(output)
     return jsonify(output)
 
+def calculate_sha256(filename):
+    sha256_hash = hashlib.sha256()
+
+    with open(filename, 'rb') as file:
+        # Read the file in chunks to efficiently handle large files
+        for chunk in iter(lambda: file.read(4096), b''):
+            sha256_hash.update(chunk)
+
+    return sha256_hash.hexdigest()
