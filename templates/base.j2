@@ -15,7 +15,7 @@
 </head>
 
 <body class="min-h-screen  flex flex-col bg-gray-200">
-    <nav class="flex items-center justify-between flex-wrap bg-white p-4 drop-shadow-md sticky">
+    <nav class="flex items-center justify-between flex-wrap bg-white p-4 drop-shadow-md sticky top-0">
         <div class="flex flex-row items-center flex-shrink-0 text-neutral-900 mr-6">
             <img src="{{ url_for('static', filename='img/wingetty.png')}}" alt="Logo" class="h-10 mr-2">
             <span class="font-semibold text-2xl tracking-tight mb-0.5">WinGetty</span>
@@ -44,6 +44,7 @@
             </div>
         </div>
     </nav>
+    
     <main class="grow p-4">
         {% block content %}{% endblock %}
     </main>
