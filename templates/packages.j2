@@ -50,7 +50,8 @@
                         x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
                         class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-40" aria-hidden="true"></div>
 
-                    <div x-cloak x-show="showModal" x-transition:enter="transition ease-out duration-300 transform"
+                    <div x-data="fileUpload()" x-cloak x-show="showModal"
+                        x-transition:enter="transition ease-out duration-300 transform"
                         x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
                         x-transition:leave="transition ease-in duration-200 transform"
@@ -74,8 +75,9 @@
                             Packages added here will instantly be available to all clients.
                         </p>
 
-                        <form class="mt-5" x-data="{'fileChosen': false}" action="{{ url_for('add_package') }}"
-                            method="POST" enctype="multipart/form-data">
+                        <form x-ref="uploadForm" @submit.prevent="submitForm" class="mt-5"
+                            x-data="{'fileChosen': false}" action="{{ url_for('add_package') }}" method="POST"
+                            enctype="multipart/form-data">
 
 
                             <div class="mt-2">
@@ -90,7 +92,7 @@
                                     class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                             </div>
 
-                            <div>
+                            <div class="mt-2">
                                 <label for="identifier" class="block  text-gray-700 capitalize ">Identifier</label>
                                 <input required name="identifier" placeholder="" type="text"
                                     class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
@@ -98,8 +100,8 @@
 
                             <div class="mt-2">
                                 <label for="file" class="block  text-gray-700 capitalize ">File</label>
-                                <input @change="fileChosen = true" name="file" accept=".exe,.msi,.msix,.appx"
-                                    type="file"
+                                <input @change="fileChosen = true" x-ref="fileInput" name="file"
+                                    accept=".exe,.msi,.msix,.appx" type="file"
                                     class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                             </div>
 
@@ -121,10 +123,15 @@
                             </div>
 
                             <div class="flex justify-end mt-6">
-                                <button type="submit"
+                                <button x-show="showUploadButton" type="submit"
                                     class="px-3 py-2 tracking-wide text-white capitalize transition-colors duration-200 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
                                     Add Package
                                 </button>
+                            </div>
+                            <div x-show="!showUploadButton"
+                                class="h-auto p-2 rounded-md w-min bg-blue-600 flex flex-row justify-end text-white text-lg font-semibold "
+     x-bind:style="'width: ' + progress + '%; transition: width 0.5s ease-in-out;'">
+                                <p x-text="progress"></p>
                             </div>
                         </form>
                     </div>
@@ -155,7 +162,7 @@
     <div class="flex flex-col mt-2">
         <div class=" overflow-x-auto">
             <div class="inline-block w-full align-middle ">
-                <div class="overflow-hidden border border-gray-200 md:rounded-lg">
+                <div class="overflow-auto border border-gray-200 md:rounded-lg">
                     <table class="min-w-full divide-y divide-gray-200 ">
                         <thead class="bg-gray-50 ">
                             <tr>
@@ -184,7 +191,8 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             {% for package in packages %}
-                            <tr x-show="search === '' || '{{package.package_name}}'.toLowerCase().includes(search.toLowerCase())" x-cloak>
+                            <tr x-show="search === '' || '{{package.package_name}}'.toLowerCase().includes(search.toLowerCase())"
+                                x-cloak>
 
 
                                 <td class="px-4 py-4 text-md whitespace-nowrap">
@@ -262,5 +270,52 @@
         </a>
     </div>
 </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function fileUpload() {
+        return {
+            progress: 0,
+            showUploadButton: true,
+            showModal: true,
+            submitForm() {
+                this.showUploadButton = false;
+                var hasFile = this.$refs.fileInput.files.length > 0;
+                let formData = new FormData(this.$refs.uploadForm);
+
+                $.ajax({
+                    url: this.$refs.uploadForm.action,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    xhr: () => {
+                        let xhr = new window.XMLHttpRequest();
+                        if (hasFile) {
+                            let fileSize = this.$refs.fileInput.files[0].size;
+                            xhr.upload.addEventListener('progress', (event) => {
+                                if (event.lengthComputable) {
+                                    this.progress = Math.round((event.loaded / fileSize) * 100);
+                                }
+                            });
+                        }
+                        return xhr;
+                    },
+                    success: () => {
+                        this.progress = 0;
+                        this.showModal = false;
+                        this.$refs.uploadForm.reset();
+                    },
+                    complete: () => {
+                        this.showUploadButton = true;
+                        this.$refs.uploadForm.reset();
+                    }
+                });
+            },
+            hideUploadButton() {
+                this.showUploadButton = false;
+            }
+        };
+    }
+</script>
 
 {% endblock %}
