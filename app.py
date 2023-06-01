@@ -97,12 +97,12 @@ def index():
 @app.route('/packages')
 def packages():
     packages = Package.query.all()
-    return render_template('packages.html', packages=packages)
+    return render_template('packages.j2', packages=packages)
 
 @app.route('/package/<identifier>')
 def package(identifier):
     package = Package.query.filter_by(package_identifier=identifier).first()
-    return render_template('package.html', package=package)
+    return render_template('package.j2', package=package)
 
 @app.route('/add_package', methods=['POST'])
 def add_package():
