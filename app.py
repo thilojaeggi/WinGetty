@@ -1,6 +1,7 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -88,6 +89,11 @@ class Installer(db.Model):
     installer_url = db.Column(db.String(100))
     installer_sha256 = db.Column(db.String(100))
     scope = db.Column(db.String(50))
+
+
+@app.context_processor
+def inject_now():
+    return {'now': datetime.utcnow()}
 
 
 @app.route('/')
