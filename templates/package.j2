@@ -35,26 +35,31 @@
     <div class="h-full w-full max-w-screen-sm	">
         <h3 class="text-2xl mb-1">Info</h3>
         <div class="bg-white/70 rounded-md h-full p-2 w-full flex flex-col space-y-2">
-            <form class="mt-5 flex flex-col h-full" x-data="{'fileChosen': false}" action="{{ url_for('add_package') }}" method="POST" enctype="multipart/form-data">
-                            
-        
+            <form class="mt-5 flex flex-col h-full" x-data="{'fileChosen': false}" action="{{ url_for('add_package') }}"
+                method="POST" enctype="multipart/form-data">
+
+
                 <div class="mt-2">
                     <label for="name" class="block  text-gray-700 capitalize ">Name</label>
-                    <input required name="name" placeholder="" type="text" class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                    <input required name="name" placeholder="" type="text"
+                        class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                 </div>
 
                 <div class="mt-2">
                     <label for="publisher" class="block text-gray-700 capitalize ">Publisher</label>
-                    <input required name="publisher" placeholder="" type="text" class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                    <input required name="publisher" placeholder="" type="text"
+                        class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                 </div>
 
                 <div>
                     <label for="identifier" class="block  text-gray-700 capitalize ">Identifier</label>
-                    <input required name="identifier" placeholder="" type="text" class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                    <input required name="identifier" placeholder="" type="text"
+                        class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                 </div>
 
                 <div class=" grow flex flex-row justify-end ">
-                    <button type="submit" class="self-end		 px-3 py-2 tracking-wide text-white capitalize transition-colors duration-200 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
+                    <button type="submit"
+                        class="self-end		 px-3 py-2  text-white  transition-colors duration-200 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
                         Update Metadata
                     </button>
                 </div>
@@ -65,7 +70,8 @@
     <div class="h-full w-full max-w-screen-sm">
         <div class="flex flex-row">
             <h3 class="text-2xl mb-1">Versions</h3>
-            <button class="bg-blue-600 hover:bg-blue-500 transition-colors duration-200 p-0.25 rounded-md text-white h-min self-end ml-2 mb-1.5"><svg
+            <button
+                class="bg-blue-600 hover:bg-blue-500 transition-colors duration-200 p-0.25 rounded-md text-white h-min self-end ml-2 mb-1.5"><svg
                     class="h-6 " xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
