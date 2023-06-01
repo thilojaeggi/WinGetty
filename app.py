@@ -16,8 +16,8 @@ with app.app_context():
     db.create_all()
 
 class Package(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    package_identifier = db.Column(db.String(255), unique=True, nullable=False, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    package_identifier = db.Column(db.String(255), unique=True, nullable=False)
     package_name = db.Column(db.String(255), nullable=False)
     publisher = db.Column(db.String(255), nullable=False)
     versions = db.relationship('PackageVersion', backref='package', cascade='all, delete-orphan')
@@ -74,9 +74,9 @@ class Package(db.Model):
 
 
 class PackageVersion(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    package_identifier = db.Column(db.String(50), db.ForeignKey('package.package_identifier'), primary_key=True)
-    package_version = db.Column(db.String(50), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    package_identifier = db.Column(db.String(50), db.ForeignKey('package.package_identifier'))
+    package_version = db.Column(db.String(50))
     default_locale = db.Column(db.String(50))
     package_locale = db.Column(db.String(50))
     short_description = db.Column(db.String(50))
@@ -84,9 +84,9 @@ class PackageVersion(db.Model):
     installers = db.relationship('Installer', backref='package_version', lazy=True)
 
 class Installer(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    package_version_id = db.Column(db.Integer, db.ForeignKey('package_version.id'), primary_key=True)
-    architecture = db.Column(db.String(50), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    package_version_id = db.Column(db.Integer, db.ForeignKey('package_version.id'))
+    architecture = db.Column(db.String(50))
     installer_type = db.Column(db.String(50))
     
     installer_url = db.Column(db.String(100))
@@ -135,10 +135,10 @@ def add_package():
         package.versions.append(package_version)
     db.session.add(package)
     db.session.commit()
-    return redirect(url_for('index'))
+    return "Package added", 200
 
 @app.route('/update_package_info', methods=['POST'])
-def update_package():
+def update_package_info():
     id = request.form['id']
     name = request.form['name']
     identifier = request.form['identifier']
