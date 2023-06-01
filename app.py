@@ -10,6 +10,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] =\
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+with app.app_context():
+    db.create_all()
 
 class Package(db.Model):
     package_identifier = db.Column(db.String(255), unique=True, nullable=False, primary_key=True)
@@ -51,6 +53,22 @@ class Package(db.Model):
 
         return output
 
+    def generate_output_manifest_search(self):
+        output = {
+                    "PackageIdentifier": self.package_identifier,
+                    "PackageName": self.package_name,
+                    "Publisher": self.publisher,
+                    "Versions": []
+                }
+            
+        for version in self.versions:
+            version_data = {
+                "PackageVersion": version.package_version
+            }
+            output["Versions"].append(version_data)
+
+        return output
+
 
 class PackageVersion(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -59,6 +77,7 @@ class PackageVersion(db.Model):
     default_locale = db.Column(db.String(50))
     package_locale = db.Column(db.String(50))
     short_description = db.Column(db.String(50))
+    date_added = db.Column(db.DateTime, default=db.func.current_timestamp())
     installers = db.relationship('Installer', backref='package_version', lazy=True)
 
 class Installer(db.Model):
@@ -90,8 +109,20 @@ def add_package():
     name = request.form['name']
     identifier = request.form['identifier']
     publisher = request.form['publisher']
+    # Get file
+    
+    file = request.files['file']
+    version = request.form['version']
+
 
     package = Package(package_identifier=identifier, package_name=name, publisher=publisher)
+    if file and version:
+        print("File and version found")
+        file.save(os.path.join(basedir, 'static', 'packages', file.filename))
+        package_version = PackageVersion(package_version=version, package_locale="en-US", short_description=name,package_identifier=identifier)
+        installer = Installer(architecture="x64", installer_type="msi", installer_url=url_for('static', filename=f'packages/{file.filename}', _external=True, _scheme='https'), installer_sha256="123", scope="user")        
+        package_version.installers.append(installer)
+        package.versions.append(package_version)
     db.session.add(package)
     db.session.commit()
     return redirect(url_for('index'))
@@ -101,7 +132,7 @@ def add_package():
 
 @app.route('/information')
 def information():
-    return jsonify({"Data": {"SourceIdentifier": "api.soos", "ServerSupportedVersions": ["1.4.0"]}})
+    return jsonify({"Data": {"SourceIdentifier": "api.wingetty", "ServerSupportedVersions": ["1.4.0"]}})
     
 @app.route('/packageManifests/<name>', methods=['GET'])
 def get_package_manifest(name):
@@ -115,18 +146,57 @@ def get_package_manifest(name):
 
 @app.route('/manifestSearch', methods=['POST'])
 def manifestSearch():
-    return jsonify({
-    "Data": [
-        {
-            "PackageIdentifier": "Test",
-            "PackageName": "test",
-            "Publisher": "test",
-            "Versions": [
-                {
-                    "PackageVersion": "1.0.0"
-                }
-            ]
-        }
-    ]
-})
+    # Output all post request data
+    request_data = request.get_json()
+    print(request_data)
+
+    maximum_results = request_data.get('MaximumResults')
+    fetch_all_manifests = request_data.get('FetchAllManifests')
+
+    query = request_data.get('Query')
+    keyword = query.get('KeyWord')
+    match_type = query.get('MatchType')
+
+    inclusions = request_data.get('Inclusions')
+    if inclusions is not None:
+        package_match_field = inclusions[0].get('PackageMatchField')
+        request_match = inclusions[0].get('RequestMatch')
+        keyword_inclusion = request_match.get('KeyWord')
+        match_type_inclusion = request_match.get('MatchType')
+
+    filters = request_data.get('Filters')
+    if filters is not None:
+        package_match_field_filter = filters[0].get('PackageMatchField')
+        request_match_filter = filters[0].get('RequestMatch')
+        keyword_filter = request_match_filter.get('KeyWord')
+        match_type_filter = request_match_filter.get('MatchType')
+
+    # Get packages by keyword and match type (exact or partial)
+    packages = []
+    if keyword is not None and match_type is not None:
+        if match_type == "Exact":
+            packages_query = Package.query.filter_by(package_identifier=keyword)
+        elif match_type == "Partial" or match_type == "Substring":
+            packages_query = Package.query.filter(Package.package_name.contains(keyword))
+        else:
+            return jsonify({}), 204
+
+        if maximum_results is not None:
+            packages_query = packages_query.limit(maximum_results)
+        
+        packages = packages_query.all()
+
+    if not packages:
+        return jsonify({}), 204
+
+
+    output_data = []
+    for package in packages:
+        # If a package is added to the output without any version associated with it WinGet will error out
+        if len(package.versions) > 0:
+            output_data.append(package.generate_output_manifest_search())
+    
+    output = {"Data": output_data}
+    print(output)
+    return jsonify(output)
 
