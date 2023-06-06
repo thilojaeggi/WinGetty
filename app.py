@@ -12,9 +12,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] =\
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-with app.app_context():
-    db.create_all()
-
 class Package(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     package_identifier = db.Column(db.String(255), unique=True, nullable=False)
@@ -93,6 +90,8 @@ class Installer(db.Model):
     installer_sha256 = db.Column(db.String(100))
     scope = db.Column(db.String(50))
 
+with app.app_context():
+    db.create_all()
 
 @app.context_processor
 def inject_now():
