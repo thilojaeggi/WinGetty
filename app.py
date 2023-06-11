@@ -1,11 +1,10 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import hashlib
 
 app = Flask(__name__)
-
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] =\
         'sqlite:///' + os.path.join(basedir, 'database.db')
@@ -18,6 +17,7 @@ class Package(db.Model):
     package_name = db.Column(db.String(255), nullable=False)
     publisher = db.Column(db.String(255), nullable=False)
     versions = db.relationship('PackageVersion', backref='package', cascade='all, delete-orphan')
+    download_count = db.Column(db.Integer, default=0)
 
     def generate_output(self):
         output = {
@@ -43,7 +43,7 @@ class Package(db.Model):
                 installer_data = {
                     "Architecture": installer.architecture,
                     "InstallerType": installer.installer_type,
-                    "InstallerUrl": installer.installer_url,
+                    "InstallerUrl": url_for('download', identifier=self.package_identifier, version=version.package_version, architecture=installer.architecture, _external=True).replace("http://localhost", "https://thilojaeggi-psychic-tribble-jrg579jpj935p64-5000.preview.app.github.dev"),
                     "InstallerSha256": installer.installer_sha256,
                     "Scope": installer.scope
                 }
@@ -86,7 +86,7 @@ class Installer(db.Model):
     architecture = db.Column(db.String(50))
     installer_type = db.Column(db.String(50))
     
-    installer_url = db.Column(db.String(100))
+    file_name = db.Column(db.String(100))
     installer_sha256 = db.Column(db.String(100))
     scope = db.Column(db.String(50))
 
@@ -117,19 +117,23 @@ def add_package():
     name = request.form['name']
     identifier = request.form['identifier']
     publisher = request.form['publisher']
+    version = request.form['version']
+    architecture = request.form['architecture']
+
     # Get file
     file = request.files['file']
-    version = request.form['version']
-
-
     package = Package(package_identifier=identifier, package_name=name, publisher=publisher)
     if file and version:
         print("File and version found")
-        file.save(os.path.join(basedir, 'static', 'packages', file.filename))
+        # Create directory if it doesn't exist
+        if not os.path.exists(os.path.join(basedir, 'static', 'packages', publisher, identifier, version, architecture)):
+            os.makedirs(os.path.join(basedir, 'static', 'packages', publisher, identifier, version, architecture))
+        # Save file
+        file.save(os.path.join(basedir, 'static', 'packages', publisher, identifier, version, architecture, file.filename))
         # Get file hash
-        hash = calculate_sha256(os.path.join(basedir, 'static', 'packages', file.filename))
+        hash = calculate_sha256(os.path.join(basedir, 'static', 'packages', publisher, identifier, version, architecture, file.filename))
         package_version = PackageVersion(package_version=version, package_locale="en-US", short_description=name,package_identifier=identifier)
-        installer = Installer(architecture="x64", installer_type="msi", installer_url='https://thilojaeggi-psychic-tribble-jrg579jpj935p64-5000.preview.app.github.dev/static/packages/' + file.filename, installer_sha256=hash, scope="user")        
+        installer = Installer(architecture=architecture, installer_type="exe", file_name=file.filename, installer_sha256=hash, scope="user")        
         package_version.installers.append(installer)
         package.versions.append(package_version)
     db.session.add(package)
@@ -285,21 +289,26 @@ def manifestSearch():
     print(output)
     return jsonify(output)
 
-@app.route('/download/<identifier>/<version>/<architecture>/<installer_type>')
-def download(identifier, version, architecture, installer_type):
+@app.route('/download/<identifier>/<version>/<architecture>')
+def download(identifier, version, architecture):
     package = Package.query.filter_by(package_identifier=identifier).first()
     if package is None:
-        return jsonify({}), 204
+        return "Package not found", 404
+    
     
     package_version = PackageVersion.query.filter_by(package_version=version).first()
     if package_version is None:
-        return jsonify({}), 204
+        return "Package version not found", 404
     
-    installer = Installer.query.filter_by(architecture=architecture, installer_type=installer_type).first()
+    installer = Installer.query.filter_by(architecture=architecture).first()
     if installer is None:
-        return jsonify({}), 204
+        return "Installer not found", 404
 
-    download_url = url_for('static', filename='packages/' + installer.installer_url.split('/')[-1])
+    download_url = url_for('static', filename=f'packages/{package.publisher}/{identifier}/{version}/{architecture}/{installer.file_name}')
+
+    package.download_count += 1
+    db.session.commit()
+    
     return redirect(download_url)
 
 def calculate_sha256(filename):
