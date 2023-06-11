@@ -247,13 +247,22 @@ def manifestSearch():
         keyword_filter = request_match_filter.get('KeyWord')
         match_type_filter = request_match_filter.get('MatchType')
 
+
     # Get packages by keyword and match type (exact or partial)
     packages = []
     if keyword is not None and match_type is not None:
         if match_type == "Exact":
             packages_query = Package.query.filter_by(package_identifier=keyword)
+            # Also search for package name if no package identifier is found
+            if packages_query.first() is None:
+                print("No package found with identifier, searching for package name")
+                packages_query = Package.query.filter_by(package_name=keyword)
         elif match_type == "Partial" or match_type == "Substring":
-            packages_query = Package.query.filter(Package.package_name.contains(keyword))
+            packages_query = Package.query.filter(Package.package_name.ilike(f'%{keyword}%'))
+            # Also search for package identifier if no package name is found
+            if packages_query.first() is None:
+                print("No package found with name, searching for package identifier")
+                packages_query = Package.query.filter(Package.package_identifier.ilike(f'%{keyword}%'))
         else:
             return jsonify({}), 204
 
@@ -275,6 +284,23 @@ def manifestSearch():
     output = {"Data": output_data}
     print(output)
     return jsonify(output)
+
+@app.route('/download/<identifier>/<version>/<architecture>/<installer_type>')
+def download(identifier, version, architecture, installer_type):
+    package = Package.query.filter_by(package_identifier=identifier).first()
+    if package is None:
+        return jsonify({}), 204
+    
+    package_version = PackageVersion.query.filter_by(package_version=version).first()
+    if package_version is None:
+        return jsonify({}), 204
+    
+    installer = Installer.query.filter_by(architecture=architecture, installer_type=installer_type).first()
+    if installer is None:
+        return jsonify({}), 204
+
+    download_url = url_for('static', filename='packages/' + installer.installer_url.split('/')[-1])
+    return redirect(download_url)
 
 def calculate_sha256(filename):
     sha256_hash = hashlib.sha256()
