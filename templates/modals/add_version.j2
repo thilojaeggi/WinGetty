@@ -1,0 +1,150 @@
+<div x-show="showModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog"
+    aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen px-4 text-center md:items-center sm:block sm:p-0">
+        <div x-cloak @click="showModal = false" x-show="showModal"
+            x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200 transform"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+            class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-40" aria-hidden="true"></div>
+
+        <div x-data="fileUpload()" x-cloak x-show="showModal"
+            x-transition:enter="transition ease-out duration-300 transform"
+            x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+            x-transition:leave="transition ease-in duration-200 transform"
+            x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+            x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            class="inline-block w-full max-w-xl p-8 my-20 overflow-hidden text-left transition-all transform bg-white rounded-lg shadow-xl 2xl:max-w-2xl">
+            <div class="flex items-center justify-between space-x-4">
+                <h1 class="text-xl font-medium text-gray-800 ">Add package</h1>
+
+                <button @click="showModal = false" class="text-gray-600 focus:outline-none hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </button>
+            </div>
+
+            <p class="mt-2 text-sm text-gray-500 ">
+                Packages added here will instantly be available to all clients.
+            </p>
+
+            <form x-ref="uploadForm" @submit.prevent="submitForm" class="mt-5" x-data="{ fileChosen: false, name: '', publisher: '', identifier: ''}"
+                action="{{ url_for('add_package') }}" method="POST"
+                enctype="multipart/form-data">
+
+
+                <div class="mt-2">
+                    <label for="name" class="block  text-gray-700  ">Name<span class="text-red-500">*</span></label>
+                    <input required name="name" placeholder="" type="text" x-model="name"
+                        class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                </div>
+
+                <div class="mt-2">
+                    <label for="publisher" class="block text-gray-700  ">Publisher<span
+                            class="text-red-500">*</span></label>
+                    <input required name="publisher" placeholder="" type="text" x-model="publisher"
+                        class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                </div>
+
+                <div class="mt-2">
+                    <label for="identifier" class="block  text-gray-700  ">Identifier<span
+                            class="text-red-500">*</span></label>
+                    <input required name="identifier" placeholder="" type="text" x-ref="identifier" x-bind:value="identifier ? identifier : (name + '.' + publisher)" 
+                        class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40" @input="identifier = ''">
+                </div>
+
+                <div class="mt-2">
+                    <label for="file" class="block  text-gray-700  ">File</label>
+                    <input @change="fileChosen = $refs.fileInput.files.length > 0" x-ref="fileInput" name="file"
+                        accept=".exe,.msi,.msix,.appx" type="file"
+                        class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                </div>
+
+                <div x-show="fileChosen" x-collapse>
+                    <div class="mt-2">
+                        <label for="architecture" class="block text-gray-700  ">Architecture<span
+                                class="text-red-500">*</span></label>
+                        <select name="architecture" x-bind:required="fileChosen"
+                            class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                            <option value="x86">x86</option>
+                            <option value="x64">x64</option>
+                            <option value="arm">arm</option>
+                            <option value="arm64">arm64</option>
+                        </select>
+                    </div>
+
+                    <div class="mt-2">
+                        <label for="version" class="block  text-gray-700  ">Version<span
+                                class="text-red-500">*</span></label>
+                        <input name="version" placeholder="" type="text" x-bind:required="fileChosen"
+                            class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                    </div>
+                </div>
+
+                <div class="flex justify-end mt-6">
+                    <button x-show="showUploadButton" type="submit"
+                        class="px-3 py-2 tracking-wide text-white  transition-colors duration-200 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
+                        Add Package
+                    </button>
+                </div>
+                <div x-show="!showUploadButton"
+                    class="h-auto p-2 rounded-md w-min bg-blue-600 flex flex-row justify-end text-white text-lg font-semibold "
+                    x-bind:style="'width: ' + progress + '%; transition: width 0.5s ease-in-out;'">
+                    <p x-text="progress"></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    function fileUpload() {
+        return {
+            progress: 0,
+            showUploadButton: true,
+            showModal: true,
+            submitForm() {
+                this.showUploadButton = false;
+                var hasFile = this.$refs.fileInput.files.length > 0;
+                let formData = new FormData(this.$refs.uploadForm);
+
+                $.ajax({
+                    url: this.$refs.uploadForm.action,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    xhr: () => {
+                        let xhr = new window.XMLHttpRequest();
+                        if (hasFile) {
+                            let fileSize = this.$refs.fileInput.files[0].size;
+                            xhr.upload.addEventListener('progress', (event) => {
+                                if (event.lengthComputable) {
+                                    this.progress = Math.round((event.loaded / fileSize) * 100);
+                                }
+                            });
+                        }
+                        return xhr;
+                    },
+                    success: () => {
+                        this.progress = 0;
+                        this.showModal = false;
+                        this.$refs.uploadForm.reset();
+                    },
+                    complete: () => {
+                        this.showUploadButton = true;
+                        this.$refs.uploadForm.reset();
+                    }
+                });
+            },
+            hideUploadButton() {
+                this.showUploadButton = false;
+            }
+        };
+    }
+</script>
+{% endblock %}
