@@ -19,10 +19,11 @@
 
 </div>
 
-<div class="flex flex-col md:flex-row h-96 gap-x-4 gap-y-12">
-    <div class="h-full w-full max-w-screen-sm	">
+<div class="flex flex-col md:flex-row h-96 gap-x-4 gap-y-12 mt-4">
+    <div class="h-full w-full max-w-screen-sm">
         <h3 class="text-2xl mb-1">Info</h3>
         <div class="bg-white/70 rounded-md h-full p-2 w-full flex flex-col space-y-2">
+                <h4 class="font-semibold text-2xl self-end mr-2">{{ package.download_count }} Downloads</h4>
             <form class="mt-5 flex flex-col h-full" x-data="{'fileChosen': false}" action="{{ url_for('update_package_info') }}"
                 method="POST" enctype="multipart/form-data">
 
@@ -106,7 +107,7 @@
                                 {% endif %}
                                 {% for installer in version.installers %}
                                 <div class="flex flex-row p-2 bg-white rounded-md justify-between"
-                                    @click="navigator.clipboard.writeText('{{installer.installer_url}}');">
+                                    @click="navigator.clipboard.writeText('{{ url_for('download', identifier=package.package_identifier, version=version.package_version, architecture=installer.architecture, _external=True).replace("http://localhost", "https://thilojaeggi-psychic-tribble-jrg579jpj935p64-5000.preview.app.github.dev") }}');">
                                     <p class="font-bold">{{installer.architecture}}</p>
                                     <div class="flex flex-row space-x-2 group cursor-pointer">
                                         <svg class="group-hover:stroke-blue-500 h-6 w-6 transition-colors duration-200"
