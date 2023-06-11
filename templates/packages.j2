@@ -69,25 +69,25 @@
 
 
                             <div class="mt-2">
-                                <label for="name" class="block  text-gray-700 capitalize ">Name<span class="text-red-500">*</span></label>
+                                <label for="name" class="block  text-gray-700  ">Name<span class="text-red-500">*</span></label>
                                 <input required name="name" placeholder="" type="text"
                                     class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                             </div>
 
                             <div class="mt-2">
-                                <label for="publisher" class="block text-gray-700 capitalize ">Publisher<span class="text-red-500">*</span></label>
+                                <label for="publisher" class="block text-gray-700  ">Publisher<span class="text-red-500">*</span></label>
                                 <input required name="publisher" placeholder="" type="text"
                                     class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                             </div>
 
                             <div class="mt-2">
-                                <label for="identifier" class="block  text-gray-700 capitalize ">Identifier<span class="text-red-500">*</span></label>
+                                <label for="identifier" class="block  text-gray-700  ">Identifier<span class="text-red-500">*</span></label>
                                 <input required name="identifier" placeholder="" type="text"
                                     class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                             </div>
 
                             <div class="mt-2">
-                                <label for="file" class="block  text-gray-700 capitalize ">File</label>
+                                <label for="file" class="block  text-gray-700  ">File</label>
                                 <input @change="fileChosen = $refs.fileInput.files.length > 0" x-ref="fileInput" name="file"
                                     accept=".exe,.msi,.msix,.appx" type="file"
                                     class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
@@ -95,7 +95,7 @@
                             
                             <div x-show="fileChosen" x-collapse>
                             <div class="mt-2">
-                                <label for="architecture" class="block text-gray-700 capitalize ">Architecture<span class="text-red-500">*</span></label>
+                                <label for="architecture" class="block text-gray-700  ">Architecture<span class="text-red-500">*</span></label>
                                 <select name="architecture" x-bind:required="fileChosen"
                                     class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                                     <option value="x86">x86</option>
@@ -106,7 +106,7 @@
                             </div>
 
                             <div class="mt-2" >
-                                <label for="version" class="block  text-gray-700 capitalize ">Version<span class="text-red-500">*</span></label>
+                                <label for="version" class="block  text-gray-700  ">Version<span class="text-red-500">*</span></label>
                                 <input name="version" placeholder="" type="text" x-bind:required="fileChosen"
                                     class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                             </div>
@@ -114,7 +114,7 @@
 
                             <div class="flex justify-end mt-6">
                                 <button x-show="showUploadButton" type="submit"
-                                    class="px-3 py-2 tracking-wide text-white capitalize transition-colors duration-200 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
+                                    class="px-3 py-2 tracking-wide text-white  transition-colors duration-200 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
                                     Add Package
                                 </button>
                             </div>
@@ -236,7 +236,7 @@
 
     <div class="flex items-center mt-4 gap-x-4 sm:mt-0">
         <a href="#"
-            class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
+            class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700  transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
@@ -248,7 +248,7 @@
         </a>
 
         <a href="#"
-            class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
+            class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700  transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
             <span>
                 Next
             </span>
