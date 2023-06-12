@@ -25,8 +25,8 @@
 <div class="flex flex-col md:flex-row max-h-96 sm:h-96 gap-x-4 gap-y-12 mt-4">
     <div class="h-full w-full max-w-screen-sm">
         <h3 class="text-2xl mb-1 select-none">Info</h3>
-        <div class="bg-white/70 rounded-md h-full p-2 w-full flex flex-col space-y-2">
-            <h4 class="font-semibold text-2xl self-end mr-2">{{ package.download_count }} {{ 'Downloads' if
+        <div class="bg-white/70 rounded-md h-min max-h-full overflow-y-auto p-2 w-full flex flex-col space-y-2">
+            <h4 class="font-base text-2xl self-start hidden mr-2">{{ package.download_count }} {{ 'Downloads' if
                 (package.download_count > 1 or package.download_count == 0) else 'Download' }}</h4>
             <form class="mt-5 flex flex-col h-full" x-data="{'fileChosen': false}"
                 action="{{ url_for('api.update_package', identifier=package.identifier) }}" method="POST"
@@ -45,14 +45,15 @@
                     <input required name="publisher" placeholder="" type="text" value="{{package.publisher}}"
                         class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                 </div>
-
-                <div>
+                <div class="mt-2">
                     <label for="identifier" class="block  text-gray-700  ">Identifier</label>
                     <input required name="identifier" placeholder="" type="text" value="{{package.identifier}}"
                         class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                 </div>
 
-                <div class=" grow flex flex-row justify-end ">
+                
+
+                <div class=" grow flex flex-row justify-end mt-2">
                     <button type="submit"
                         class="self-end		 px-3 py-2  text-white  transition-colors duration-300 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
                         Update Metadata
