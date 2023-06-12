@@ -25,7 +25,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/thilojaeggi/WinGetty">
-    <img src="https://raw.githubusercontent.com/thilojaeggi/WinGetty/main/static/img/wingetty.png" alt="Logo" height="128">
+    <img src="https://raw.githubusercontent.com/thilojaeggi/WinGetty/main/src/wingetty.png" alt="Logo" height="128">
   </a>
 
 <h3 align="center">WinGetty</h3>
