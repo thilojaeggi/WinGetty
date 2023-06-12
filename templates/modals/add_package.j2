@@ -33,7 +33,7 @@
 
             <form x-ref="uploadForm" @submit.prevent="submitForm" class="mt-5"
                 x-data="{ fileChosen: false, name: '', publisher: '', identifier: '', identifierEditedManually : false}"
-                x-data="{'fileChosen': false}" action="{{ url_for('add_package') }}" method="POST"
+                x-data="{'fileChosen': false}" action="{{ url_for('api.add_package') }}" method="POST"
                 enctype="multipart/form-data">
 
 
