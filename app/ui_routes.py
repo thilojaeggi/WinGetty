@@ -1,7 +1,7 @@
 from app import db
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for
 
-from models import Package, PackageVersion, Installer
+from app.models import Package, PackageVersion, Installer
 
 ui = Blueprint('ui', __name__)
 
