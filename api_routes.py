@@ -1,6 +1,6 @@
 import os
-from flask import Blueprint, jsonify, render_template, request, redirect, url_for
-from utils import calculate_sha256
+from flask import Blueprint, jsonify, render_template, request, redirect, url_for, current_app, send_from_directory
+from utils import calculate_sha256, debugPrint
 from app import db, basedir
 from models import Package, PackageVersion, Installer
 
@@ -19,14 +19,16 @@ def add_package():
     file = request.files['file']
     package = Package(package_identifier=identifier, package_name=name, publisher=publisher)
     if file and version:
-        print("File and version found")
+        debugPrint("File and version found")
+        save_directory = os.path.join(basedir, 'packages', publisher, identifier, version, architecture)
         # Create directory if it doesn't exist
-        if not os.path.exists(os.path.join(basedir, 'static', 'packages', publisher, identifier, version, architecture)):
-            os.makedirs(os.path.join(basedir, 'static', 'packages', publisher, identifier, version, architecture))
+        if not os.path.exists(save_directory):
+            os.makedirs(save_directory)
         # Save file
-        file.save(os.path.join(basedir, 'static', 'packages', publisher, identifier, version, architecture, file.filename))
+        file_path = os.path.join(save_directory, file.filename)
+        file.save(file_path)
         # Get file hash
-        hash = calculate_sha256(os.path.join(basedir, 'static', 'packages', publisher, identifier, version, architecture, file.filename))
+        hash = calculate_sha256(file_path)
         package_version = PackageVersion(package_version=version, package_locale="en-US", short_description=name,package_identifier=identifier)
         installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file.filename, installer_sha256=hash, scope="user")        
         package_version.installers.append(installer)
@@ -121,7 +123,7 @@ def get_package_manifest(name):
 def manifestSearch():
     # Output all post request data
     request_data = request.get_json()
-    print(request_data)
+    debugPrint(request_data)
 
     maximum_results = request_data.get('MaximumResults')
     fetch_all_manifests = request_data.get('FetchAllManifests')
@@ -154,13 +156,13 @@ def manifestSearch():
             packages_query = Package.query.filter_by(package_identifier=keyword)
             # Also search for package name if no package identifier is found
             if packages_query.first() is None:
-                print("No package found with identifier, searching for package name")
+                debugPrint("No package found with identifier, searching for package name")
                 packages_query = Package.query.filter_by(package_name=keyword)
         elif match_type == "Partial" or match_type == "Substring":
             packages_query = Package.query.filter(Package.package_name.ilike(f'%{keyword}%'))
             # Also search for package identifier if no package name is found
             if packages_query.first() is None:
-                print("No package found with name, searching for package identifier")
+                debugPrint("No package found with name, searching for package identifier")
                 packages_query = Package.query.filter(Package.package_identifier.ilike(f'%{keyword}%'))
         else:
             return jsonify({}), 204
@@ -181,7 +183,7 @@ def manifestSearch():
             output_data.append(package.generate_output_manifest_search())
     
     output = {"Data": output_data}
-    print(output)
+    debugPrint(output)
     return jsonify(output)
 
 @api.route('/download/<identifier>/<version>/<architecture>')
@@ -190,18 +192,31 @@ def download(identifier, version, architecture):
     if package is None:
         return "Package not found", 404
     
-    
-    package_version = PackageVersion.query.filter_by(package_version=version).first()
+    # Get version of package and also match package
+    package_version = PackageVersion.query.filter_by(package_version=version, package_identifier=identifier).first()
     if package_version is None:
         return "Package version not found", 404
-    
-    installer = Installer.query.filter_by(architecture=architecture).first()
+    # Get installer of package version and also match architecture and identifier
+    installer = Installer.query.filter_by(package_version_id=package_version.id, architecture=architecture).first()
     if installer is None:
         return "Installer not found", 404
+    
 
-    download_url = url_for('static', filename=f'packages/{package.publisher}/{identifier}/{version}/{architecture}/{installer.file_name}')
+    installer_path = os.path.join(basedir, 'packages', package.publisher, package.package_identifier, package_version.package_version, installer.architecture)
 
     package.download_count += 1
     db.session.commit()
+
+    if current_app.debug:
+        debugPrint("Starting download for package:")
+        debugPrint(f"Package name: {package.package_name}")
+        debugPrint(f"Package identifier: {package.package_identifier}")
+        debugPrint(f"Package version: {package_version.package_version}")
+        debugPrint(f"Architecture: {installer.architecture}")
+        debugPrint(f"Installer file name: {installer.file_name}")
+        debugPrint(f"Installer SHA256: {installer.installer_sha256}")
+        debugPrint(f"Download URL: {installer_path}")
     
-    return redirect(download_url)
+
+    
+    return send_from_directory(installer_path, installer.file_name, as_attachment=True)

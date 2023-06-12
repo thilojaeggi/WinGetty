@@ -1,4 +1,5 @@
 import hashlib
+from flask import current_app
 
 def calculate_sha256(filename):
     sha256_hash = hashlib.sha256()
