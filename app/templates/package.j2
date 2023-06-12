@@ -6,8 +6,11 @@
 <div class="sm:flex sm:items-center sm:justify-between">
     <div>
         <div class="flex items-center gap-x-3">
-            <h2 class="text-3xl font-medium text-gray-800 ">{{ package.name }} <span
-                    class="text-gray-500 text-base">{{package.identifier}}</span></h2>
+            <div class="flex flex-col">
+
+                <h2 class="text-3xl font-medium text-gray-800 ">{{ package.name }}</h2>
+                <h4 class="text-gray-500 text-base font-semibold">{{package.identifier}}</h4>
+            </div>
             <span
                 class="px-3 py-1 mt-1 text-sm text-blue-600 {{ 'bg-emerald-100/60 text-emerald-500' if package.versions|length > 0 else 'bg-red-100/60 text-red-500' }} rounded-full ">
                 {{ 'Version ' + (package.versions|last).version_code if
@@ -19,7 +22,7 @@
 
 </div>
 
-<div class="flex flex-col md:flex-row h-96 gap-x-4 gap-y-12 mt-4">
+<div class="flex flex-col md:flex-row max-h-96 sm:h-96 gap-x-4 gap-y-12 mt-4">
     <div class="h-full w-full max-w-screen-sm">
         <h3 class="text-2xl mb-1 select-none">Info</h3>
         <div class="bg-white/70 rounded-md h-full p-2 w-full flex flex-col space-y-2">
@@ -83,12 +86,12 @@
 
             <div class="drop-shadow-md flex flex-col divide-y">
                 {% for version in package.versions|sort_versions %}
-                <div class="bg-white {% if loop.first %}rounded-t-md{% elif loop.last %}rounded-b-md{% endif %} {% if package.versions|length == 1 %} rounded-md {% endif %} flex flex-col" x-data="{ expanded: false }"
-                    @click.away="expanded = false">
+                <div class="bg-white {% if loop.first %}rounded-t-md{% elif loop.last %}rounded-b-md{% endif %} {% if package.versions|length == 1 %} rounded-md {% endif %} flex flex-col"
+                    x-data="{ expanded: false }" @click.away="expanded = false">
                     <div class="flex  flex-row justify-between cursor-pointer p-2" @click="expanded = !expanded">
                         <p class="font-bold text-xl select-none">{{version.version_code}}</p>
                         <p class="text-gray-700 select-none">{{version.date_added or ""}}</p>
-                        
+
                     </div>
                     <div x-show="expanded" x-collapse>
                         <div class="flex flex-col p-2">
@@ -118,7 +121,9 @@
                                     {% endif %}
                                     {% for installer in version.installers %}
                                     <div class="flex flex-row p-2 bg-white rounded-md justify-between"
-                                        @click="navigator.clipboard.writeText('{{ url_for('api.download', identifier=package.identifier, version=version.version_code, architecture=installer.architecture, _external=True).replace("http://localhost", "https://thilojaeggi-psychic-tribble-jrg579jpj935p64-5000.preview.app.github.dev") }}');">
+                                        @click="navigator.clipboard.writeText('{{ url_for('api.download', identifier=package.identifier, version=version.version_code, architecture=installer.architecture, _external=True).replace("
+                                        http://localhost", "https://thilojaeggi-psychic-tribble-jrg579jpj935p64-5000.preview.app.github.dev"
+                                        ) }}');">
 
 
                                         <p class="font-bold">{{installer.architecture}}</p>
