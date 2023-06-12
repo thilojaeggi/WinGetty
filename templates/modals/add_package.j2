@@ -31,7 +31,8 @@
                 Packages added here will instantly be available to all clients.
             </p>
 
-            <form x-ref="uploadForm" @submit.prevent="submitForm" class="mt-5" x-data="{ fileChosen: false, name: '', publisher: '', identifier: '', identifierEditedManually : false}"
+            <form x-ref="uploadForm" @submit.prevent="submitForm" class="mt-5"
+                x-data="{ fileChosen: false, name: '', publisher: '', identifier: '', identifierEditedManually : false}"
                 x-data="{'fileChosen': false}" action="{{ url_for('add_package') }}" method="POST"
                 enctype="multipart/form-data">
 
@@ -52,7 +53,9 @@
                 <div class="mt-2">
                     <label for="identifier" class="block  text-gray-700  ">Identifier<span
                             class="text-red-500">*</span></label>
-                    <input required name="identifier" placeholder="" type="text" x-model="identifier" x-bind:value="identifierEditedManually ? identifier : (publisher + '.' + name)" @input="identifierEditedManually = true"
+                    <input required name="identifier" placeholder="" type="text" x-model="identifier"
+                        x-bind:value="identifierEditedManually ? identifier : (publisher + '.' + name)"
+                        @input="identifierEditedManually = true"
                         class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                 </div>
 
@@ -75,7 +78,24 @@
                             <option value="arm64">arm64</option>
                         </select>
                     </div>
-
+                    <div class="mt-2">
+                        <label for="type" class="block text-gray-700  ">Installer Type<span
+                                class="text-red-500">*</span></label>
+                        <select name="type" x-bind:required="fileChosen"
+                            class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                            <option value="msix">msix</option>
+                            <option value="msi">msi</option>
+                            <option value="appx">appx</option>
+                            <option value="exe">exe</option>
+                            <option value="zip">zip</option>
+                            <option value="inno">inno</option>
+                            <option value="nullsoft">nullsoft</option>
+                            <option value="wix">wix</option>
+                            <option value="burn">burn</option>
+                            <option value="pwa">pwa</option>
+                            <option value="msstore">msstore</option>
+                        </select>
+                    </div>
                     <div class="mt-2">
                         <label for="version" class="block  text-gray-700  ">Version<span
                                 class="text-red-500">*</span></label>
