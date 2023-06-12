@@ -2,10 +2,15 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from distutils.version import LooseVersion
 
 
 db = SQLAlchemy()
 basedir = os.path.abspath(os.path.dirname(__file__))
+
+def sort_versions(versions):
+    return sorted(versions, key=lambda x: LooseVersion(x.package_version), reverse=True)
+
 
 def create_app():
     app = Flask(__name__)
@@ -19,6 +24,9 @@ def create_app():
     app.register_blueprint(ui)
     app.register_blueprint(api)
     
+    
+
+    app.jinja_env.filters['sort_versions'] = sort_versions
 
     @app.context_processor
     def inject_now():
