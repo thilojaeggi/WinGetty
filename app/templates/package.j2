@@ -21,7 +21,7 @@
 
 <div class="flex flex-col md:flex-row h-96 gap-x-4 gap-y-12 mt-4">
     <div class="h-full w-full max-w-screen-sm">
-        <h3 class="text-2xl mb-1">Info</h3>
+        <h3 class="text-2xl mb-1 select-none">Info</h3>
         <div class="bg-white/70 rounded-md h-full p-2 w-full flex flex-col space-y-2">
             <h4 class="font-semibold text-2xl self-end mr-2">{{ package.download_count }} {{ 'Downloads' if
                 (package.download_count > 1 or package.download_count == 0) else 'Download' }}</h4>
@@ -61,7 +61,7 @@
 
     <div class="h-full w-full max-w-screen-sm">
         <div class="flex flex-row" x-data="{ 'showModal': false }">
-            <h3 class="text-2xl mb-1">Versions</h3>
+            <h3 class="text-2xl mb-1 select-none">Versions</h3>
 
             <button type="button" @click="showModal = true"
                 class="bg-blue-600 hover:bg-blue-500 transition-colors duration-200 p-0.25 rounded-md text-white h-min self-end ml-2 mb-1.5"><svg
@@ -72,7 +72,8 @@
             </button>
             {% include 'modals/add_version.j2' %}
         </div>
-        <div class="bg-white/70 rounded-md h-full p-2 overflow-y-auto space-y-2">
+        <!-- Adding flex-col here hides the scrollbar -->
+        <div class="bg-white/70 rounded-md h-full p-2 flex flex-col overflow-y-auto space-y-2">
 
             {% if package.versions|length == 0%}
             <div class="h-full w-full flex flex-col justify-center items-center">
@@ -81,17 +82,17 @@
             {% endif %}
 
             <div class="drop-shadow-md flex flex-col divide-y">
-                {% for version in package.versions|reverse %}
-                <div class="bg-white {% if loop.first %}rounded-t-md{% elif loop.last %}rounded-b-md{% endif %} flex flex-col" x-data="{ expanded: false }"
+                {% for version in package.versions|sort_versions %}
+                <div class="bg-white {% if loop.first %}rounded-t-md{% elif loop.last %}rounded-b-md{% endif %} {% if package.versions|length == 1 %} rounded-md {% endif %} flex flex-col" x-data="{ expanded: false }"
                     @click.away="expanded = false">
                     <div class="flex  flex-row justify-between cursor-pointer p-2" @click="expanded = !expanded">
-                        <p class="font-bold text-xl">{{version.package_version}}</p>
-                        <p class="text-gray-700">{{version.date_added or ""}}</p>
+                        <p class="font-bold text-xl select-none">{{version.package_version}}</p>
+                        <p class="text-gray-700 select-none">{{version.date_added or ""}}</p>
                         
                     </div>
                     <div x-show="expanded" x-collapse>
                         <div class="flex flex-col p-2">
-                            <h3 class="text-xl font-bold">Info</h3>
+                            <h3 class="text-xl font-bold select-none">Info</h3>
                             <div class="flex flex-row">
                                 <div class="flex flex-col">
                                     <p>Default locale</p>
@@ -109,7 +110,7 @@
 
                             </div>
 
-                            <h3 class="text-xl font-bold">Installers</h3>
+                            <h3 class="text-xl font-bold select-none">Installers</h3>
                             <div class="flex flex-row">
                                 <div class="bg-gray-100 p-1.5 flex flex-col rounded-md w-1/2">
                                     {% if version.installers|length == 0%}
