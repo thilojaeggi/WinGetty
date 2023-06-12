@@ -107,6 +107,10 @@ def packages():
     packages = Package.query.all()
     return render_template('packages.j2', packages=packages)
 
+@app.route('/settings')
+def settings():
+    return render_template('settings.j2')
+
 @app.route('/package/<identifier>')
 def package(identifier):
     package = Package.query.filter_by(package_identifier=identifier).first()
