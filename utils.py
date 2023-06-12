@@ -9,3 +9,7 @@ def calculate_sha256(filename):
             sha256_hash.update(chunk)
 
     return sha256_hash.hexdigest()
+
+def debugPrint(message):
+    if current_app.config['DEBUG']:
+        print(message)
