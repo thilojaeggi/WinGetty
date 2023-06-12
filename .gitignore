@@ -21,6 +21,8 @@ docs/_build/
 *.pem
 *.db
 
+packages/
+
 # Coverage reports
 htmlcov/
 .coverage

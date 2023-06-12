@@ -1,8 +1,8 @@
 import os
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, current_app, send_from_directory
-from utils import calculate_sha256, debugPrint, save_file
+from app.utils import calculate_sha256, debugPrint, save_file
 from app import db, basedir
-from models import Package, PackageVersion, Installer
+from app.models import Package, PackageVersion, Installer
 
 api = Blueprint('api', __name__)
 
