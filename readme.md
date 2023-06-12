@@ -33,6 +33,8 @@
   <p align="center">
     An open source REST Backend for creating a private WinGet Repo without having to use Azure.
     <br />
+    Already functional but expect breaking changes with each update.
+    <br />
     ·
     <a href="https://github.com/thilojaeggi/WinGetty/issues">Report Bug</a>
     ·
