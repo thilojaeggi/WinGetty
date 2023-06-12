@@ -100,12 +100,12 @@ def inject_now():
 
 @app.route('/')
 def index():
-    return redirect(url_for('packages'))
+    return redirect(url_for('overview'))
 
-@app.route('/packages')
-def packages():
+@app.route('/overview')
+def overview():
     packages = Package.query.all()
-    return render_template('packages.j2', packages=packages)
+    return render_template('overview.j2', packages=packages)
 
 @app.route('/package/<identifier>')
 def package(identifier):
@@ -117,8 +117,9 @@ def add_package():
     name = request.form['name']
     identifier = request.form['identifier']
     publisher = request.form['publisher']
-    version = request.form['version']
     architecture = request.form['architecture']
+    installer_type = request.form['type']
+    version = request.form['version']
 
     # Get file
     file = request.files['file']
@@ -133,7 +134,7 @@ def add_package():
         # Get file hash
         hash = calculate_sha256(os.path.join(basedir, 'static', 'packages', publisher, identifier, version, architecture, file.filename))
         package_version = PackageVersion(package_version=version, package_locale="en-US", short_description=name,package_identifier=identifier)
-        installer = Installer(architecture=architecture, installer_type="exe", file_name=file.filename, installer_sha256=hash, scope="user")        
+        installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file.filename, installer_sha256=hash, scope="user")        
         package_version.installers.append(installer)
         package.versions.append(package_version)
     db.session.add(package)
