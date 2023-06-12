@@ -100,12 +100,12 @@ def inject_now():
 
 @app.route('/')
 def index():
-    return redirect(url_for('overview'))
+    return redirect(url_for('packages'))
 
-@app.route('/overview')
-def overview():
+@app.route('/packages')
+def packages():
     packages = Package.query.all()
-    return render_template('overview.j2', packages=packages)
+    return render_template('packages.j2', packages=packages)
 
 @app.route('/package/<identifier>')
 def package(identifier):
