@@ -2,3 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 [x-cloak] { display: none !important; }
+* {
+    font-family: 'Poppins', sans-serif !important;
+}
