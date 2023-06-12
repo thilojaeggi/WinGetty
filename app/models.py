@@ -38,10 +38,12 @@ class Package(db.Model):
                     "Scope": installer.scope
                 }
                 version_data["Installers"].append(installer_data)
-
-            output["Data"]["Versions"].append(version_data)
+            # Only append version if there's at least one installer
+            if version_data["Installers"]:
+                output["Data"]["Versions"].append(version_data)
 
         return output
+
 
     def generate_output_manifest_search(self):
         output = {
@@ -55,7 +57,9 @@ class Package(db.Model):
             version_data = {
                 "PackageVersion": version.package_version
             }
-            output["Versions"].append(version_data)
+            # Only append version if there's at least one installer
+            if version.installers:
+                output["Versions"].append(version_data)
 
         return output
 
