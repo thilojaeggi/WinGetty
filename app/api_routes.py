@@ -171,15 +171,14 @@ def download(identifier, version, architecture):
     package.download_count += 1
     db.session.commit()
 
-    if current_app.debug:
-        debugPrint("Starting download for package:")
-        debugPrint(f"Package name: {package.package_name}")
-        debugPrint(f"Package identifier: {package.package_identifier}")
-        debugPrint(f"Package version: {package_version.package_version}")
-        debugPrint(f"Architecture: {installer.architecture}")
-        debugPrint(f"Installer file name: {installer.file_name}")
-        debugPrint(f"Installer SHA256: {installer.installer_sha256}")
-        debugPrint(f"Download URL: {installer_path}")
+    debugPrint("Starting download for package:")
+    debugPrint(f"Package name: {package.package_name}")
+    debugPrint(f"Package identifier: {package.package_identifier}")
+    debugPrint(f"Package version: {package_version.package_version}")
+    debugPrint(f"Architecture: {installer.architecture}")
+    debugPrint(f"Installer file name: {installer.file_name}")
+    debugPrint(f"Installer SHA256: {installer.installer_sha256}")
+    debugPrint(f"Download URL: {installer_path}")
     
 
     
