@@ -9,7 +9,7 @@ db = SQLAlchemy()
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 def sort_versions(versions):
-    return sorted(versions, key=lambda x: LooseVersion(x.package_version), reverse=True)
+    return sorted(versions, key=lambda x: LooseVersion(x.version_code), reverse=True)
 
 
 def create_app():

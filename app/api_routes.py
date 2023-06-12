@@ -15,29 +15,30 @@ def add_package():
     installer_type = request.form['type']
     version = request.form['version']
 
+
     # Get file
     file = request.files['file']
-    package = Package(package_identifier=identifier, package_name=name, publisher=publisher)
+    package = Package(identifier=identifier, name=name, publisher=publisher)
     if file and version:
         debugPrint("File and version found")
         hash = save_file(file, publisher, identifier, version, architecture)
-        package_version = PackageVersion(package_version=version, package_locale="en-US", short_description=name,package_identifier=identifier)
+        version_code = PackageVersion(version_code=version, package_locale="en-US", short_description=name,identifier=identifier)
         installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file.filename, installer_sha256=hash, scope="user")        
-        package_version.installers.append(installer)
-        package.versions.append(package_version)
+        version_code.installers.append(installer)
+        package.versions.append(version_code)
     db.session.add(package)
     db.session.commit()
     return "Package added", 200
 
 @api.route('/package/<identifier>', methods=['POST'])
 def update_package(identifier):
-    package = Package.query.filter_by(package_identifier=identifier).first()
+    package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
         return "Package not found", 404
     
     name = request.form['name']
     publisher = request.form['publisher']
-    package.package_name = name
+    package.name = name
     package.publisher = publisher
     db.session.commit()
     return redirect(request.referrer)
@@ -48,21 +49,21 @@ def add_version(identifier):
     architecture = request.form['architecture']
     installer_type = request.form['type']
 
-    package = Package.query.filter_by(package_identifier=identifier).first()
+    package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
         return "Package not found", 404
     file = request.files['file']
-    package_version = PackageVersion(package_version=version, package_locale="en-US", short_description=package.package_name,package_identifier=identifier)
+    version_code = PackageVersion(version_code=version, package_locale="en-US", short_description=package.name,identifier=identifier)
     if file and version:
         debugPrint("File and version found")
         hash = save_file(file, package.publisher, identifier, version, architecture)
         if hash is None:
             return "Error saving file", 500
         installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file.filename, installer_sha256=hash, scope="user")        
-        package_version.installers.append(installer)
+        version_code.installers.append(installer)
 
     
-    package.versions.append(package_version)
+    package.versions.append(version_code)
     db.session.commit()
 
     return redirect(request.referrer)
@@ -75,7 +76,7 @@ def information():
     
 @api.route('/packageManifests/<name>', methods=['GET'])
 def get_package_manifest(name):
-    package = Package.query.filter_by(package_identifier=name).first()
+    package = Package.query.filter_by(identifier=name).first()
     if package is None:
         
         return jsonify({}), 204
@@ -117,17 +118,17 @@ def manifestSearch():
     packages = []
     if keyword is not None and match_type is not None:
         if match_type == "Exact":
-            packages_query = Package.query.filter_by(package_identifier=keyword)
+            packages_query = Package.query.filter_by(identifier=keyword)
             # Also search for package name if no package identifier is found
             if packages_query.first() is None:
                 debugPrint("No package found with identifier, searching for package name")
-                packages_query = Package.query.filter_by(package_name=keyword)
+                packages_query = Package.query.filter_by(name=keyword)
         elif match_type == "Partial" or match_type == "Substring":
-            packages_query = Package.query.filter(Package.package_name.ilike(f'%{keyword}%'))
+            packages_query = Package.query.filter(Package.name.ilike(f'%{keyword}%'))
             # Also search for package identifier if no package name is found
             if packages_query.first() is None:
                 debugPrint("No package found with name, searching for package identifier")
-                packages_query = Package.query.filter(Package.package_identifier.ilike(f'%{keyword}%'))
+                packages_query = Package.query.filter(Package.identifier.ilike(f'%{keyword}%'))
         else:
             return jsonify({}), 204
 
@@ -152,29 +153,29 @@ def manifestSearch():
 
 @api.route('/download/<identifier>/<version>/<architecture>')
 def download(identifier, version, architecture):
-    package = Package.query.filter_by(package_identifier=identifier).first()
+    package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
         return "Package not found", 404
     
     # Get version of package and also match package
-    package_version = PackageVersion.query.filter_by(package_version=version, package_identifier=identifier).first()
-    if package_version is None:
+    version_code = PackageVersion.query.filter_by(version_code=version, identifier=identifier).first()
+    if version_code is None:
         return "Package version not found", 404
     # Get installer of package version and also match architecture and identifier
-    installer = Installer.query.filter_by(package_version_id=package_version.id, architecture=architecture).first()
+    installer = Installer.query.filter_by(version_code_id=version_code.id, architecture=architecture).first()
     if installer is None:
         return "Installer not found", 404
     
 
-    installer_path = os.path.join(basedir, 'packages', package.publisher, package.package_identifier, package_version.package_version, installer.architecture)
+    installer_path = os.path.join(basedir, 'packages', package.publisher, package.identifier, version_code.version_code, installer.architecture)
 
     package.download_count += 1
     db.session.commit()
 
     debugPrint("Starting download for package:")
-    debugPrint(f"Package name: {package.package_name}")
-    debugPrint(f"Package identifier: {package.package_identifier}")
-    debugPrint(f"Package version: {package_version.package_version}")
+    debugPrint(f"Package name: {package.name}")
+    debugPrint(f"Package identifier: {package.identifier}")
+    debugPrint(f"Package version: {version_code.version_code}")
     debugPrint(f"Architecture: {installer.architecture}")
     debugPrint(f"Installer file name: {installer.file_name}")
     debugPrint(f"Installer SHA256: {installer.installer_sha256}")

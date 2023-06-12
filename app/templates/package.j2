@@ -1,16 +1,16 @@
 {% extends "base.j2" %}
-{% set title = "Package: " ~ package.package_name %}
+{% set title = "Package: " ~ package.name %}
 {% block content %}
 
 
 <div class="sm:flex sm:items-center sm:justify-between">
     <div>
         <div class="flex items-center gap-x-3">
-            <h2 class="text-3xl font-medium text-gray-800 ">{{ package.package_name }} <span
-                    class="text-gray-500 text-base">{{package.package_identifier}}</span></h2>
+            <h2 class="text-3xl font-medium text-gray-800 ">{{ package.name }} <span
+                    class="text-gray-500 text-base">{{package.identifier}}</span></h2>
             <span
                 class="px-3 py-1 mt-1 text-sm text-blue-600 {{ 'bg-emerald-100/60 text-emerald-500' if package.versions|length > 0 else 'bg-red-100/60 text-red-500' }} rounded-full ">
-                {{ 'Version ' + (package.versions|last).package_version if
+                {{ 'Version ' + (package.versions|last).version_code if
                 package.versions|length > 0 else 'No versions' }}
             </span>
         </div>
@@ -26,14 +26,14 @@
             <h4 class="font-semibold text-2xl self-end mr-2">{{ package.download_count }} {{ 'Downloads' if
                 (package.download_count > 1 or package.download_count == 0) else 'Download' }}</h4>
             <form class="mt-5 flex flex-col h-full" x-data="{'fileChosen': false}"
-                action="{{ url_for('api.update_package', identifier=package.package_identifier) }}" method="POST"
+                action="{{ url_for('api.update_package', identifier=package.identifier) }}" method="POST"
                 enctype="multipart/form-data">
 
 
 
                 <div class="mt-2">
                     <label for="name" class="block  text-gray-700  ">Name</label>
-                    <input required name="name" placeholder="" type="text" value="{{package.package_name}}"
+                    <input required name="name" placeholder="" type="text" value="{{package.name}}"
                         class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                 </div>
 
@@ -45,7 +45,7 @@
 
                 <div>
                     <label for="identifier" class="block  text-gray-700  ">Identifier</label>
-                    <input required name="identifier" placeholder="" type="text" value="{{package.package_identifier}}"
+                    <input required name="identifier" placeholder="" type="text" value="{{package.identifier}}"
                         class="block w-full px-3 py-2 mt-1 text-gray-600 placeholder-gray-400 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                 </div>
 
@@ -86,7 +86,7 @@
                 <div class="bg-white {% if loop.first %}rounded-t-md{% elif loop.last %}rounded-b-md{% endif %} {% if package.versions|length == 1 %} rounded-md {% endif %} flex flex-col" x-data="{ expanded: false }"
                     @click.away="expanded = false">
                     <div class="flex  flex-row justify-between cursor-pointer p-2" @click="expanded = !expanded">
-                        <p class="font-bold text-xl select-none">{{version.package_version}}</p>
+                        <p class="font-bold text-xl select-none">{{version.version_code}}</p>
                         <p class="text-gray-700 select-none">{{version.date_added or ""}}</p>
                         
                     </div>
@@ -118,9 +118,7 @@
                                     {% endif %}
                                     {% for installer in version.installers %}
                                     <div class="flex flex-row p-2 bg-white rounded-md justify-between"
-                                        @click="navigator.clipboard.writeText('{{ url_for('api.download', identifier=package.package_identifier, version=version.package_version, architecture=installer.architecture, _external=True).replace("
-                                        http://localhost", "https://thilojaeggi-psychic-tribble-jrg579jpj935p64-5000.preview.app.github.dev"
-                                        ) }}');">
+                                        @click="navigator.clipboard.writeText('{{ url_for('api.download', identifier=package.identifier, version=version.version_code, architecture=installer.architecture, _external=True).replace("http://localhost", "https://thilojaeggi-psychic-tribble-jrg579jpj935p64-5000.preview.app.github.dev") }}');">
 
 
                                         <p class="font-bold">{{installer.architecture}}</p>

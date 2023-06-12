@@ -20,5 +20,5 @@ def settings():
 
 @ui.route('/package/<identifier>', methods=['GET'])
 def package(identifier):
-    package = Package.query.filter_by(package_identifier=identifier).first()
+    package = Package.query.filter_by(identifier=identifier).first()
     return render_template('package.j2', package=package)

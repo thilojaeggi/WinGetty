@@ -82,15 +82,15 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             {% for package in packages %}
-                            <tr x-show="search === '' || '{{package.package_name}}'.toLowerCase().includes(search.toLowerCase()) || '{{package.package_identifier}}'.toLowerCase().includes(search.toLowerCase()) || '{{package.publisher}}'.toLowerCase().includes(search.toLowerCase())"
+                            <tr x-show="search === '' || '{{package.name}}'.toLowerCase().includes(search.toLowerCase()) || '{{package.identifier}}'.toLowerCase().includes(search.toLowerCase()) || '{{package.publisher}}'.toLowerCase().includes(search.toLowerCase())"
                                 x-cloak>
 
 
                                 <td class="px-4 py-4 text-md whitespace-nowrap">
-                                    <h4 class="text-gray-700 font-semibold ">{{ package.package_name }}</h4>
+                                    <h4 class="text-gray-700 font-semibold ">{{ package.name }}</h4>
                                 </td>
                                 <td class="px-4 py-4 text-md whitespace-nowrap">
-                                    <h4 class="text-gray-700 ">{{ package.package_identifier }}</h4>
+                                    <h4 class="text-gray-700 ">{{ package.identifier }}</h4>
                                 </td>
 
                                 <td class="px-4 py-4 text-md whitespace-nowrap">
@@ -100,13 +100,13 @@
                                 <td class="pl-3 py-4 text-sm font-medium whitespace-nowrap">
                                     <div
                                         class="inline px-3 py-1  text-sm font-normal rounded-full  gap-x-2 {{ 'bg-emerald-100/60 text-emerald-500' if package.versions|length > 0 else 'bg-red-100/60 text-red-500' }}  ">
-                                        {{ 'Version ' + package.versions[0].package_version if package.versions|length >
+                                        {{ 'Version ' + package.versions[0].version_code if package.versions|length >
                                         0 else 'No versions' }}
                                     </div>
                                 </td>
 
                                 <td class="px-4 py-4 text-sm whitespace-nowrap flex flex-row justify-center">
-                                    <a href="{{ url_for('ui.package', identifier=package.package_identifier) }}"
+                                    <a href="{{ url_for('ui.package', identifier=package.identifier) }}"
                                         class="px-1  py-1 text-gray-500 transition-colors duration-200 rounded-lg  hover:bg-gray-100">
                                         <?xml version="1.0" ?><svg class="feather feather-edit" fill="none" height="24"
                                             stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
