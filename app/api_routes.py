@@ -162,7 +162,7 @@ def download(identifier, version, architecture):
     if version_code is None:
         return "Package version not found", 404
     # Get installer of package version and also match architecture and identifier
-    installer = Installer.query.filter_by(version_code_id=version_code.id, architecture=architecture).first()
+    installer = Installer.query.filter_by(version_id=version_code.id, architecture=architecture).first()
     if installer is None:
         return "Installer not found", 404
     
