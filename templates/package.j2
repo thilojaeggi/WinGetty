@@ -23,9 +23,11 @@
     <div class="h-full w-full max-w-screen-sm">
         <h3 class="text-2xl mb-1">Info</h3>
         <div class="bg-white/70 rounded-md h-full p-2 w-full flex flex-col space-y-2">
-                <h4 class="font-semibold text-2xl self-end mr-2">{{ package.download_count }} Downloads</h4>
-            <form class="mt-5 flex flex-col h-full" x-data="{'fileChosen': false}" action="{{ url_for('api.update_package_info') }}"
-                method="POST" enctype="multipart/form-data">
+            <h4 class="font-semibold text-2xl self-end mr-2">{{ package.download_count }} Downloads</h4>
+            <form class="mt-5 flex flex-col h-full" x-data="{'fileChosen': false}"
+                action="{{ url_for('api.update_package', identifier=package.package_identifier) }}" method="POST"
+                enctype="multipart/form-data">
+
 
 
                 <div class="mt-2">
@@ -57,15 +59,17 @@
     </div>
 
     <div class="h-full w-full max-w-screen-sm">
-        <div class="flex flex-row">
+        <div class="flex flex-row" x-data="{ 'showModal': false }">
             <h3 class="text-2xl mb-1">Versions</h3>
-            <button
-                class="bg-blue-600 hover:bg-blue-500 transition-colors duration-200 p-0.25 rounded-md text-white h-min self-end ml-2 mb-1.5"><svg
-                    class="h-6 " xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-            </button>
+            
+                <button type="button" @click="showModal = true"
+                    class="bg-blue-600 hover:bg-blue-500 transition-colors duration-200 p-0.25 rounded-md text-white h-min self-end ml-2 mb-1.5"><svg
+                        class="h-6 " xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                </button>
+                {% include 'modals/add_version.j2' %}
         </div>
         <div class="bg-white/70 rounded-md h-full p-2 flex flex-col overflow-y-auto space-y-2">
             {% if package.versions|length == 0%}
@@ -74,15 +78,15 @@
             </div>
             {% endif %}
             {% for version in package.versions %}
-            <div class="bg-white drop-shadow-md rounded-md flex flex-col "
-                x-data="{ expanded: false }" @click.away="expanded = false">
+            <div class="bg-white drop-shadow-md rounded-md flex flex-col " x-data="{ expanded: false }"
+                @click.away="expanded = false">
 
                 <div class="flex flex-row justify-between cursor-pointer p-2" @click="expanded = !expanded">
                     <p class="font-bold text-xl">{{version.package_version}}</p>
                     <p class="text-gray-700">{{version.date_added or ""}}</p>
                 </div>
                 <div x-show="expanded" x-collapse>
-                    <div class="flex flex-col p-2" >
+                    <div class="flex flex-col p-2">
                         <h3 class="text-xl font-bold">Info</h3>
                         <div class="flex flex-row">
                             <div class="flex flex-col">
@@ -109,7 +113,9 @@
                                 {% endif %}
                                 {% for installer in version.installers %}
                                 <div class="flex flex-row p-2 bg-white rounded-md justify-between"
-                                    @click="navigator.clipboard.writeText('{{ url_for('api.download', identifier=package.package_identifier, version=version.package_version, architecture=installer.architecture, _external=True).replace("http://localhost", "https://thilojaeggi-psychic-tribble-jrg579jpj935p64-5000.preview.app.github.dev") }}');">
+                                                                        @click="navigator.clipboard.writeText('{{ url_for('api.download', identifier=package.package_identifier, version=version.package_version, architecture=installer.architecture, _external=True).replace("http://localhost", "https://thilojaeggi-psychic-tribble-jrg579jpj935p64-5000.preview.app.github.dev") }}');">
+
+                                    
                                     <p class="font-bold">{{installer.architecture}}</p>
                                     <div class="flex flex-row space-x-2 group cursor-pointer">
                                         <svg class="group-hover:stroke-blue-500 h-6 w-6 transition-colors duration-200"
@@ -118,7 +124,8 @@
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                 d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
                                         </svg>
-                                        <p class="group-hover:text-blue-600 transition-colors duration-200">Copy link </p>
+                                        <p class="group-hover:text-blue-600 transition-colors duration-200">Copy link
+                                        </p>
                                     </div>
                                 </div>
                                 {% endfor %}
