@@ -23,7 +23,8 @@
     <div class="h-full w-full max-w-screen-sm">
         <h3 class="text-2xl mb-1">Info</h3>
         <div class="bg-white/70 rounded-md h-full p-2 w-full flex flex-col space-y-2">
-            <h4 class="font-semibold text-2xl self-end mr-2">{{ package.download_count }} Downloads</h4>
+            <h4 class="font-semibold text-2xl self-end mr-2">{{ package.download_count }} {{ 'Downloads' if
+                (package.download_count > 1 or package.download_count == 0) else 'Download' }}</h4>
             <form class="mt-5 flex flex-col h-full" x-data="{'fileChosen': false}"
                 action="{{ url_for('api.update_package', identifier=package.package_identifier) }}" method="POST"
                 enctype="multipart/form-data">
