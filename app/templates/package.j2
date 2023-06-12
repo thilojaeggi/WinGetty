@@ -88,10 +88,9 @@
                 {% for version in package.versions|sort_versions %}
                 <div class="bg-white {% if loop.first %}rounded-t-md{% elif loop.last %}rounded-b-md{% endif %} {% if package.versions|length == 1 %} rounded-md {% endif %} flex flex-col"
                     x-data="{ expanded: false }" @click.away="expanded = false">
-                    <div class="flex  flex-row justify-between cursor-pointer p-2" @click="expanded = !expanded">
-                        <p class="font-bold text-xl select-none">{{version.version_code}}</p>
+                    <div class="flex  flex-row justify-between items-center cursor-pointer p-2" @click="expanded = !expanded">
+                        <p class="font-semibold text-xl select-none">{{version.version_code}}</p>
                         <p class="text-gray-700 select-none">{{version.date_added or ""}}</p>
-
                     </div>
                     <div x-show="expanded" x-collapse>
                         <div class="flex flex-col p-2">
