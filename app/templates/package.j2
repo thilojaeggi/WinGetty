@@ -7,15 +7,22 @@
     <div>
         <div class="flex items-center gap-x-3">
             <div class="flex flex-col">
-
                 <h2 class="text-3xl font-medium text-gray-800 ">{{ package.name }}</h2>
                 <h4 class="text-gray-500 text-base font-semibold">{{package.identifier}}</h4>
             </div>
+            <div class="flex flex-col">
             <span
-                class="px-3 py-1 mt-1 text-sm text-blue-600 {{ 'bg-emerald-100/60 text-emerald-500' if package.versions|length > 0 else 'bg-red-100/60 text-red-500' }} rounded-full ">
+                class="px-3 py-1 mt-1 text-base text-center {{ 'bg-emerald-100/60 text-emerald-600' if package.versions|length > 0 else 'bg-red-100/60 text-red-500' }} rounded-full ">
                 {{ 'Version ' + (package.versions|last).version_code if
                 package.versions|length > 0 else 'No versions' }}
             </span>
+            <span
+                class="px-3 py-1 mt-1 text-base text-center text-blue-600 bg-blue-200/60 rounded-full ">
+                {{ package.download_count }} {{ 'Downloads' if
+                (package.download_count > 1 or package.download_count == 0) else 'Download' }}
+            </span>
+            </div>
+            
         </div>
 
     </div>
@@ -26,8 +33,7 @@
     <div class="h-full w-full max-w-screen-sm">
         <h3 class="text-2xl mb-1 select-none">Info</h3>
         <div class="bg-white/70 rounded-md h-min max-h-full overflow-y-auto p-2 w-full flex flex-col space-y-2">
-            <h4 class="font-base text-2xl self-start hidden mr-2">{{ package.download_count }} {{ 'Downloads' if
-                (package.download_count > 1 or package.download_count == 0) else 'Download' }}</h4>
+            <h4 class="font-base text-2xl self-start hidden mr-2"></h4>
             <form class="mt-5 flex flex-col h-full" x-data="{'fileChosen': false}"
                 action="{{ url_for('api.update_package', identifier=package.identifier) }}" method="POST"
                 enctype="multipart/form-data">
@@ -77,7 +83,7 @@
             {% include 'modals/add_version.j2' %}
         </div>
         <!-- Adding flex-col here hides the scrollbar -->
-        <div class="bg-white/70 rounded-md h-full p-2 flex flex-col overflow-y-auto space-y-2">
+        <div class="bg-white/70 rounded-md h-full p-2 flex flex-col overflow-y-auto space-y-2 scrollbar-none">
 
             {% if package.versions|length == 0%}
             <div class="h-full w-full flex flex-col justify-center items-center">
