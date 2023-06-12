@@ -3,7 +3,7 @@
     <div class="flex items-end justify-center min-h-screen px-4 text-center md:items-center sm:block sm:p-0">
         <div x-cloak @click="showModal = false" x-show="showModal"
             x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200 transform"
+            x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-300 transform"
             x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
             class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-40" aria-hidden="true"></div>
 
@@ -11,7 +11,7 @@
             x-transition:enter="transition ease-out duration-300 transform"
             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-            x-transition:leave="transition ease-in duration-200 transform"
+            x-transition:leave="transition ease-in duration-300 transform"
             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             class="inline-block w-full max-w-xl p-8 my-20 overflow-hidden text-left transition-all transform bg-white rounded-lg shadow-xl 2xl:max-w-2xl">
@@ -106,7 +106,7 @@
 
                 <div class="flex justify-end mt-6">
                     <button x-show="showUploadButton" type="submit"
-                        class="px-3 py-2 tracking-wide text-white  transition-colors duration-200 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
+                        class="px-3 py-2 tracking-wide text-white  transition-colors duration-300 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
                         Add Package
                     </button>
                 </div>
@@ -153,6 +153,7 @@
                         this.progress = 0;
                         this.showModal = false;
                         this.$refs.uploadForm.reset();
+                        this.$dispatch('refresh');
                     },
                     complete: () => {
                         this.showUploadButton = true;
