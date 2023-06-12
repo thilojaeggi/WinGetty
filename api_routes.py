@@ -1,6 +1,6 @@
 import os
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, current_app, send_from_directory
-from utils import calculate_sha256, debugPrint
+from utils import calculate_sha256, debugPrint, save_file
 from app import db, basedir
 from models import Package, PackageVersion, Installer
 
@@ -20,15 +20,7 @@ def add_package():
     package = Package(package_identifier=identifier, package_name=name, publisher=publisher)
     if file and version:
         debugPrint("File and version found")
-        save_directory = os.path.join(basedir, 'packages', publisher, identifier, version, architecture)
-        # Create directory if it doesn't exist
-        if not os.path.exists(save_directory):
-            os.makedirs(save_directory)
-        # Save file
-        file_path = os.path.join(save_directory, file.filename)
-        file.save(file_path)
-        # Get file hash
-        hash = calculate_sha256(file_path)
+        hash = save_file(file, publisher, identifier, version, architecture)
         package_version = PackageVersion(package_version=version, package_locale="en-US", short_description=name,package_identifier=identifier)
         installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file.filename, installer_sha256=hash, scope="user")        
         package_version.installers.append(installer)
@@ -37,71 +29,43 @@ def add_package():
     db.session.commit()
     return "Package added", 200
 
-@api.route('/update_package_info', methods=['POST'])
-def update_package_info():
-    id = request.form['id']
-    name = request.form['name']
-    identifier = request.form['identifier']
-    publisher = request.form['publisher']
-
-    package = Package.query.filter_by(id=id).first()
+@api.route('/package/<identifier>', methods=['POST'])
+def update_package(identifier):
+    package = Package.query.filter_by(package_identifier=identifier).first()
     if package is None:
-        return redirect(request.referrer)
+        return "Package not found", 404
     
+    name = request.form['name']
+    publisher = request.form['publisher']
     package.package_name = name
-    package.package_identifier = identifier
     package.publisher = publisher
     db.session.commit()
     return redirect(request.referrer)
 
-    
-@api.route('/add_package_version', methods=['POST'])
-def add_package_version():
-    package_identifier = request.form['package_identifier']
-    package_version = request.form['package_version']
-    package_locale = request.form['package_locale']
-    short_description = request.form['short_description']
+@api.route('/package/<identifier>/add-version', methods=['POST'])
+def add_version(identifier):
+    version = request.form['version']
+    architecture = request.form['architecture']
+    installer_type = request.form['type']
 
-    package = Package.query.filter_by(package_identifier=package_identifier).first()
+    package = Package.query.filter_by(package_identifier=identifier).first()
     if package is None:
-        return redirect(request.referrer)
+        return "Package not found", 404
+    file = request.files['file']
+    package_version = PackageVersion(package_version=version, package_locale="en-US", short_description=package.package_name,package_identifier=identifier)
+    if file and version:
+        debugPrint("File and version found")
+        hash = save_file(file, package.publisher, identifier, version, architecture)
+        if hash is None:
+            return "Error saving file", 500
+        installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file.filename, installer_sha256=hash, scope="user")        
+        package_version.installers.append(installer)
 
     
-    package_version = PackageVersion(package_version=package_version, package_locale=package_locale, short_description=short_description)
     package.versions.append(package_version)
     db.session.commit()
+
     return redirect(request.referrer)
-
-
-
-@api.route('/add_installer', methods=['POST'])
-def add_installer():
-    package_identifier = request.form['package_identifier']
-    package_version = request.form['package_version']
-    architecture = request.form['architecture']
-    installer_type = request.form['installer_type']
-    file = request.files['file']
-    scope = request.form['scope']
-
-    package = Package.query.filter_by(package_identifier=package_identifier).first()
-    if package is None:
-        return redirect(request.referrer)
-    
-    package_version = PackageVersion.query.filter_by(package_version=package_version).first()
-    if package_version is None:
-        return redirect(request.referrer)
-    
-    if file:
-        file.save(os.path.join(basedir, 'static', 'packages', file.filename))
-        # Get file hash
-        hash = calculate_sha256(os.path.join(basedir, 'static', 'packages', file.filename))
-        installer = Installer(architecture=architecture, installer_type=installer_type, installer_url='https://thilojaeggi-psychic-tribble-jrg579jpj935p64-5000.preview.app.github.dev/static/packages/' + file.filename, installer_sha256=hash, scope=scope)
-        package_version.installers.append(installer)
-        db.session.commit()
-
-    
-    return redirect(request.referrer)
-    
 
 
 
