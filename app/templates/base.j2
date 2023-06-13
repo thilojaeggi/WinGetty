@@ -25,7 +25,7 @@
     </script>
 </head>
 
-<body class="min-h-screen  flex flex-col bg-slate-200 dark:bg-zinc-800">
+<body class="min-h-screen h-screen  flex flex-col bg-slate-200 dark:bg-zinc-800">
     <nav
         class="flex items-center justify-between flex-wrap bg-white dark:bg-zinc-900 text-neutral-700 dark:text-neutral-100	 p-4 drop-shadow-md sticky top-0 z-50">
         <div class="flex flex-row items-center flex-shrink-0 text-neutral-900 dark:text-neutral-200 mr-6">
@@ -75,8 +75,9 @@
         </div>
     </nav>
 
-    <main class=" p-4">
+    <main class="h-full w-full p-4 flex flex-col">
         {% block content %}{% endblock %}
+        
     </main>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>var themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
