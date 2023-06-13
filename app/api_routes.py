@@ -166,22 +166,12 @@ def download(identifier, version, architecture):
     installer = Installer.query.filter_by(version_id=version_code.id, architecture=architecture).first()
     if installer is None:
         return "Installer not found", 404
+
+    
     
 
     installer_path = os.path.join(basedir, 'packages', package.publisher, package.identifier, version_code.version_code, installer.architecture)
     file_path = os.path.join(installer_path, installer.file_name)
-    # Only add to download_count for a whole file download not part of itq (winget uses range)
-    expected_file_size = os.path.getsize(file_path)
-
-    # Check if the Range header is present
-    range_header = request.headers.get('Range')
-
-    is_partial = range_header is not None
-
-    if not is_partial or (is_partial and request.range.end == expected_file_size - 1):
-        package.download_count += 1
-        db.session.commit()
-
     debugPrint("Starting download for package:")
     debugPrint(f"Package name: {package.name}")
     debugPrint(f"Package identifier: {package.identifier}")
@@ -190,7 +180,20 @@ def download(identifier, version, architecture):
     debugPrint(f"Installer file name: {installer.file_name}")
     debugPrint(f"Installer SHA256: {installer.installer_sha256}")
     debugPrint(f"Download URL: {installer_path}")
-    
 
-    
+
+    # Check if the Range header is present
+    range_header = request.headers.get('Range')
+
+    is_partial = range_header is not None
+    if is_partial:
+        request.range = parse_range_header(range_header)
+        if request.range is None:
+            return "Invalid range header", 400
+
+    # Only add to download_count for a whole file download not part of it (winget uses range)
+    if (is_partial and range_header and range_header == "bytes=0-1") or not is_partial:
+        package.download_count += 1
+        db.session.commit()
+
     return send_from_directory(installer_path, installer.file_name, as_attachment=True)
