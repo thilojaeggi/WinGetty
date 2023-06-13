@@ -128,9 +128,7 @@
                                     {% endif %}
                                     {% for installer in version.installers %}
                                     <div class="flex flex-row p-2 bg-white dark:bg-neutral-950 rounded-md justify-between"
-                                        @click="navigator.clipboard.writeText('{{ url_for('api.download', identifier=package.identifier, version=version.version_code, architecture=installer.architecture, _external=True).replace("
-                                        http://localhost", "https://thilojaeggi-psychic-tribble-jrg579jpj935p64-5000.preview.app.github.dev"
-                                        ) }}');">
+                                        @click="navigator.clipboard.writeText('{{ url_for('api.download', identifier=package.identifier, version=version.version_code, architecture=installer.architecture, _external=True).replace("http://localhost", "https://thilojaeggi-psychic-tribble-jrg579jpj935p64-5000.preview.app.github.dev") }}');">
 
 
                                         <p class="font-bold">{{installer.architecture}}</p>
