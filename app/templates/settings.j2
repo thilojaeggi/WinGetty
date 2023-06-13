@@ -16,7 +16,7 @@
                     {{ config.VERSION  }} 
                 </p>
                 <p class="dark:text-gray-200">
-                ({{ 'Unstable' if (config.VERSION.split('.')[0]|int) < 1 else 'Stable' }})
+                ({{ 'Beta' if (config.VERSION.split('.')[0]|int) < 1 else 'Stable' }})
                 </p>
             </td>
         </tr>
