@@ -23,6 +23,8 @@
             document.documentElement.classList.remove('dark')
         }
     </script>
+
+    <script src="{{ url_for('static', filename='js/jquery-3.7.0.min.js') }}"></script>
 </head>
 
 <body class="min-h-screen h-screen  flex flex-col bg-slate-200 dark:bg-zinc-800">
@@ -79,7 +81,6 @@
         {% block content %}{% endblock %}
 
     </main>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
         var themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
