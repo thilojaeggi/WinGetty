@@ -1,7 +1,8 @@
 import hashlib
 import os
 from flask import current_app
-from app import basedir
+
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 def calculate_sha256(filename):
     sha256_hash = hashlib.sha256()

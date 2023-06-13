@@ -4,9 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from distutils.version import LooseVersion
 from . import config
-
+from .utils import basedir
 db = SQLAlchemy()
-basedir = os.path.abspath(os.path.dirname(__file__))
 
 def sort_versions(versions):
     return sorted(versions, key=lambda x: LooseVersion(x.version_code), reverse=True)

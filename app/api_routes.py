@@ -1,7 +1,7 @@
 import os
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, current_app, send_from_directory
-from app.utils import calculate_sha256, debugPrint, save_file
-from app import db, basedir
+from app.utils import calculate_sha256, debugPrint, save_file, basedir
+from app import db
 from app.models import Package, PackageVersion, Installer
 
 api = Blueprint('api', __name__)
@@ -72,7 +72,7 @@ def add_version(identifier):
 
 @api.route('/information')
 def information():
-    return jsonify({"Data": {"SourceIdentifier": "api.wingetty", "ServerSupportedVersions": ["1.4.0"]}})
+    return jsonify({"Data": {"SourceIdentifier": current_app.config["REPO_NAME"], "ServerSupportedVersions": ["1.4.0"]}})
     
 @api.route('/packageManifests/<name>', methods=['GET'])
 def get_package_manifest(name):
