@@ -47,7 +47,21 @@
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
+<hr>
 
+### What currently works:
+* Webinterface for managing packages, versions and installers
+* Adding package with or without installer and version
+* Adding version to existing package with or without installer and version
+* Updating Package Information except Identifier
+* Searching/Showing for packages with WinGet
+* Downloading/Installing packages with WinGet
+* Upgrading packages with WinGet
+### What is planned:
+* Adding installers to existing packages
+* Adding installer parameters to support e.g. silent installs
+* Adding support for user/machine/both installers.
+<hr>
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
