@@ -1,0 +1,11 @@
+{% extends "base.j2" %}
+{% set title = "Setup" %}
+{% block content %}
+<h1 class="text-3xl font-medium text-gray-800">{{title}}</h1>
+
+
+
+<p class="mt-4 inline-block">Setting up is easy, just execute the following command in an elevated PowerShell Terminal</p><br>
+<p class="inline-block p-2 bg-white rounded-md mt-2">winget source add -n WinGetty -t "Microsoft.Rest" -a {{ url_for('ui.index', _external=True) }}" </p>
+
+{% endblock %}

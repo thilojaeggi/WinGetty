@@ -14,6 +14,10 @@ def packages():
     packages = Package.query.all()
     return render_template('packages.j2', packages=packages)
 
+@ui.route('/setup')
+def setup():
+    return render_template('setup.j2')
+
 @ui.route('/settings')
 def settings():
     return render_template('settings.j2')
