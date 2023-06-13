@@ -3,6 +3,7 @@ from flask import Blueprint, jsonify, render_template, request, redirect, url_fo
 from app.utils import calculate_sha256, debugPrint, save_file, basedir
 from app import db
 from app.models import Package, PackageVersion, Installer
+from werkzeug.http import parse_range_header
 
 api = Blueprint('api', __name__)
 
@@ -168,9 +169,18 @@ def download(identifier, version, architecture):
     
 
     installer_path = os.path.join(basedir, 'packages', package.publisher, package.identifier, version_code.version_code, installer.architecture)
+    file_path = os.path.join(installer_path, installer.file_name)
+    # Only add to download_count for a whole file download not part of itq (winget uses range)
+    expected_file_size = os.path.getsize(file_path)
 
-    package.download_count += 1
-    db.session.commit()
+    # Check if the Range header is present
+    range_header = request.headers.get('Range')
+
+    is_partial = range_header is not None
+
+    if not is_partial or (is_partial and request.range.end == expected_file_size - 1):
+        package.download_count += 1
+        db.session.commit()
 
     debugPrint("Starting download for package:")
     debugPrint(f"Package name: {package.name}")
