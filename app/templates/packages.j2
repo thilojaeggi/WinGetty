@@ -4,12 +4,14 @@
 
 
 <div class="sm:flex sm:items-center sm:justify-between">
-        <div class="flex items-center gap-x-3">
-            <h1 class="text-3xl font-medium text-gray-800">Packages</h1>
+    <div class="flex items-center gap-x-3">
+        <h1 class="text-3xl font-medium text-gray-800 dark:text-gray-300">Packages</h1>
 
-            <span class="px-3 py-1 mt-1 text-base text-center text-blue-600 bg-blue-200/60 rounded-full">{{packages|length}} {{ 'Packages' if
-                packages|length > 1 else 'Package' }}</span>
-        </div>
+        <span
+            class="px-3 py-1 mt-1 text-base text-center text-blue-600 dark:text-blue-300 bg-blue-200/60 dark:bg-blue-600/60 rounded-full">{{packages|length}}
+            {{ 'Packages' if
+            packages|length > 1 else 'Package' }}</span>
+    </div>
 
 
     <div class="flex items-center gap-x-3">
@@ -42,33 +44,33 @@
             </span>
 
             <input type="text" placeholder="Search" x-model="search"
-                class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-200 rounded-lg md:w-80 placeholder-gray-400/70 pl-11 rtl:pr-11 rtl:pl-5  focus:border-blue-400  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
+                class="block w-full py-1.5 pr-5 text-gray-700 dark:text-gray-200 bg-white border border-gray-200 dark:bg-neutral-900 dark:border-none rounded-lg md:w-80 placeholder-gray-400/70 pl-11 rtl:pr-11 rtl:pl-5  focus:border-blue-400  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
         </div>
     </div>
 
     <div class="flex flex-col mt-2">
         <div class=" overflow-x-auto">
             <div class="inline-block w-full align-middle ">
-                <div class="overflow-auto border border-gray-200 md:rounded-lg">
-                    <table class="min-w-full divide-y divide-gray-200 ">
-                        <thead class="bg-gray-50 ">
-                            <tr>
+                <div class="overflow-auto border border-gray-200 dark:border-none md:rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-400 ">
+                        <thead class="bg-gray-50 dark:bg-neutral-900 ">
+                            <tr class="text-gray-500 dark:text-gray-200">
                                 <th scope="col"
-                                    class="pl-3 py-3.5  text-sm font-normal text-left rtl:text-right text-gray-500">
+                                    class="pl-3 py-3.5  text-sm font-normal text-left rtl:text-right ">
                                     Name
                                 </th>
 
                                 <th scope="col"
-                                    class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500">
+                                    class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
                                     Identifier
                                 </th>
 
                                 <th scope="col"
-                                    class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500">
+                                    class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
                                     Publisher</th>
 
                                 <th scope="col"
-                                    class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500">
+                                    class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
                                     Latest Version</th>
 
                                 <th scope="col" class="relative py-3.5 px-4">
@@ -76,28 +78,28 @@
                                 </th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody class="bg-white dark:bg-neutral-950 divide-y divide-gray-200 dark:divide-gray-700 text-gray-700 dark:text-gray-300">
                             {% for package in packages %}
                             <tr x-show="search === '' || '{{package.name}}'.toLowerCase().includes(search.toLowerCase()) || '{{package.identifier}}'.toLowerCase().includes(search.toLowerCase()) || '{{package.publisher}}'.toLowerCase().includes(search.toLowerCase())"
                                 x-cloak>
 
 
                                 <td class="px-4 py-4 text-md whitespace-nowrap">
-                                    <h4 class="text-gray-700 font-semibold ">{{ package.name }}</h4>
+                                    <h4 class=" font-semibold ">{{ package.name }}</h4>
                                 </td>
                                 <td class="px-4 py-4 text-md whitespace-nowrap">
-                                    <h4 class="text-gray-700 ">{{ package.identifier }}</h4>
+                                    <h4 class=" ">{{ package.identifier }}</h4>
                                 </td>
 
                                 <td class="px-4 py-4 text-md whitespace-nowrap">
                                     <h4 @click="search = '{{ package.publisher }}'"
-                                        class="text-gray-700 hover:font-bold cursor-pointer transition-[font-weight] duration-300 ">
+                                        class=" hover:font-bold cursor-pointer transition-[font-weight] duration-300 ">
                                         {{ package.publisher }}</h4>
                                 </td>
 
                                 <td class="pl-3 py-4 text-sm font-medium whitespace-nowrap">
                                     <div
-                                        class="inline px-3 py-1  text-sm font-normal rounded-full  gap-x-2 {{ 'bg-emerald-100/60 text-emerald-500' if package.versions|length > 0 else 'bg-red-100/60 text-red-500' }}  ">
+                                        class="inline px-3 py-1  text-sm font-normal rounded-full  gap-x-2 {{ 'bg-emerald-100/60 dark:bg-emerald-700/60 text-emerald-500 dark:text-emerald-300' if package.versions|length > 0 else 'bg-red-100/60 dark:bg-red-700/60 text-red-500 dark:text-red-300' }}  ">
                                         {{ 'Version ' + package.versions[0].version_code if package.versions|length >
                                         0 else 'No versions' }}
                                     </div>
@@ -135,7 +137,7 @@
 
     <div class="flex items-center mt-4 gap-x-4 sm:mt-0">
         <a href="#"
-            class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700  transition-colors duration-300 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
+            class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 dark:text-gray-300  transition-colors duration-300 bg-white dark:bg-neutral-900 dark:hover:bg-neutral-800 border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
@@ -147,7 +149,7 @@
         </a>
 
         <a href="#"
-            class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700  transition-colors duration-300 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
+            class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 dark:text-gray-300  transition-colors duration-300 bg-white dark:bg-neutral-900 dark:hover:bg-neutral-800 border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
             <span>
                 Next
             </span>
