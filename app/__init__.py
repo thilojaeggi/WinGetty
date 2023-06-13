@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from distutils.version import LooseVersion
-
+from . import config
 
 db = SQLAlchemy()
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -14,9 +14,7 @@ def sort_versions(versions):
 
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] =\
-            'sqlite:///' + os.path.join(basedir, 'database.db')
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config.from_object(config.Config)
     db.init_app(app)
 
     from app.ui_routes import ui
