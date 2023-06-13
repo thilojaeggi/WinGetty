@@ -75,12 +75,14 @@
         </div>
     </nav>
 
-    <main class="h-full w-full p-4 flex flex-col">
+    <main class="h-full w-full p-4 flex flex-col max-w-screen-xl mx-auto">
         {% block content %}{% endblock %}
-        
+
     </main>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>var themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+
+    <script>
+        var themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
         var themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
 
         // Change the icons inside the button based on previous settings
@@ -119,7 +121,8 @@
                 }
             }
 
-        });</script>
+        });
+    </script>
 </body>
 
 </html>
