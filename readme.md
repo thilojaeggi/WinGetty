@@ -59,7 +59,7 @@
 * Upgrading packages with WinGet
 ### What is planned:
 * Adding installers to existing packages
-* Adding installer parameters to support e.g. silent installs
+* Adding installer parameters to support e.g. silent installs, meanwhile use --custom or --silent
 * Adding support for user/machine/both installers.
 <hr>
 
