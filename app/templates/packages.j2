@@ -1,6 +1,6 @@
 {% extends "base.j2" %}
 {% set title = "Packages" %}
-{% set alpine_data = "{ showAddPackageModal: false, currentPage: 1 }"%}
+{% set alpine_data = "{ showAddPackageModal: false}"%}
 
 {% block content %}
 <div class="sm:flex sm:items-center sm:justify-between">
@@ -52,7 +52,8 @@
         <div class=" overflow-x-auto">
             <div class="inline-block w-full align-middle ">
                 <div class="overflow-auto border border-gray-200 dark:border-none md:rounded-lg">
-                    <table id="packages_table" hx-target="#packages_table tbody"  hx-swap="innerHTML"  class="min-w-full divide-y divide-gray-200 dark:divide-gray-400 ">
+                    <table id="packages_table" hx-target="#packages_table tbody" hx-swap="innerHTML"
+                        class="min-w-full divide-y divide-gray-200 dark:divide-gray-400 ">
                         <thead class="bg-gray-50 dark:bg-neutral-900 ">
                             <tr class="text-gray-500 dark:text-gray-200">
                                 <th scope="col" class="pl-3 py-3.5  text-sm font-normal text-left rtl:text-right ">
@@ -84,13 +85,17 @@
         </div>
     </div>
 </div>
-<div class="mt-6 sm:flex sm:items-center sm:justify-between ">
-    <div class="text-sm text-gray-500">
-        Page <span class="font-medium text-gray-700 "><span x-text="currentPage"></span> of {{ pages }}</span>
+<div class="mt-6 sm:flex sm:items-center sm:justify-between " x-data="{ currentPage: {{page}}}">
+    <div class="text-sm text-gray-500 dark:text-gray-300">
+        Page <span class="font-medium text-gray-700 dark:text-gray-400"><span class="dark:text-gray-300"
+                x-text="currentPage"></span> of {{ pages }}</span>
     </div>
 
     <div class="flex items-center mt-4 gap-x-4 sm:mt-0">
-        <button x-on:click="currentPage = currentPage - 1" x-bind:hx-get="'{{url_for('ui.packages')}}?page=' + (currentPage) " hx-target="#packages_table tbody" hx-swap="innerHTML"
+        <button
+            @click="currentPage = currentPage > 1 ? currentPage - 1 : 1; addOrOverrideURLParameter('page', currentPage);"
+            x-bind:hx-get="'{{url_for('ui.packages')}}?page=' + (currentPage > 1 ? currentPage - 1 : 1)"
+            hx-target="#packages_table tbody" hx-swap="innerHTML"
             class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 dark:text-gray-300  transition-colors duration-300 bg-white dark:bg-neutral-900 dark:hover:bg-neutral-800 border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
@@ -102,7 +107,10 @@
             </span>
         </button>
 
-        <button x-on:click="currentPage = currentPage + 1"  x-bind:hx-get="'{{url_for('ui.packages')}}?page=' + (currentPage + 1)" hx-target="#packages_table tbody" hx-swap="innerHTML"
+        <button
+            @click="currentPage = currentPage < {{pages}} ? currentPage + 1 : currentPage; addOrOverrideURLParameter('page', currentPage);"
+            x-bind:hx-get="'{{url_for('ui.packages')}}?page=' + (currentPage < {{pages}} ? currentPage + 1 : currentPage)"
+            hx-target="#packages_table tbody" hx-swap="innerHTML"
             class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 dark:text-gray-300  transition-colors duration-300 bg-white dark:bg-neutral-900 dark:hover:bg-neutral-800 border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
             <span>
                 Next
@@ -116,14 +124,19 @@
     </div>
 </div>
 
+
 <script>
-  function loadTableData() {
-    const currentPage = Alpine.store('myData').currentPage;
-    const url = '/load_data?page=' + currentPage;
-    const tableContent = document.getElementById('tableContent');
-    tableContent.hxGet(url);
+function addOrOverrideURLParameter(paramName, paramValue) {
+  const url = new URL(window.location.href);
+  const searchParams = url.searchParams;
+  
+  if (searchParams.has(paramName)) {
+    searchParams.delete(paramName);
   }
-</script>
+  
+  searchParams.append(paramName, paramValue);
+  window.history.replaceState({}, '', url.toString());
+}
 
-
+    </script>
 {% endblock %}
