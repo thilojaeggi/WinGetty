@@ -1,6 +1,6 @@
 {% extends "base.j2" %}
 {% set title = "Package: " ~ package.name %}
-{% set alpine_data = "{ showAddVersionModal : false, showAddInstallerModal: false }" %}
+{% set alpine_data = "{ showAddVersionModal : false, showAddInstallerModal: false, selectedVersion: '' }" %}
 {% block content %}
 
 <div class="sm:flex sm:items-center sm:justify-between">
@@ -61,9 +61,9 @@
 
 
 
-                <div class=" grow flex flex-row justify-end mt-2">
+                <div class=" grow flex flex-row justify-end mt-4">
                     <button type="submit"
-                        class="self-end		 px-3 py-2  text-white  transition-colors duration-300 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
+                        class="self-end px-3 py-2 text-white transition-colors duration-300 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
                         Update Metadata
                     </button>
                 </div>
@@ -122,7 +122,7 @@
                             <h3 class="text-xl font-medium select-none dark:text-gray-200">Installers</h3>
                             <div class="flex flex-row">
                                 <div
-                                    class="bg-gray-100 text-gray-500 dark:text-gray-200 dark:bg-neutral-800 p-1.5 flex flex-col rounded-md w-1/2">
+                                    class="bg-gray-100 text-gray-500 dark:text-gray-200 dark:bg-neutral-800 p-1.5 flex flex-col gap-y-1 rounded-md w-1/2">
                                     {% if version.installers|length == 0%}
                                     <p class="">No installers, consider adding one</p>
                                     {% endif %}
@@ -139,14 +139,11 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round"
                                                     d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
                                             </svg>
-                                            <p class="group-hover:text-blue-600 transition-colors duration-300">Copy
-                                                link
-                                            </p>
                                         </div>
                                     </div>
                                     {% endfor %}
                                 </div>
-                                <button type="button" @click="showAddInstallerModal = true"
+                                <button type="button" @click="selectedVersion = '{{version.version_code}}'; showAddInstallerModal = true;"
                                     class="bg-blue-600 hover:bg-blue-500 transition-colors duration-300 p-0.5 rounded-md text-white h-min self-end ml-2"><svg
                                         class="h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor">
