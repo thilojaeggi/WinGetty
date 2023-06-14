@@ -1,8 +1,8 @@
 {% extends "base.j2" %}
 {% set title = "Packages" %}
-{% set alpine_data = "{ showAddPackageModal: false }"%}
-{% block content %}
+{% set alpine_data = "{ showAddPackageModal: false, currentPage: 1 }"%}
 
+{% block content %}
 <div class="sm:flex sm:items-center sm:justify-between">
     <div class="flex items-center gap-x-3">
         <h1 class="text-3xl font-medium text-gray-800 dark:text-gray-200">{{title}}</h1>
@@ -52,25 +52,21 @@
         <div class=" overflow-x-auto">
             <div class="inline-block w-full align-middle ">
                 <div class="overflow-auto border border-gray-200 dark:border-none md:rounded-lg">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-400 ">
+                    <table id="packages_table" hx-target="#packages_table tbody"  hx-swap="innerHTML"  class="min-w-full divide-y divide-gray-200 dark:divide-gray-400 ">
                         <thead class="bg-gray-50 dark:bg-neutral-900 ">
                             <tr class="text-gray-500 dark:text-gray-200">
-                                <th scope="col"
-                                    class="pl-3 py-3.5  text-sm font-normal text-left rtl:text-right ">
+                                <th scope="col" class="pl-3 py-3.5  text-sm font-normal text-left rtl:text-right ">
                                     Name
                                 </th>
 
-                                <th scope="col"
-                                    class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
+                                <th scope="col" class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
                                     Identifier
                                 </th>
 
-                                <th scope="col"
-                                    class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
+                                <th scope="col" class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
                                     Publisher</th>
 
-                                <th scope="col"
-                                    class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
+                                <th scope="col" class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
                                     Latest Version</th>
 
                                 <th scope="col" class="relative py-3.5 px-4">
@@ -78,51 +74,9 @@
                                 </th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white dark:bg-neutral-950 divide-y divide-gray-200 dark:divide-gray-700 text-gray-700 dark:text-gray-300">
-                            {% for package in packages %}
-                            <tr x-show="search === '' || '{{package.name}}'.toLowerCase().includes(search.toLowerCase()) || '{{package.identifier}}'.toLowerCase().includes(search.toLowerCase()) || '{{package.publisher}}'.toLowerCase().includes(search.toLowerCase())"
-                                x-cloak>
-
-
-                                <td class="px-4 py-4 text-md whitespace-nowrap">
-                                    <h4 class=" font-semibold ">{{ package.name }}</h4>
-                                </td>
-                                <td class="px-4 py-4 text-md whitespace-nowrap">
-                                    <h4 class=" ">{{ package.identifier }}</h4>
-                                </td>
-
-                                <td class="px-4 py-4 text-md whitespace-nowrap">
-                                    <h4 @click="search = '{{ package.publisher }}'"
-                                        class=" hover:font-bold cursor-pointer transition-[font-weight] duration-300 ">
-                                        {{ package.publisher }}</h4>
-                                </td>
-
-                                <td class="pl-3 py-4 text-sm font-medium whitespace-nowrap">
-                                    <div
-                                        class="inline px-3 py-1  text-sm font-normal rounded-full  gap-x-2 {{ 'bg-emerald-100/60 dark:bg-emerald-700/60 text-emerald-500 dark:text-emerald-300' if package.versions|length > 0 else 'bg-red-100/60 dark:bg-red-700/60 text-red-500 dark:text-red-300' }}  ">
-                                        {{ 'Version ' + (package.versions|sort_versions)[0].version_code if package.versions|length >
-                                        0 else 'No versions' }}
-                                    </div>
-                                </td>
-
-                                <td class="px-4 py-4 text-sm whitespace-nowrap flex flex-row justify-center">
-                                    <a href="{{ url_for('ui.package', identifier=package.identifier) }}"
-                                        class="px-1  py-1 text-gray-500 transition-colors hover:bg-gray-100 duration-300 rounded-lg  ">
-                                        <?xml version="1.0" ?>
-                                        <svg class="feather feather-edit" fill="none" height="24" stroke="currentColor"
-                                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                        </svg>
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-
-
-
-
+                        <tbody
+                            class="bg-white dark:bg-neutral-950 divide-y divide-gray-200 dark:divide-gray-700 text-gray-700 dark:text-gray-300">
+                            {% include("packages_rows.j2") %}
                         </tbody>
                     </table>
                 </div>
@@ -132,11 +86,11 @@
 </div>
 <div class="mt-6 sm:flex sm:items-center sm:justify-between ">
     <div class="text-sm text-gray-500">
-        Page <span class="font-medium text-gray-700 ">1 of 10</span>
+        Page <span class="font-medium text-gray-700 "><span x-text="currentPage"></span> of {{ pages }}</span>
     </div>
 
     <div class="flex items-center mt-4 gap-x-4 sm:mt-0">
-        <a href="#"
+        <button x-on:click="currentPage = currentPage - 1" x-bind:hx-get="'{{url_for('ui.packages')}}?page=' + (currentPage) " hx-target="#packages_table tbody" hx-swap="innerHTML"
             class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 dark:text-gray-300  transition-colors duration-300 bg-white dark:bg-neutral-900 dark:hover:bg-neutral-800 border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
@@ -146,9 +100,9 @@
             <span>
                 previous
             </span>
-        </a>
+        </button>
 
-        <a href="#"
+        <button x-on:click="currentPage = currentPage + 1"  x-bind:hx-get="'{{url_for('ui.packages')}}?page=' + (currentPage + 1)" hx-target="#packages_table tbody" hx-swap="innerHTML"
             class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 dark:text-gray-300  transition-colors duration-300 bg-white dark:bg-neutral-900 dark:hover:bg-neutral-800 border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
             <span>
                 Next
@@ -158,11 +112,18 @@
                 stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
             </svg>
-        </a>
+        </button>
     </div>
 </div>
 
-
+<script>
+  function loadTableData() {
+    const currentPage = Alpine.store('myData').currentPage;
+    const url = '/load_data?page=' + currentPage;
+    const tableContent = document.getElementById('tableContent');
+    tableContent.hxGet(url);
+  }
+</script>
 
 
 {% endblock %}
