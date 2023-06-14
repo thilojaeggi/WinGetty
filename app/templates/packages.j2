@@ -44,14 +44,14 @@
             </span>
 
             <input type="text" placeholder="Search" x-model="search"
-                class="block w-full py-1.5 pr-5 text-gray-700 dark:text-gray-200 bg-white border border-gray-200 dark:bg-neutral-900 dark:border-none rounded-lg md:w-80 placeholder-gray-400/70 pl-11 rtl:pr-11 rtl:pl-5  focus:border-blue-400  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
+                class="block w-full py-1.5 pr-5 text-gray-700 dark:text-gray-200 bg-white dark:bg-neutral-900 rounded-lg md:w-80 placeholder-gray-400/70 pl-11 rtl:pr-11 rtl:pl-5  focus:border-blue-400  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
         </div>
     </div>
 
     <div class="flex flex-col mt-2">
         <div class=" overflow-x-auto">
             <div class="inline-block w-full align-middle ">
-                <div class="overflow-auto border border-gray-200 dark:border-none md:rounded-lg">
+                <div class="overflow-auto md:rounded-lg">
                     <table id="packages_table" hx-target="#packages_table tbody" hx-swap="innerHTML"
                         class="min-w-full divide-y divide-gray-200 dark:divide-gray-400 ">
                         <thead class="bg-gray-50 dark:bg-neutral-950 ">
@@ -91,12 +91,12 @@
                 x-text="currentPage"></span> of {{ pages }}</span>
     </div>
 
-    <div class="flex items-center mt-4 gap-x-4 sm:mt-0">
+    <div class="flex items-center mt-4 gap-x-4 sm:mt-0" x-show="{{pages}} > 1">
         <button
             @click="currentPage = currentPage > 1 ? currentPage - 1 : 1; addOrOverrideURLParameter('page', currentPage);"
             x-bind:hx-get="'{{url_for('ui.packages')}}?page=' + (currentPage > 1 ? currentPage - 1 : 1)"
             hx-target="#packages_table tbody" hx-swap="innerHTML"
-            class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 dark:text-gray-300  transition-colors duration-300 bg-white dark:bg-neutral-900 dark:hover:bg-neutral-800 border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
+            class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 dark:text-gray-300  transition-colors duration-300 bg-white dark:bg-neutral-950 dark:hover:bg-neutral-900 rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
@@ -111,7 +111,7 @@
             @click="currentPage = currentPage < {{pages}} ? currentPage + 1 : currentPage; addOrOverrideURLParameter('page', currentPage);"
             x-bind:hx-get="'{{url_for('ui.packages')}}?page=' + (currentPage < {{pages}} ? currentPage + 1 : currentPage)"
             hx-target="#packages_table tbody" hx-swap="innerHTML"
-            class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 dark:text-gray-300  transition-colors duration-300 bg-white dark:bg-neutral-900 dark:hover:bg-neutral-800 border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
+            class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 dark:text-gray-300  transition-colors duration-300 bg-white dark:bg-neutral-950 dark:hover:bg-neutral-900 rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
             <span>
                 Next
             </span>
