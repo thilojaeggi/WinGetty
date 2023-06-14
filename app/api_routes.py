@@ -15,10 +15,11 @@ def add_package():
     architecture = request.form['architecture']
     installer_type = request.form['type']
     version = request.form['version']
-
-
-    # Get file
     file = request.files['file']
+    
+    if not all([name, identifier, publisher]) or (file and not all([architecture, installer_type, version])):
+        return "Missing required fields", 400
+
     package = Package(identifier=identifier, name=name, publisher=publisher)
     if file and version:
         debugPrint("File and version found")
@@ -69,6 +70,33 @@ def add_version(identifier):
 
     return redirect(request.referrer)
 
+
+@api.route('/package/<identifier>/add-installer', methods=['POST'])
+def add_installer(identifier):
+    architecture = request.form['architecture']
+    installer_type = request.form['type']
+    version = request.form['version']
+
+    file = request.files['file']
+    package = Package.query.filter_by(identifier=identifier).first()
+    if package is None:
+        return "Package not found", 404
+    
+    version = PackageVersion.query.filter_by(identifier=identifier, version_code=version).first()
+    if version is None:
+        return "Version not found", 404
+
+    if file:
+        debugPrint("File found")
+        hash = save_file(file, package.publisher, package.identifier, version.version_code, architecture)
+        if hash is None:
+            return "Error saving file", 500
+        installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file.filename, installer_sha256=hash, scope="user")        
+        version.installers.append(installer)
+        db.session.commit()
+
+        return redirect(request.referrer)
+    
 
 
 @api.route('/information')
