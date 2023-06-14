@@ -1,7 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-[x-cloak] { display: none !important; }
+
+[x-cloak] {
+    display: none !important;
+}
+
 * {
     font-family: 'Poppins', sans-serif !important;
+}
+
+.htmx-swapping {
+    opacity: 0;
+    height: 0;
+    transition: opacity 1s ease-out;
+
 }
