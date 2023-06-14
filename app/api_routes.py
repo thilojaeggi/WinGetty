@@ -45,6 +45,24 @@ def update_package(identifier):
     db.session.commit()
     return redirect(request.referrer)
 
+@api.route('/package/<identifier>', methods=['DELETE'])
+def delete_package(identifier):
+    # Delete package with all versions and installers, lastly delete the identifier folder in packages
+    package = Package.query.filter_by(identifier=identifier).first()
+    if package is None:
+        return "Package not found", 404
+    
+    for version in package.versions:
+        for installer in version.installers:
+            os.remove(os.path.join(basedir, 'packages', package.publisher, package.identifier, version.version_code, installer.architecture, installer.file_name))
+            db.session.delete(installer)
+        db.session.delete(version)
+    db.session.delete(package)
+    db.session.commit()
+
+    return "", 200
+
+
 @api.route('/package/<identifier>/add-version', methods=['POST'])
 def add_version(identifier):
     version = request.form['version']
