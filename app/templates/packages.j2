@@ -76,7 +76,7 @@
                             </tr>
                         </thead>
                         <tbody
-                            class="bg-white dark:bg-neutral-900 divide-y divide-gray-200 dark:divide-gray-700 text-gray-700 dark:text-gray-300">
+                            class="bg-white dark:bg-neutral-900 divide-y divide-gray-200 dark:divide-gray-700 text-gray-700 dark:text-gray-300" hx-target="closest tr" hx-swap="outerHTML swap:1s">
                             {% include("packages_rows.j2") %}
                         </tbody>
                     </table>
