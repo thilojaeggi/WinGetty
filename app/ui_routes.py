@@ -11,12 +11,36 @@ def index():
 @ui.route('/packages')
 def packages():
     page = request.args.get('page', 1, type=int)
-    packages = Package.query.paginate(page=page, per_page=10)
-    available_pages = packages.pages
-    packages = packages.items
+    search_query = request.args.get('q')
+    per_page = 10
+
+
+    if search_query:
+        packages = Package.query.filter(
+            db.or_(
+                Package.name.ilike(f'%{search_query}%'),
+                Package.identifier.ilike(f'%{search_query}%')
+            )
+        )
+    else:
+        packages = Package.query
+
+    total_pages = packages.paginate(page=1, per_page=per_page).pages
+    if page < 1 or (total_pages > 0 and page > total_pages):
+        return redirect(url_for('ui.packages', q=search_query, page=total_pages))
+
+    packages_paginated = packages.paginate(page=page, per_page=per_page)
+    available_pages = packages_paginated.pages
+    packages = packages_paginated.items
+
+    print(f'Page: {page}')
+    print(f'Available pages: {available_pages}')
+
+
     if htmx:
         return render_template('packages_rows.j2', packages=packages)
     return render_template('packages.j2', packages=packages, page=page, pages=available_pages)
+
 
 @ui.route('/setup')
 def setup():
