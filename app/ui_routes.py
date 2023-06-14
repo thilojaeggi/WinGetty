@@ -1,6 +1,5 @@
-from app import db
+from app import db, htmx
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for
-
 from app.models import Package, PackageVersion, Installer
 
 ui = Blueprint('ui', __name__)
@@ -11,8 +10,13 @@ def index():
 
 @ui.route('/packages')
 def packages():
-    packages = Package.query.all()
-    return render_template('packages.j2', packages=packages)
+    page = request.args.get('page', 1, type=int)
+    packages = Package.query.paginate(page=page, per_page=10)
+    available_pages = packages.pages
+    packages = packages.items
+    if htmx:
+        return render_template('packages_rows.j2', packages=packages)
+    return render_template('packages.j2', packages=packages, page=page, pages=available_pages)
 
 @ui.route('/setup')
 def setup():
