@@ -31,36 +31,36 @@
 </head>
 
 <body class="min-h-screen h-full font-poppins flex flex-col bg-slate-200 dark:bg-zinc-800">
-    <nav 
-        class="flex items-center justify-between flex-wrap bg-white dark:bg-zinc-900 text-neutral-700 dark:text-neutral-100	 p-4 drop-shadow-md sticky top-0 z-50">
+    <nav x-data="{ menuVisible: window.innerWidth > 768 }"
+        class="flex items-center justify-between flex-wrap sm:flex-row bg-white dark:bg-zinc-900 text-neutral-700 dark:text-neutral-100	 p-4 drop-shadow-md sticky top-0 z-50">
         <div class="flex flex-row items-center flex-shrink-0 text-neutral-900 dark:text-neutral-200 mr-6">
             <img src="{{ url_for('static', filename='img/wingetty.png')}}" alt="Logo" class="h-10 mr-2">
             <span class="font-semibold text-2xl tracking-tight mb-0.5">WinGetty</span>
         </div>
-        <div class="block lg:hidden">
-            <button
-                class="flex items-center px-3 py-2 border rounded  border-blue-400 hover:text-white hover:border-white">
-                <svg class="fill-current h-3 w-3" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+        <div class="block md:hidden">
+            <button @click="menuVisible = !menuVisible"
+                class="flex items-center px-3 py-2  hover:text-blue-600 transition-colors duration-300">
+                <svg class="fill-current h-6 w-6 transition-transform duration-300" x-bind:class="menuVisible ? '-rotate-90' : 'rotate-0'" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                     <title>Menu</title>
                     <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z" />
                 </svg>
             </button>
         </div>
-        <div class="w-full block flex-grow  lg:flex lg:items-center lg:w-auto">
+
+        <div class="w-full block flex-grow md:flex md:flex-row justify-between items-center md:w-auto text-lg font-semibold" x-collapse x-show="menuVisible">
             <div class="text-lg font-semibold">
                 <a href="{{ url_for('ui.packages') }}"
-                    class="block mt-4 lg:inline-block lg:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500">
+                    class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500">
                     Packages
                 </a>
 
             </div>
-            <div class="text-lg font-semibold self-end ml-auto flex flex-row items-center">
                 <a href="{{ url_for('ui.setup') }}"
-                    class="block mt-4 lg:inline-block lg:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500">
+                    class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ml-auto">
                     Setup
                 </a>
                 <a href="{{ url_for('ui.settings') }}"
-                    class="block mt-4 lg:inline-block lg:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500">
+                    class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ">
                     Settings
                 </a>
                 <button id="theme-toggle" class="theme-toggle" type="button" title="Toggle theme"
@@ -77,8 +77,8 @@
                         </g>
                     </svg>
                 </button>
-            </div>
         </div>
+
     </nav>
 
     <main class="h-full w-full p-4 flex flex-col max-w-screen-xl mx-auto" x-data="{{ alpine_data }}">
