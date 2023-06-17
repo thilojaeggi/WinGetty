@@ -33,13 +33,18 @@ def packages():
     available_pages = packages_paginated.pages
     packages = packages_paginated.items
 
+    # Get total item count available
+    package_count = packages_paginated.total
+    
+
+
     print(f'Page: {page}')
     print(f'Available pages: {available_pages}')
 
 
     if htmx:
         return render_template('packages_rows.j2', packages=packages)
-    return render_template('packages.j2', packages=packages, page=page, pages=available_pages)
+    return render_template('packages.j2', packages=packages, page=page, pages=available_pages, package_count=package_count)
 
 
 @ui.route('/setup')
