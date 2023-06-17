@@ -1,138 +1,144 @@
-<div x-show="showModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog"
-    aria-modal="true">
-    <div class="flex items-end justify-center min-h-screen px-4 text-center md:items-center sm:block sm:p-0">
-        <div x-cloak @click="showModal = false" x-show="showModal"
-            x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-300 transform"
-            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-            class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-40" aria-hidden="true"></div>
-
-        <div x-data="fileUpload()" x-cloak x-show="showModal"
-            x-transition:enter="transition ease-out duration-300 transform"
-            x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-            x-transition:leave="transition ease-in duration-300 transform"
-            x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-            x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            class="inline-block w-full max-w-xl p-8 my-20 overflow-hidden text-left transition-all transform bg-white dark:bg-neutral-900 rounded-lg shadow-xl 2xl:max-w-2xl">
-            <div class="flex items-center justify-between space-x-4">
-                <h1 class="text-xl font-medium text-gray-800 dark:text-gray-200 ">Add package</h1>
-
-                <button @click="showModal = false" class="text-gray-600 focus:outline-none hover:text-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+<!-- Main modal -->
+<div x-show="showModal" id="defaultModal" tabindex="-1" aria-hidden="true"
+    class="fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full dark:bg-neutral-700/40 flex justify-center items-center" >
+    <div class="relative w-full max-w-2xl max-h-full " @click.away="showModal = false">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-lg shadow dark:bg-neutral-900" x-data="addPackage();">
+            <!-- Modal header -->
+            <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
+                <div class="flex flex-col">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                        Add Package
+                    </h3>
+                    <h5>
+                        <span class="text-gray-400">
+                            Packages added here will instantly be available to all clients.
+                        </span>
+                    </h5>
+                </div>
+                <button type="button" @click="showModal = false" 
+                    class="text-gray-400 transition-colors duration-300 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                    data-modal-hide="defaultModal">
+                    <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd"
+                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                            clip-rule="evenodd"></path>
                     </svg>
+                    <span class="sr-only">Close modal</span>
                 </button>
             </div>
-
-            <p class="mt-2 text-sm text-gray-500 ">
-                Packages added here will instantly be available to all clients.
-            </p>
-
-            <form x-ref="uploadForm" @submit.prevent="submitForm" class="mt-5"
-                x-data="{ fileChosen: false, name: '', publisher: '', identifier: '', identifierEditedManually : false}"
-                x-data="{'fileChosen': false}" action="{{ url_for('api.add_package') }}" method="POST"
-                enctype="multipart/form-data">
+            <!-- Modal body -->
+            <div class="p-6 space-y-6">
+                <form id="addPackage" x-ref="addPackageForm" @submit.prevent="submitForm" class="mt-5"
+                    x-data="{ fileChosen: false, name: '', publisher: '', identifier: '', identifierEditedManually : false}"
+                    x-data="{'fileChosen': false}" action="{{ url_for('api.add_package') }}" method="POST"
+                    enctype="multipart/form-data">
 
 
-                <div class="mt-2">
-                    <label for="name" class="block  text-gray-700 dark:text-gray-300 ">Name<span class="text-red-500">*</span></label>
-                    <input required name="name" placeholder="" type="text" x-model="name"
-                        class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-                </div>
-
-                <div class="mt-2">
-                    <label for="publisher" class="block text-gray-700 dark:text-gray-300 ">Publisher<span
-                            class="text-red-500">*</span></label>
-                    <input required name="publisher" placeholder="" type="text" x-model="publisher"
-                        class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-                </div>
-
-                <div class="mt-2">
-                    <label for="identifier" class="block  text-gray-700 dark:text-gray-300 ">Identifier<span
-                            class="text-red-500">*</span></label>
-                    <input required name="identifier" placeholder="" type="text" x-model="identifier"
-                        x-bind:value="identifierEditedManually ? identifier : (publisher + '.' + name)"
-                        @input="identifierEditedManually = true"
-                        class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-                </div>
-
-                <div class="mt-2">
-                    <label for="file" class="block  text-gray-700 dark:text-gray-300 ">File</label>
-                    <input @change="fileChosen = $refs.fileInput.files.length > 0" x-ref="fileInput" name="file"
-                        accept=".exe,.msi,.msix,.appx" type="file"
-                        class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-                </div>
-
-                <div x-show="fileChosen" x-collapse>
                     <div class="mt-2">
-                        <label for="architecture" class="block text-gray-700 dark:text-gray-300 ">Architecture<span
+                        <label for="name" class="block  text-gray-700 dark:text-gray-300 ">Name<span
                                 class="text-red-500">*</span></label>
-                        <select name="architecture" x-bind:required="fileChosen"
-                            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-                            <option value="x86">x86</option>
-                            <option value="x64">x64</option>
-                            <option value="arm">arm</option>
-                            <option value="arm64">arm64</option>
-                        </select>
-                    </div>
-                    <div class="mt-2">
-                        <label for="type" class="block text-gray-700 dark:text-gray-300 ">Installer Type<span
-                                class="text-red-500">*</span></label>
-                        <select name="type" x-bind:required="fileChosen"
-                            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-                            <option value="msix">msix</option>
-                            <option value="msi">msi</option>
-                            <option value="appx">appx</option>
-                            <option value="exe">exe</option>
-                            <option value="zip">zip</option>
-                            <option value="inno">inno</option>
-                            <option value="nullsoft">nullsoft</option>
-                            <option value="wix">wix</option>
-                            <option value="burn">burn</option>
-                            <option value="pwa">pwa</option>
-                            <option value="msstore">msstore</option>
-                        </select>
-                    </div>
-                    <div class="mt-2">
-                        <label for="version" class="block  text-gray-700 dark:text-gray-300 ">Version<span
-                                class="text-red-500">*</span></label>
-                        <input name="version" placeholder="" type="text" x-bind:required="fileChosen"
+                        <input required name="name" placeholder="" type="text" x-model="name"
                             class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                     </div>
-                </div>
 
-                <div class="flex justify-end mt-6">
-                    <button x-show="showUploadButton" type="submit"
-                        class="px-3 py-2 tracking-wide text-white   transition-colors duration-300 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
-                        Add Package
-                    </button>
-                </div>
-                <div x-show="!showUploadButton"
+                    <div class="mt-2">
+                        <label for="publisher" class="block text-gray-700 dark:text-gray-300 ">Publisher<span
+                                class="text-red-500">*</span></label>
+                        <input required name="publisher" placeholder="" type="text" x-model="publisher"
+                            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                    </div>
+
+                    <div class="mt-2">
+                        <label for="identifier" class="block  text-gray-700 dark:text-gray-300 ">Identifier<span
+                                class="text-red-500">*</span></label>
+                        <input required name="identifier" placeholder="" type="text" x-model="identifier"
+                            x-bind:value="identifierEditedManually ? identifier : (publisher + '.' + name)"
+                            @input="identifierEditedManually = true"
+                            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                    </div>
+
+                    <div class="mt-2">
+                        <label for="file" class="block  text-gray-700 dark:text-gray-300 ">File</label>
+                        <input @change="fileChosen = $refs.fileInput.files.length > 0" x-ref="fileInput" name="file"
+                            accept=".exe,.msi,.msix,.appx" type="file"
+                            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                    </div>
+
+                    <div x-show="fileChosen" x-collapse>
+                        <div class="mt-2">
+                            <label for="architecture" class="block text-gray-700 dark:text-gray-300 ">Architecture<span
+                                    class="text-red-500">*</span></label>
+                            <select name="architecture" x-bind:required="fileChosen"
+                                class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                                <option value="x86">x86</option>
+                                <option value="x64">x64</option>
+                                <option value="arm">arm</option>
+                                <option value="arm64">arm64</option>
+                            </select>
+                        </div>
+                        <div class="mt-2">
+                            <label for="type" class="block text-gray-700 dark:text-gray-300 ">Installer Type<span
+                                    class="text-red-500">*</span></label>
+                            <select name="type" x-bind:required="fileChosen"
+                                class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                                <option value="msix">msix</option>
+                                <option value="msi">msi</option>
+                                <option value="appx">appx</option>
+                                <option value="exe">exe</option>
+                                <option value="zip">zip</option>
+                                <option value="inno">inno</option>
+                                <option value="nullsoft">nullsoft</option>
+                                <option value="wix">wix</option>
+                                <option value="burn">burn</option>
+                                <option value="pwa">pwa</option>
+                                <option value="msstore">msstore</option>
+                            </select>
+                        </div>
+                        <div class="mt-2">
+                            <label for="version" class="block  text-gray-700 dark:text-gray-300 ">Version<span
+                                    class="text-red-500">*</span></label>
+                            <input name="version" placeholder="" type="text" x-bind:required="fileChosen"
+                                class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                        </div>
+                    </div>
+                    <div x-show="!showUploadButton"
+                        class="h-auto p-2 rounded-md w-min bg-blue-600 flex flex-row justify-end text-white text-lg font-semibold "
+                        x-bind:style="'width: ' + progress + '%; transition: width 0.5s ease-in-out;'">
+                        <p x-text="progress"></p>
+                    </div>
+                </form>
+            </div>
+            <!-- Modal footer -->
+            <div
+                class="flex items-center justify-end p-6 space-x-2 dark:border-gray-600">
+                <button x-show="showUploadButton" type="submit" type="button" form="addPackage"
+                    class="px-3 py-2 tracking-wide text-white   transition-colors duration-300 transform bg-blue-700 hover:bg-blue-800 rounded-md focus:outline-none focus:bg-blue-800 focus:ring focus:ring-blue-300 focus:ring-opacity-50">Add
+                    Package</button>
+                    <div x-show="!showUploadButton"
                     class="h-auto p-2 rounded-md w-min bg-blue-600 flex flex-row justify-end text-white text-lg font-semibold "
                     x-bind:style="'width: ' + progress + '%; transition: width 0.5s ease-in-out;'">
                     <p x-text="progress"></p>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
 
+
 <script>
-    function fileUpload() {
+    function addPackage() {
         return {
             progress: 0,
             showUploadButton: true,
-            showModal: true,
             submitForm() {
                 this.showUploadButton = false;
                 var hasFile = this.$refs.fileInput.files.length > 0;
-                let formData = new FormData(this.$refs.uploadForm);
+                let formData = new FormData(this.$refs.addPackageForm);
 
                 $.ajax({
-                    url: this.$refs.uploadForm.action,
+                    url: this.$refs.addPackageForm.action,
                     type: 'POST',
                     data: formData,
                     processData: false,
@@ -152,12 +158,11 @@
                     success: () => {
                         this.progress = 0;
                         this.showModal = false;
-                        this.$refs.uploadForm.reset();
-                        this.$dispatch('refresh');
+                        this.$refs.addPackageForm.reset();
                     },
                     complete: () => {
                         this.showUploadButton = true;
-                        this.$refs.uploadForm.reset();
+                        this.$refs.addPackageForm.reset();
                     }
                 });
             },
