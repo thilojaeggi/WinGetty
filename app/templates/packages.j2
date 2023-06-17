@@ -8,9 +8,9 @@
         <h1 class="text-3xl font-medium text-gray-800 dark:text-gray-200">{{title}}</h1>
 
         <span
-            class="px-3 py-1 mt-1 text-base text-center text-blue-600 dark:text-blue-300 bg-blue-200/60 dark:bg-blue-600/60 rounded-full">{{packages|length}}
+            class="px-3 py-1 mt-1 text-base text-center text-blue-600 dark:text-blue-300 bg-blue-200/60 dark:bg-blue-600/60 rounded-full">{{package_count}}
             {{ 'Packages' if
-            packages|length > 1 else 'Package' }}</span>
+            package_count > 1 else 'Package' }}</span>
     </div>
 
 
