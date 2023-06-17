@@ -1,13 +1,13 @@
 <!-- Main modal -->
-<div x-show="showModal" id="defaultModal" tabindex="-1" aria-hidden="true"
+<div x-show="showModal" id="defaultModal" tabindex="-1" aria-hidden="true" x-data="addPackageFormData();"
     class="fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full dark:bg-neutral-700/40 flex justify-center items-center" >
-    <div class="relative w-full max-w-2xl max-h-full " @click.away="showModal = false">
+    <div class="relative w-full max-w-2xl max-h-full " @click.away="hideModal()">
         <!-- Modal content -->
-        <div class="relative bg-white rounded-lg shadow dark:bg-neutral-900" x-data="addPackage();">
+        <div class="relative bg-white rounded-lg shadow dark:bg-neutral-900">
             <!-- Modal header -->
             <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
                 <div class="flex flex-col">
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white">
                         Add Package
                     </h3>
                     <h5>
@@ -16,7 +16,7 @@
                         </span>
                     </h5>
                 </div>
-                <button type="button" @click="showModal = false" 
+                <button type="button" @click="hideModal()" 
                     class="text-gray-400 transition-colors duration-300 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
                     data-modal-hide="defaultModal">
                     <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
@@ -30,9 +30,9 @@
             </div>
             <!-- Modal body -->
             <div class="p-6 space-y-6">
-                <form id="addPackage" x-ref="addPackageForm" @submit.prevent="submitForm" class="mt-5"
+                <form id="addPackageForm" x-ref="addPackageForm" @submit.prevent="submitForm" class="mt-5"
                     x-data="{ fileChosen: false, name: '', publisher: '', identifier: '', identifierEditedManually : false}"
-                    x-data="{'fileChosen': false}" action="{{ url_for('api.add_package') }}" method="POST"
+                    action="{{ url_for('api.add_package') }}" method="POST"
                     enctype="multipart/form-data">
 
 
@@ -113,7 +113,7 @@
             <!-- Modal footer -->
             <div
                 class="flex items-center justify-end p-6 space-x-2 dark:border-gray-600">
-                <button x-show="showUploadButton" type="submit" type="button" form="addPackage"
+                <button x-show="showUploadButton" type="submit" type="button" form="addPackageForm"
                     class="px-3 py-2 tracking-wide text-white   transition-colors duration-300 transform bg-blue-700 hover:bg-blue-800 rounded-md focus:outline-none focus:bg-blue-800 focus:ring focus:ring-blue-300 focus:ring-opacity-50">Add
                     Package</button>
                     <div x-show="!showUploadButton"
@@ -128,9 +128,10 @@
 
 
 <script>
-    function addPackage() {
+    function addPackageFormData() {
         return {
             progress: 0,
+            
             showUploadButton: true,
             submitForm() {
                 this.showUploadButton = false;
@@ -168,6 +169,12 @@
             },
             hideUploadButton() {
                 this.showUploadButton = false;
+            },
+            hideModal() {
+                this.showModal = false;
+                // Get the form by its id and reset it
+                fileChosen = false;
+                document.getElementById("addPackageForm").reset();
             }
         };
     }
