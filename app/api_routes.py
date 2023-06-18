@@ -125,7 +125,6 @@ def information():
 def get_package_manifest(name):
     package = Package.query.filter_by(identifier=name).first()
     if package is None:
-        
         return jsonify({}), 204
     return jsonify(package.generate_output())
 
