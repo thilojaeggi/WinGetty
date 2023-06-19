@@ -4,29 +4,44 @@
 {% block content %}
 
 <div class="sm:flex sm:items-center sm:justify-between">
-    <div>
-        <div class="flex items-center gap-x-3">
-            <div class="flex flex-col">
-                <h2 class="text-3xl font-medium text-gray-800 dark:text-gray-200">{{ package.name }}</h2>
-                <h4 class="text-gray-500 dark:text-neutral-400 text-base font-semibold">{{package.identifier}}</h4>
-                <div class="flex flex-row gap-x-2">
-                    <span
-                        class="px-3 py-1 mt-1 text-base text-center {{ 'bg-emerald-100/60 dark:bg-emerald-700/60 text-emerald-600 dark:text-emerald-300' if package.versions|length > 0 else 'bg-red-100/60 dark:bg-red-700/60 text-red-500 dark:text-red-300' }} rounded-full ">
-                        {{ 'Version ' + (package.versions|sort_versions)[0].version_code if
-                        package.versions|length > 0 else 'No versions' }}
-                    </span>
-                    <span
-                        class="px-3 py-1 mt-1 text-base text-center text-blue-600 dark:text-blue-300 bg-blue-200/60 dark:bg-blue-600/60 rounded-full ">
-                        {{ package.download_count }} {{ 'Downloads' if
-                        (package.download_count > 1 or package.download_count == 0) else 'Download' }}
-                    </span>
-                </div>
+    <div class="flex flex-row w-full justify-between  gap-x-3">
+        <div class="flex flex-col">
+            <h2 class="text-3xl font-medium text-gray-800 dark:text-gray-200">{{ package.name }}</h2>
+            <h4 class="text-gray-500 dark:text-neutral-400 text-base font-semibold">{{package.identifier}}</h4>
+            <div class="flex flex-row gap-x-2">
+                <span
+                    class="px-3 py-1 mt-1 text-base text-center {{ 'bg-emerald-100/60 dark:bg-emerald-700/60 text-emerald-600 dark:text-emerald-300' if package.versions|length > 0 else 'bg-red-100/60 dark:bg-red-700/60 text-red-500 dark:text-red-300' }} rounded-full ">
+                    {{ 'Version ' + (package.versions|sort_versions)[0].version_code if
+                    package.versions|length > 0 else 'No versions' }}
+                </span>
+                <span
+                    class="px-3 py-1 mt-1 text-base text-center text-blue-600 dark:text-blue-300 bg-blue-200/60 dark:bg-blue-600/60 rounded-full ">
+                    {{ package.download_count }} {{ 'Downloads' if
+                    (package.download_count > 1 or package.download_count == 0) else 'Download' }}
+                </span>
             </div>
+        </div>
+        <div class="flex flex-row self-end">
 
+            <a hx-delete="{{ url_for('ui.package', identifier=package.identifier)}}"
+                hx-after-delete="window.location.href = '{{ url_for('ui.index') }}'"
+                hx-confirm="Are you sure you want to delete {{ package.identifier }} and all of its versions and installers?"
+                class="px-1 group py-1 text-gray-500 transition-colors hover:bg-red-100 dark:bg-neutral-900 dark:hover:bg-neutral-950/60 duration-300 rounded-lg cursor-pointer">
 
+                <svg class="group-hover:stroke-red-500 transition-color duration-300 h-6 w-6" fill="none"
+                    stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0">
+                    </path>
+                </svg>
+            </a>
         </div>
 
+
+
     </div>
+
 
 </div>
 
@@ -129,8 +144,6 @@
                                     {% for installer in version.installers %}
                                     <div class="flex flex-row p-2 bg-white dark:bg-neutral-950 rounded-md justify-between"
                                         @click="navigator.clipboard.writeText('{{ url_for('api.download', identifier=package.identifier, version=version.version_code, architecture=installer.architecture, _external=True).replace("http://localhost", "https://thilojaeggi-psychic-tribble-jrg579jpj935p64-5000.preview.app.github.dev") }}');">
-
-
                                         <p class="font-bold">{{installer.architecture}}</p>
                                         <div class="flex flex-row space-x-2 group cursor-pointer">
                                             <svg class="group-hover:stroke-blue-500 h-6 w-6 transition-colors duration-300"
@@ -140,10 +153,12 @@
                                                     d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
                                             </svg>
                                         </div>
+
                                     </div>
                                     {% endfor %}
                                 </div>
-                                <button type="button" @click="selectedVersion = '{{version.version_code}}'; showAddInstallerModal = true;"
+                                <button type="button"
+                                    @click="selectedVersion = '{{version.version_code}}'; showAddInstallerModal = true;"
                                     class="bg-blue-600 hover:bg-blue-500 transition-colors duration-300 p-0.5 rounded-md text-white h-min self-end ml-2"><svg
                                         class="h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor">
