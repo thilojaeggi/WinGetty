@@ -21,6 +21,8 @@ docs/_build/
 *.pem
 *.db
 
+/app/static/css/style.css
+
 packages/
 
 # Coverage reports
