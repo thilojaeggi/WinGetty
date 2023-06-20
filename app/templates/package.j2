@@ -15,7 +15,7 @@
                     package.versions|length > 0 else 'No versions' }}
                 </span>
                 <span
-                    class="px-3 py-1 mt-1 text-base text-center text-blue-600 dark:text-blue-300 bg-blue-200/60 dark:bg-blue-600/60 rounded-full ">
+                    class="{{ 'hidden' if package.versions|length < 1}} px-3 py-1 mt-1 text-base text-center text-blue-600 dark:text-blue-300 bg-blue-200/60 dark:bg-blue-600/60 rounded-full ">
                     {{ package.download_count }} {{ 'Downloads' if
                     (package.download_count > 1 or package.download_count == 0) else 'Download' }}
                 </span>
