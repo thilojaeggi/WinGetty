@@ -1,6 +1,6 @@
 <!-- Main modal -->
 <div x-show="showModal" id="defaultModal" tabindex="-1" aria-hidden="true" x-data="addPackageFormData();"
-    class="fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full dark:bg-neutral-700/40 flex justify-center items-center" >
+    class="fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full dark:bg-neutral-700/40 flex justify-center items-center">
     <div class="relative w-full max-w-2xl max-h-full " @click.away="hideModal()">
         <!-- Modal content -->
         <div class="relative bg-white rounded-lg shadow dark:bg-neutral-900">
@@ -16,7 +16,7 @@
                         </span>
                     </h5>
                 </div>
-                <button type="button" @click="hideModal()" 
+                <button type="button" @click="hideModal()"
                     class="text-gray-400 transition-colors duration-300 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
                     data-modal-hide="defaultModal">
                     <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
@@ -32,8 +32,7 @@
             <div class="p-6 space-y-6">
                 <form id="addPackageForm" x-ref="addPackageForm" @submit.prevent="submitForm" class="mt-5"
                     x-data="{ fileChosen: false, name: '', publisher: '', identifier: '', identifierEditedManually : false}"
-                    action="{{ url_for('api.add_package') }}" method="POST"
-                    enctype="multipart/form-data">
+                    action="{{ url_for('api.add_package') }}" method="POST" enctype="multipart/form-data">
 
 
                     <div class="mt-2">
@@ -54,8 +53,8 @@
                         <label for="identifier" class="block  text-gray-700 dark:text-gray-300 ">Identifier<span
                                 class="text-red-500">*</span></label>
                         <input required name="identifier" placeholder="" type="text" x-model="identifier"
-                            x-bind:value="identifierEditedManually ? identifier : (publisher + '.' + name)"
-                            @input="identifierEditedManually = true"
+                            x-bind:value="identifierEditedManually ? identifier : (publisher.replace(/\s/g, '').replace(/[^a-zA-Z.äöüÄÖÜ]/g, '') + '.' + name.replace(/\s/g, '').replace(/[^a-zA-Z.äöüÄÖÜ]/g, ''))"
+                            @input="identifierEditedManually = true; identifier = identifier.replace(/\s/g, '').replace(/[^a-zA-Z.äöüÄÖÜ]/g, '')"
                             class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                     </div>
 
@@ -104,23 +103,18 @@
                         </div>
                     </div>
                     <div x-show="!showUploadButton"
-                        class="h-auto p-2 rounded-md w-min bg-blue-600 flex flex-row justify-end text-white text-lg font-semibold "
+                        class="h-auto p-2 mt-4 rounded-md w-min bg-blue-600 flex flex-row justify-end text-white text-lg font-semibold "
                         x-bind:style="'width: ' + progress + '%; transition: width 0.5s ease-in-out;'">
                         <p x-text="progress"></p>
                     </div>
                 </form>
             </div>
             <!-- Modal footer -->
-            <div
-                class="flex items-center justify-end p-6 space-x-2 dark:border-gray-600">
-                <button x-show="showUploadButton" type="submit" type="button" form="addPackageForm"
+            <div x-show="showUploadButton" class="flex items-center justify-end p-6 space-x-2 dark:border-gray-600">
+                <button type="submit" type="button" form="addPackageForm"
                     class="px-3 py-2 tracking-wide text-white   transition-colors duration-300 transform bg-blue-700 hover:bg-blue-800 rounded-md focus:outline-none focus:bg-blue-800 focus:ring focus:ring-blue-300 focus:ring-opacity-50">Add
                     Package</button>
-                    <div x-show="!showUploadButton"
-                    class="h-auto p-2 rounded-md w-min bg-blue-600 flex flex-row justify-end text-white text-lg font-semibold "
-                    x-bind:style="'width: ' + progress + '%; transition: width 0.5s ease-in-out;'">
-                    <p x-text="progress"></p>
-                </div>
+
             </div>
         </div>
     </div>
@@ -131,7 +125,7 @@
     function addPackageFormData() {
         return {
             progress: 0,
-            
+
             showUploadButton: true,
             submitForm() {
                 this.showUploadButton = false;
