@@ -4,5 +4,9 @@
   },
   "dependencies": {
     "tailwind-scrollbar": "^3.0.4"
+  },
+  "scripts" : {
+    "build:css": "tailwindcss build -i src/input.css -o ./app/static/css/style.css",
+    "watch:css": "tailwindcss build -i src/input.css -o ./app/static/css/style.css --watch"
   }
 }
