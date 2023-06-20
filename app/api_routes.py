@@ -9,12 +9,12 @@ api = Blueprint('api', __name__)
 
 @api.route('/add_package', methods=['POST'])
 def add_package():
-    name = request.form['name']
-    identifier = request.form['identifier']
-    publisher = request.form['publisher']
+    name = request.form['name'].strip()
+    identifier = request.form['identifier'].strip()
+    publisher = request.form['publisher'].strip()
     architecture = request.form['architecture']
     installer_type = request.form['type']
-    version = request.form['version']
+    version = request.form['version'].strip()
     file = request.files['file']
     
     if not all([name, identifier, publisher]) or (file and not all([architecture, installer_type, version])):
@@ -37,7 +37,6 @@ def update_package(identifier):
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
         return "Package not found", 404
-    
     name = request.form['name']
     publisher = request.form['publisher']
     package.name = name
