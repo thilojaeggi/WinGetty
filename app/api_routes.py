@@ -113,7 +113,28 @@ def add_installer(identifier):
         db.session.commit()
 
         return redirect(request.referrer)
+
+@api.route('/package/<identifier>/<version>/<installer>', methods=['DELETE'])
+def delete_installer(identifier, version, installer):
+    package = Package.query.filter_by(identifier=identifier).first()
+    if package is None:
+        print("Package not found")
+        return "Package not found", 404
     
+    version = PackageVersion.query.filter_by(identifier=identifier, version_code=version).first()
+    if version is None:
+        print("Version not found")
+        return "Version not found", 404
+
+    installer = Installer.query.filter_by(id=installer).first()
+    if installer is None:
+        return "Installer not found", 404
+    
+    os.remove(os.path.join(basedir, 'packages', package.publisher, package.identifier, version.version_code, installer.architecture, installer.file_name))
+    db.session.delete(installer)
+    db.session.commit()
+
+    return "", 200
 
 
 @api.route('/information')
