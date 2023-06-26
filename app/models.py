@@ -1,6 +1,6 @@
 from app import db
 from flask import url_for, current_app
-
+import os
 class Package(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     identifier = db.Column(db.String(255), unique=True, nullable=False)
@@ -33,7 +33,7 @@ class Package(db.Model):
                 installer_data = {
                     "Architecture": installer.architecture,
                     "InstallerType": installer.installer_type,
-                    "InstallerUrl": url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, _external=True).replace("http://localhost", "https://thilojaeggi-psychic-tribble-jrg579jpj935p64-5000.preview.app.github.dev"),
+                    "InstallerUrl": url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, _external=True).replace('localhost', os.environ['CODESPACE_NAME'] + '-5000.preview.app.github.dev' if os.environ['CODESPACE_NAME'] else 'localhost'),
                     "InstallerSha256": installer.installer_sha256,
                     "Scope": installer.scope
                 }
