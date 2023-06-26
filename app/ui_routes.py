@@ -1,6 +1,7 @@
 from app import db, htmx
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for
 from app.models import Package, PackageVersion, Installer
+from app.utils import debugPrint
 
 ui = Blueprint('ui', __name__)
 
@@ -38,8 +39,8 @@ def packages():
     
 
 
-    print(f'Page: {page}')
-    print(f'Available pages: {available_pages}')
+    debugPrint(f'Page: {page}')
+    debugPrint(f'Available pages: {available_pages}')
 
 
     if htmx:
