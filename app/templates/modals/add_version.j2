@@ -1,7 +1,7 @@
 <!-- Main modal -->
 <div x-show="showAddVersionModal" id="addVersionModal" tabindex="-1" aria-hidden="true" x-data="addVersionFormData();"
-    class="fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full dark:bg-neutral-700/40 flex justify-center items-center">
-    <div class="relative w-full max-w-2xl max-h-full " @click.away="hideModal()">
+    class="fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-full max-h-full dark:bg-neutral-700/40 flex justify-center items-center" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 " x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+    <div class="relative w-full max-w-2xl max-h-full " @click.away="hideModal()" x-show="showAddVersionModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="ease-in duration-300" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-90">
         <!-- Modal content -->
         <div class="relative bg-white rounded-lg shadow dark:bg-neutral-900">
             <!-- Modal header -->
