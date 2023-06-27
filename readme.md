@@ -53,12 +53,12 @@
 * Webinterface for managing packages, versions and installers
 * Adding package with or without installer and version
 * Adding version to existing package with or without installer and version
+* Adding installers to existing versions
 * Updating Package Information except Identifier
 * Searching/Showing for packages with WinGet
-* Downloading/Installing packages with WinGet
+* Downloading/Installing packages with WinGet with Download Count
 * Upgrading packages with WinGet
 ### What is planned:
-* Adding installers to existing packages
 * Adding installer parameters to support e.g. silent installs, meanwhile use --custom or --silent
 * Adding support for user/machine/both installers.
 <hr>
