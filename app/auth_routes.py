@@ -1,4 +1,4 @@
-from flask import Blueprint, config, render_template, redirect, url_for, request, current_app
+from flask import Blueprint, config, render_template, redirect, url_for, request, current_app, flash
 from flask_login import login_required, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -10,7 +10,8 @@ auth = Blueprint('auth', __name__)
 @auth.route('/login')
 def login():
     # Get if at least one user exists, if no and registration is allowed, redirecto signup and flash message
-    if not User.query.first() and not current_app.config['DISABLE_REGISTRATION']:
+    if not User.query.first() and current_app.config['ENABLE_REGISTRATION']:
+        flash('No user exists yet, please create one.', 'warning')
         return redirect(url_for('auth.signup'))
     
     return render_template('login.j2')
@@ -27,15 +28,18 @@ def login_post():
     # check if the user actually exists
     # take the user-supplied password, hash it, and compare it to the hashed password in the database
     if not user or not check_password_hash(user.password, password):
+        flash('Please check your login details and try again.', 'error')
         return redirect(url_for('auth.login')) # if the user doesn't exist or password is wrong, reload the page
 
     login_user(user, remember=remember)
+    flash('Logged in successfully.', 'success')
     return redirect(url_for('ui.index'))
 
 
 @auth.route('/signup')
 def signup():
-    if current_app.config['DISABLE_REGISTRATION']:
+    if not current_app.config['ENABLE_REGISTRATION']:
+        flash('Registration is disabled.', 'error')
         return redirect(url_for('ui.index'))
     return render_template('register.j2')
 
@@ -51,12 +55,14 @@ def signup_post():
     email = request.form.get('email')
     name = request.form.get('name')
     password = request.form.get('password')
-    if current_app.config['DISABLE_REGISTRATION']:
+    if not current_app.config['ENABLE_REGISTRATION']:
+        flash('Registration is disabled.', 'error')
         return redirect(url_for('ui.index'))
 
     user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
 
     if user: # if a user is found, we want to redirect back to signup page so user can try again
+        flash('Email address already in use.', 'error')
         return redirect(url_for('auth.signup'))
 
     # create a new user with the form data. Hash the password so the plaintext version isn't saved.
@@ -66,4 +72,10 @@ def signup_post():
     db.session.add(new_user)
     db.session.commit()
 
-    return redirect(url_for('auth.login'))
+    # Sign in the new user
+    login_user(new_user)
+
+
+    flash('Account successfully created', 'success')
+
+    return redirect(url_for('ui.index'))
