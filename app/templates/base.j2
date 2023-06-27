@@ -15,10 +15,26 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/theme-toggles@4.10.1/css/expand.min.css">
 
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://unpkg.com/htmx.org@1.9.2"
-        integrity="sha384-L6OqL9pRWyyFU3+/bjdSri+iIphTN/bvYyM37tICVyOJkWZLpP2vGn6VUEXgzg6h"
-        crossorigin="anonymous"></script>
+    <script defer src="{{ url_for('static', filename='js/alpine.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/htmx.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery-3.7.0.min.js') }}"></script>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <!-- Flash messages -->
+    {% for category, message in messages %}
+    <script>
+        window.addEventListener('load', function () {
+            window.dispatchEvent(new CustomEvent('notice', {
+                detail: {
+                    text: '{{ message }}',
+                    type: '{{ category }}'
+                }
+            }))
+        });
+    </script>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
 
     <script>
         // On page load or when changing themes, best to add inline in `head` to avoid FOUC
@@ -29,12 +45,12 @@
         }
     </script>
 
-    <script src="{{ url_for('static', filename='js/jquery-3.7.0.min.js') }}"></script>
+
 </head>
 
 <body class="min-h-screen h-full font-poppins flex flex-col bg-slate-200 dark:bg-zinc-800">
     <nav x-data="{ menuVisible: window.innerWidth > 768 }" @click.away="if(window.innerWidth < 768) menuVisible = false"
-        class="flex items-center justify-between flex-wrap sm:flex-row bg-white dark:bg-zinc-900 text-neutral-700 dark:text-neutral-100	 p-4 drop-shadow-md sticky top-0 z-50">
+        class="flex items-center justify-between flex-wrap sm:flex-row bg-white dark:bg-zinc-900 text-neutral-700 dark:text-neutral-100	 p-4 drop-shadow-md sticky top-0 ">
         <a href="{{ url_for('ui.index') }}">
             <div class="flex flex-row items-center flex-shrink-0 text-neutral-900 dark:text-neutral-200 mr-6">
                 <img src="{{ url_for('static', filename='img/wingetty.png')}}" alt="Logo" class="h-10 mr-2">
@@ -78,7 +94,7 @@
                 class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ml-auto">
                 Log in
             </a>
-            {% if not config['DISABLE_REGISTRATION'] %}
+            {% if config['ENABLE_REGISTRATION'] %}
             <a href="{{ url_for('auth.signup') }}"
                 class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ">
                 Sign up
@@ -108,6 +124,50 @@
 
     </main>
 
+    <div x-data="noticesHandler()" class="fixed inset-0 flex flex-col items-end justify-start h-screen w-screen"
+        @notice.window="add($event.detail)" style="pointer-events:none">
+        <template x-for="notice of notices" :key="notice.id">
+            <div x-show="visible.includes(notice)" x-transition:enter="transition ease-in duration-200"
+                x-transition:enter-start="transform opacity-0 -translate-y-2"
+                x-transition:enter-end="transform opacity-100" x-transition:leave="transition ease-out duration-500"
+                x-transition:leave-start="transform translate-x-0 opacity-100"
+                x-transition:leave-end="transform -translate-y-2 sm:translate-y-0 sm:translate-x-full opacity-0"
+                @click="remove(notice.id)"
+                class="rounded-lg mt-2 sm:m-4 w-auto mx-auto sm:w-auto p-8  h-16 flex items-center border-2 justify-center text-black dark:text-gray-200 bg-gray-100 dark:bg-zinc-800 shadow-lg font-bold text-lg cursor-pointer z-50"
+                :class="{
+				'border-green-500': notice.type === 'success',
+				'border-blue-500': notice.type === 'info',
+				'border-orange-500': notice.type === 'warning',
+				'border-red-500': notice.type === 'error',
+			 }" style="pointer-events:all" x-text="notice.text">
+            </div>
+        </template>
+    </div>
+    <script>
+        function noticesHandler() {
+            return {
+                notices: [],
+                visible: [],
+                add(notice) {
+                    notice.id = Date.now()
+                    this.notices.push(notice)
+                    this.fire(notice.id)
+                },
+                fire(id) {
+                    this.visible.push(this.notices.find(notice => notice.id == id))
+                    const timeShown = 2000 * this.visible.length
+                    setTimeout(() => {
+                        this.remove(id)
+                    }, timeShown)
+                },
+                remove(id) {
+                    const notice = this.visible.find(notice => notice.id == id)
+                    const index = this.visible.indexOf(notice)
+                    this.visible.splice(index, 1)
+                },
+            }
+        }
+    </script>
     <script>
         var themeToggleBtn = document.getElementById('theme-toggle');
 
@@ -148,6 +208,7 @@
 
         });
     </script>
+
 </body>
 
 </html>
