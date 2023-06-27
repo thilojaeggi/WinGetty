@@ -34,7 +34,7 @@ VOLUME /app/instance
 VOLUME /app/app/packages
 
 # Expose port 8080 for Gunicorn
-EXPOSE 80
+EXPOSE 8080
 
 # Start the app using Gunicorn
-CMD ["gunicorn", "-b", "0.0.0.0:80", "--workers", "2", "app:create_app()"]
+CMD ["gunicorn", "-b", "0.0.0.0:8080", "--workers", "2", "app:create_app()"]

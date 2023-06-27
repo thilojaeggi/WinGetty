@@ -7,14 +7,14 @@ services:
       dockerfile: Dockerfile
     image: wingetty
     ports:
-      - 8080:80
+      - 8080:8080
     volumes:
       - instance_volume:/app/instance
       - packages_volume:/app/app/packages
     environment:
       - FLASK_APP=app
       - FLASK_ENV=production
-
+      - WINGETTY_ENABLE_REGISTRATION=1
 volumes:
   instance_volume:
   packages_volume:
