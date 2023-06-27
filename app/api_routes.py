@@ -1,5 +1,5 @@
 import os
-from flask import Blueprint, jsonify, render_template, request, redirect, url_for, current_app, send_from_directory
+from flask import Blueprint, jsonify, render_template, request, redirect, url_for, current_app, send_from_directory, flash
 from app.utils import calculate_sha256, debugPrint, save_file, basedir
 from app import db
 from app.models import Package, PackageVersion, Installer
@@ -30,6 +30,7 @@ def add_package():
         package.versions.append(version_code)
     db.session.add(package)
     db.session.commit()
+    flash('Package added successfully.', 'success')
     return "Package added", 200
 
 @api.route('/package/<identifier>', methods=['POST'])
