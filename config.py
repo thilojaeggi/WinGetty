@@ -5,6 +5,7 @@ settings = Dynaconf(
     envvar_prefix="WINGETTY",
     settings_files=['settings.toml', '.secrets.toml'],
     VERSION = "0.0.1"
+    PREFERRED_URL_SCHEME = "https"
 )
 
 # `envvar_prefix` = export envvars with `export DYNACONF_FOO=bar`.
