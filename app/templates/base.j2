@@ -34,8 +34,10 @@
   <nav x-data="{ menuVisible: window.innerWidth > 768 }" @click.away="if(window.innerWidth < 768) menuVisible = false"
         class="flex items-center justify-between flex-wrap sm:flex-row bg-white dark:bg-zinc-900 text-neutral-700 dark:text-neutral-100	 p-4 drop-shadow-md sticky top-0 z-50">
         <div class="flex flex-row items-center flex-shrink-0 text-neutral-900 dark:text-neutral-200 mr-6">
-            <img src="{{ url_for('static', filename='img/wingetty.png')}}" alt="Logo" class="h-10 mr-2">
-            <span class="font-semibold text-2xl tracking-tight mb-0.5">WinGetty</span>
+				<a href="{{ url_for('ui.packages') }}">
+		            <img src="{{ url_for('static', filename='img/wingetty.png')}}" alt="Logo" class="h-10 mr-2">
+				</a>
+            	<a href="{{ url_for('ui.packages') }}" class="font-semibold text-2xl tracking-tight mb-0.5">WinGetty</a>
         </div>
         <div class="block md:hidden">
             <button @click="menuVisible = !menuVisible"
