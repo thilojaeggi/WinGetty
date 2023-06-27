@@ -129,6 +129,7 @@
                         this.progress = 0;
                         this.showAddInstallerModal = false;
                         this.$refs.addInstallerForm.reset();
+                        location.reload();
                     },
                     complete: () => {
                         this.showUploadButton = true;
