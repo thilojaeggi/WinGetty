@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     image: wingetty
     ports:
-      - 8080:8080
+      - 8080:80
     volumes:
       - instance_volume:/app/instance
       - packages_volume:/app/app/packages
