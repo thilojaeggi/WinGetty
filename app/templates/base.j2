@@ -48,6 +48,8 @@
         </div>
 
         <div class="w-full block flex-grow md:flex md:flex-row justify-between items-center md:w-auto text-lg font-semibold" x-collapse x-show="menuVisible">
+              {% if current_user.is_authenticated %}
+
             <div class="text-lg font-semibold">
                 <a href="{{ url_for('ui.packages') }}"
                     class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500">
@@ -63,6 +65,10 @@
                     class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ">
                     Settings
                 </a>
+                {% endif %}
+                {% if not current_user.is_authenticated %}
+                <div class="flex-grow"></div>
+                {% endif %}
                 <button id="theme-toggle" class="theme-toggle mt-2 sm:mt-0" type="button" title="Toggle theme"
                     aria-label="Toggle theme">
                     <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="1.2em" height="1.2em"
