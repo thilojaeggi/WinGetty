@@ -10,3 +10,7 @@ public/
 !.env.example
 celerybeat-schedule
 docker-compose.override.yml
+
+./app/packages/
+*.db
+node_modules/
