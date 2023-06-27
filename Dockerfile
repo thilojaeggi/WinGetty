@@ -8,5 +8,5 @@ RUN apt-get update && \
     apt-get remove -y npm && \
     rm -rf node_modules
 RUN pip install -r requirements.txt
-EXPOSE 443
-CMD ["gunicorn", "-b", "0.0.0.0:443", "--workers", "2", "app:create_app()"]
+EXPOSE 80
+CMD ["gunicorn", "-b", "0.0.0.0:80", "--workers", "2", "app:create_app()"]
