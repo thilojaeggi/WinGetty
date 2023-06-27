@@ -1,0 +1,26 @@
+{% extends "base.j2" %}
+
+{% block content %}
+<div class="column is-4 is-offset-4">
+    <h3 class="text-3xl dark:text-gray-200 text-black">Register</h3>
+    <div class="max-w-screen-sm">
+        <form method="POST" action="/signup">
+            <div class="mt-2">
+                        <label for="email" class="block  text-gray-700 dark:text-gray-300 ">E-Mail<span
+                                class="text-red-500">*</span></label>
+                        <input required name="email" placeholder="" type="text" 
+                            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                    </div>
+
+                    <div class="mt-2">
+                        <label for="password" class="block text-gray-700 dark:text-gray-300 ">Password<span
+                                class="text-red-500">*</span></label>
+                        <input required name="password" placeholder="" type="text"
+                            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                    </div>
+             <button type="submit" type="button" 
+                    class="mt-2 px-3 py-2 tracking-wide text-white   transition-colors duration-300 transform bg-blue-700 hover:bg-blue-800 rounded-md focus:outline-none focus:bg-blue-800 focus:ring focus:ring-blue-300 focus:ring-opacity-50">Register</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
