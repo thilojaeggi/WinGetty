@@ -1,8 +1,8 @@
 {% extends "base.j2" %}
-
+{% set title="Login" %}
 {% block content %}
 <div class="column is-4 is-offset-4">
-    <h3 class="text-3xl dark:text-gray-200 text-black">Login</h3>
+        <h1 class="text-3xl font-medium text-gray-800 dark:text-gray-200">{{title}}</h1>
     <div class="max-w-screen-sm">
         <form method="POST" action="/login">
             <div class="mt-2">
