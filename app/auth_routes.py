@@ -41,7 +41,7 @@ def signup():
     if not current_app.config['ENABLE_REGISTRATION']:
         flash('Registration is disabled.', 'error')
         return redirect(url_for('ui.index'))
-    return render_template('register.j2')
+    return render_template('signup.j2')
 
 @auth.route('/logout')
 @login_required
