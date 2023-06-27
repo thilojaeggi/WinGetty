@@ -25,6 +25,7 @@ def create_app():
     dynaconf.init_app(app)
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'
+    login_manager.login_message = ''
     login_manager.init_app(app)
 
     from app.models import User
