@@ -11,7 +11,7 @@ itsdangerous==2.1.2
 Jinja2==3.1.2
 MarkupSafe==2.1.2
 pycparser==2.21
-pyOpenSSL==23.1.1
+pyOpenSSL==23.2.0
 python-dotenv==1.0.0
 SQLAlchemy==2.0.15
 typing_extensions==4.6.2
