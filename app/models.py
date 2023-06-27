@@ -33,7 +33,7 @@ class Package(db.Model):
                 installer_data = {
                     "Architecture": installer.architecture,
                     "InstallerType": installer.installer_type,
-                    "InstallerUrl": url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, _external=True).replace('localhost', os.environ['CODESPACE_NAME'] + '-5000.preview.app.github.dev' if os.environ['CODESPACE_NAME'] else 'localhost'),
+                    "InstallerUrl": url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, _external=True, _scheme="https").replace('localhost', os.environ['CODESPACE_NAME'] + '-5000.preview.app.github.dev' if os.environ['CODESPACE_NAME'] else 'localhost'),
                     "InstallerSha256": installer.installer_sha256,
                     "Scope": installer.scope
                 }
