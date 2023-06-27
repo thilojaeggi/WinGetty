@@ -12,8 +12,6 @@ services:
       - instance_volume:/app/instance
       - packages_volume:/app/app/packages
     environment:
-      - FLASK_APP=app
-      - FLASK_ENV=production
       - WINGETTY_ENABLE_REGISTRATION=1
 volumes:
   instance_volume:
