@@ -1,3 +1,4 @@
+from flask_login import login_required
 from app import db, htmx
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for
 from app.models import Package, PackageVersion, Installer
@@ -9,7 +10,9 @@ ui = Blueprint('ui', __name__)
 def index():
     return redirect(url_for('ui.packages'))
 
+
 @ui.route('/packages')
+@login_required
 def packages():
     page = request.args.get('page', 1, type=int)
     search_query = request.args.get('q')
@@ -49,14 +52,17 @@ def packages():
 
 
 @ui.route('/setup')
+@login_required
 def setup():
     return render_template('setup.j2')
 
 @ui.route('/settings')
+@login_required
 def settings():
     return render_template('settings.j2')
 
 @ui.route('/package/<identifier>', methods=['GET'])
+@login_required
 def package(identifier):
     package = Package.query.filter_by(identifier=identifier).first()
 
