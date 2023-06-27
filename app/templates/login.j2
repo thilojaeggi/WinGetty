@@ -4,7 +4,7 @@
 <div class="column is-4 is-offset-4">
         <h1 class="text-3xl font-medium text-gray-800 dark:text-gray-200">{{title}}</h1>
     <div class="max-w-screen-sm">
-        <form method="POST" action="/login">
+        <form method="POST" action="{{ url_for('auth.login') }}">
             <div class="mt-2">
                         <label for="email" class="block  text-gray-700 dark:text-gray-300 ">E-Mail<span
                                 class="text-red-500">*</span></label>
