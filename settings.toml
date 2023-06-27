@@ -4,4 +4,7 @@ SQLALCHEMY_TRACK_MODIFICATIONS = false
 # Repo configuration
 REPO_NAME = "WinGetty"
 
+# Replace with your own secret key or overwrite with environment variable
 SECRET_KEY="ASIOFDIOFSDFIFSIOD2*)"
+
+DISABLE_REGISTRATION = false
