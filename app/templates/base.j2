@@ -74,7 +74,16 @@
             </a>
             {% endif %}
             {% if not current_user.is_authenticated %}
-            <div class="flex-grow"></div>
+            <a href="{{ url_for('auth.login') }}"
+                class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ml-auto">
+                Log in
+            </a>
+            {% if not config['DISABLE_REGISTRATION'] %}
+            <a href="{{ url_for('auth.signup') }}"
+                class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ">
+                Sign up
+            </a>
+            {% endif %}
             {% endif %}
             <button id="theme-toggle" class="theme-toggle mt-2 sm:mt-0" type="button" title="Toggle theme"
                 aria-label="Toggle theme">
