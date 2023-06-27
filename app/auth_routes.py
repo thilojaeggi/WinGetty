@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, request
+from flask import Blueprint, config, render_template, redirect, url_for, request, current_app
 from flask_login import login_required, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -9,6 +9,10 @@ auth = Blueprint('auth', __name__)
 
 @auth.route('/login')
 def login():
+    # Get if at least one user exists, if no and registration is allowed, redirecto signup and flash message
+    if not User.query.first() and not current_app.config['DISABLE_REGISTRATION']:
+        return redirect(url_for('auth.signup'))
+    
     return render_template('login.j2')
 
 @auth.route('/login', methods=['POST'])
@@ -31,6 +35,8 @@ def login_post():
 
 @auth.route('/signup')
 def signup():
+    if current_app.config['DISABLE_REGISTRATION']:
+        return redirect(url_for('ui.index'))
     return render_template('register.j2')
 
 @auth.route('/logout')
@@ -45,6 +51,8 @@ def signup_post():
     email = request.form.get('email')
     name = request.form.get('name')
     password = request.form.get('password')
+    if current_app.config['DISABLE_REGISTRATION']:
+        return redirect(url_for('ui.index'))
 
     user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
 
