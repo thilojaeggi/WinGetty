@@ -1,0 +1,20 @@
+version: '3'
+services:
+  wingetty:
+    container_name: wingetty
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: wingetty
+    ports:
+      - 8080:8080
+    volumes:
+      - instance_volume:/app/instance
+      - packages_volume:/app/app/packages
+    environment:
+      - FLASK_APP=app
+      - FLASK_ENV=production
+
+volumes:
+  instance_volume:
+  packages_volume:
