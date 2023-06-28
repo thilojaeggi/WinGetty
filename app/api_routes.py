@@ -146,6 +146,8 @@ def delete_installer(identifier, version, installer):
 def information():
     return jsonify({"Data": {"SourceIdentifier": current_app.config["REPO_NAME"], "ServerSupportedVersions": ["1.4.0"]}})
     
+
+    
 @api.route('/packageManifests/<name>', methods=['GET'])
 def get_package_manifest(name):
     package = Package.query.filter_by(identifier=name).first()
