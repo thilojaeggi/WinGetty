@@ -88,6 +88,17 @@
                 class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ">
                 Settings
             </a>
+            <a href="{{ url_for('auth.logout') }}" class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ">
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="feather feather-log-out">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+
+            </a>
             {% endif %}
             {% if not current_user.is_authenticated %}
             <a href="{{ url_for('auth.login') }}"
@@ -120,9 +131,10 @@
     </nav>
 
     <main class="h-full w-full p-4 flex flex-col max-w-screen-xl mx-auto" x-data="{{ alpine_data }}">
-<div class="text-lg text-white pb-4  {{ 'hidden' if not config['ENABLE_REGISTRATION'] }}">
-<p class="p-2 bg-red-500 rounded-md">Registration is enabled, this is a potential security risk. Consider disabling it after you've created your users.</p>
-</div>
+        <div class="text-lg text-white pb-4  {{ 'hidden' if not config['ENABLE_REGISTRATION'] }}">
+            <p class="p-2 bg-red-500/90 rounded-md">Registration is enabled, this is a potential security risk. Consider
+                disabling it after you've created your users.</p>
+        </div>
         {% block content %}{% endblock %}
 
     </main>
