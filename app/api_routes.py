@@ -1,6 +1,7 @@
 import os
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, current_app, send_from_directory, flash
 from werkzeug.http import parse_range_header
+from werkzeug.utils import secure_filename
 
 from app.utils import debugPrint, save_file, basedir
 from app import db
@@ -29,9 +30,11 @@ def add_package():
     package = Package(identifier=identifier, name=name, publisher=publisher)
     if file and version:
         debugPrint("File and version found")
-        hash = save_file(file, publisher, identifier, version, architecture)
+        file_name = secure_filename(file.filename)
+        hash = save_file(file, file_name, publisher, identifier, version, architecture)
+
         version_code = PackageVersion(version_code=version, package_locale="en-US", short_description=name,identifier=identifier)
-        installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file.filename, installer_sha256=hash, scope="user")        
+        installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file_name, installer_sha256=hash, scope="user")        
         version_code.installers.append(installer)
         package.versions.append(version_code)
     db.session.add(package)
@@ -82,10 +85,11 @@ def add_version(identifier):
     version_code = PackageVersion(version_code=version, package_locale="en-US", short_description=package.name,identifier=identifier)
     if file and version:
         debugPrint("File and version found")
-        hash = save_file(file, package.publisher, identifier, version, architecture)
+        file_name = secure_filename(file.filename)
+        hash = save_file(file, file_name, package.publisher, identifier, version, architecture)
         if hash is None:
             return "Error saving file", 500
-        installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file.filename, installer_sha256=hash, scope="user")        
+        installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file_name, installer_sha256=hash, scope="user")        
         version_code.installers.append(installer)
 
     
@@ -112,10 +116,11 @@ def add_installer(identifier):
 
     if file:
         debugPrint("File found")
-        hash = save_file(file, package.publisher, package.identifier, version.version_code, architecture)
+        file_name = secure_filename(file.filename)
+        hash = save_file(file, file_name, package.publisher, package.identifier, version.version_code, architecture)
         if hash is None:
             return "Error saving file", 500
-        installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file.filename, installer_sha256=hash, scope="user")        
+        installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file_name, installer_sha256=hash, scope="user")        
         version.installers.append(installer)
         db.session.commit()
 
