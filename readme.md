@@ -48,6 +48,7 @@
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
 <hr>
+
 ## Installation and Setup:
 You can find the install and setup guide in the [Wiki](https://github.com/thilojaeggi/WinGetty/wiki/Getting-started)  
 
