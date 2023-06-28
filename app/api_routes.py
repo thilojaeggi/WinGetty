@@ -1,9 +1,11 @@
 import os
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, current_app, send_from_directory, flash
-from app.utils import calculate_sha256, debugPrint, save_file, basedir
+from werkzeug.http import parse_range_header
+
+from app.utils import debugPrint, save_file, basedir
 from app import db
 from app.models import Package, PackageVersion, Installer
-from werkzeug.http import parse_range_header
+
 
 api = Blueprint('api', __name__)
 
