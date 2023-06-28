@@ -37,7 +37,7 @@ def create_app():
     from app.api_routes import api
     from app.auth_routes import auth
     app.register_blueprint(ui)
-    app.register_blueprint(api)
+    app.register_blueprint(api, url_prefix='/api')
     app.register_blueprint(auth)
     
     

@@ -7,6 +7,10 @@ from werkzeug.http import parse_range_header
 
 api = Blueprint('api', __name__)
 
+@api.route('/')
+def index():
+    return "API is running, see documentation for more information", 200
+
 @api.route('/add_package', methods=['POST'])
 def add_package():
     name = request.form['name'].strip()
