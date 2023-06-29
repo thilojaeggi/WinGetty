@@ -1,0 +1,1 @@
+installer_switches = ['Silent', 'SilentWithProgress', 'Interactive', 'InstallLocation', 'Log', 'Upgrade', 'Custom' ]
