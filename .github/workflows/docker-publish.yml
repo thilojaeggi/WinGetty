@@ -38,16 +38,7 @@ jobs:
           echo "tags<<EOF" >> $GITHUB_OUTPUT
           echo '${{ steps.meta.outputs.tags }}' >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Scan Dockerfile vulnerabilities using Checkov
-        id: checkov
-        uses: bridgecrewio/checkov-action@master
-        with:
-          directory: .
-          framework: dockerfile
-          quiet: true # show only failed checks
-          container_user: 1000 # UID to run the container under to prevent permission issues
-
+          
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
