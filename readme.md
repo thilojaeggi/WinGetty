@@ -61,8 +61,8 @@ You can find the install and setup guide in the [Wiki](https://github.com/thiloj
 * Searching/Showing for packages with WinGet
 * Downloading/Installing packages with WinGet with Download Count
 * Upgrading packages with WinGet
+* Adding "installer switches" under advanced settings allowing you to set parameters for silent installs, logs, install directory and more.
 ### What is planned:
-* Adding installer parameters to support e.g. silent installs, meanwhile use --custom or --silent
 * Adding support for user/machine/both installers.
 <hr>
 
