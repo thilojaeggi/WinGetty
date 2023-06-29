@@ -19,7 +19,7 @@
             <div class="flex flex-col">
                 <label :for="item.key" class="block  text-gray-700 dark:text-gray-300 " x-text="item.key"><span
                         class="text-red-500">*</span></label>
-                <input :id="item.key" type="text" x-bind:required="fileChosen" x-model="item.value"
+                <input :id="item.key" :name="item.key" type="text" x-bind:required="fileChosen" x-model="item.value"
                     class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
             </div>
             <button @click="

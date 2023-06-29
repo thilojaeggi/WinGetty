@@ -50,10 +50,18 @@ class Package(db.Model):
                     "InstallerUrl": url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, _external=True, _scheme="https"),
                     "InstallerSha256": installer.installer_sha256,
                     "Scope": installer.scope,
-                    "InstallerSwitches": installer.switches
+                    "InstallerSwitches": self._get_installer_switches(installer)
                 }
                 installer_data.append(data)
             return installer_data
+    
+    def _get_installer_switches(self, installer):
+        switches = []
+        for switch in installer.switches:
+            switches.append({
+                switch.switch_key: switch.switch_value
+            })
+        return switches
 
     def generate_output_manifest_search(self):
         output = {

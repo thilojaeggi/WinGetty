@@ -6,7 +6,8 @@ from werkzeug.utils import secure_filename
 
 from app.utils import debugPrint, save_file, basedir
 from app import db
-from app.models import Package, PackageVersion, Installer
+from app.constants import installer_switches
+from app.models import InstallerSwitch, Package, PackageVersion, Installer
 
 
 api = Blueprint('api', __name__)
@@ -34,12 +35,22 @@ def add_package():
         debugPrint("File and version found")
         file_name = secure_filename(file.filename)
         hash = save_file(file, file_name, publisher, identifier, version, architecture)
-
         version_code = PackageVersion(version_code=version, package_locale="en-US", short_description=name,identifier=identifier)
         installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file_name, installer_sha256=hash, scope="user")        
+        for field_name in installer_switches:
+            debugPrint(f"Checking for field name ${field_name}")
+            if field_name in request.form:
+                debugPrint("Field name found ${field_name}")
+                installer_switch = InstallerSwitch() 
+                installer_switch.switch_key = field_name
+                installer_switch.switch_value = request.form.get(field_name)
+                installer.switches.append(installer_switch)
         version_code.installers.append(installer)
         package.versions.append(version_code)
+        
     db.session.add(package)
+
+
     db.session.commit()
     flash('Package added successfully.', 'success')
     return "Package added", 200
@@ -138,12 +149,12 @@ def add_installer(identifier):
 def delete_installer(identifier, version, installer):
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
-        print("Package not found")
+        debugPrint("Package not found")
         return "Package not found", 404
     
     version = PackageVersion.query.filter_by(identifier=identifier, version_code=version).first()
     if version is None:
-        print("Version not found")
+        debugPrint("Version not found")
         return "Version not found", 404
 
     installer = Installer.query.filter_by(id=installer).first()
