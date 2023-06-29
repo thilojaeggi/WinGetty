@@ -12,40 +12,48 @@ class Package(db.Model):
     download_count = db.Column(db.Integer, default=0)
 
     def generate_output(self):
-        output = {
-            "Data": {
-                "PackageIdentifier": self.identifier,
-                "Versions": []
+            output = {
+                "Data": {
+                    "PackageIdentifier": self.identifier,
+                    "Versions": self._get_version_data()
+                }
             }
+            return output
+
+    def _get_version_data(self):
+        version_data = []
+        for version in self.versions:
+            data = {
+                "PackageVersion": version.version_code,
+                "DefaultLocale": self._get_default_locale(version),
+                "Installers": self._get_installer_data(version)
+            }
+            # Only append version if there's at least one installer
+            if data["Installers"]:
+                version_data.append(data)
+        return version_data
+
+    def _get_default_locale(self, version):
+        return {
+            "PackageLocale": version.package_locale,
+            "Publisher": self.publisher,
+            "PackageName": self.name,
+            "ShortDescription": version.short_description
         }
 
-        for version in self.versions:
-            version_data = {
-                "PackageVersion": version.version_code,
-                "DefaultLocale": {
-                    "PackageLocale": version.package_locale,
-                    "Publisher": self.publisher,
-                    "PackageName": self.name,
-                    "ShortDescription": version.short_description
-                },
-                "Installers": []
-            }
-
+    def _get_installer_data(self, version):
+            installer_data = []
             for installer in version.installers:
-                installer_data = {
+                data = {
                     "Architecture": installer.architecture,
                     "InstallerType": installer.installer_type,
                     "InstallerUrl": url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, _external=True, _scheme="https"),
                     "InstallerSha256": installer.installer_sha256,
-                    "Scope": installer.scope
+                    "Scope": installer.scope,
+                    "InstallerSwitches": installer.switches
                 }
-                version_data["Installers"].append(installer_data)
-            # Only append version if there's at least one installer
-            if version_data["Installers"]:
-                output["Data"]["Versions"].append(version_data)
-
-        return output
-
+                installer_data.append(data)
+            return installer_data
 
     def generate_output_manifest_search(self):
         output = {
@@ -84,6 +92,13 @@ class Installer(db.Model):
     file_name = db.Column(db.String(100))
     installer_sha256 = db.Column(db.String(100))
     scope = db.Column(db.String(50))
+    switches = db.relationship('InstallerSwitch', backref='installer', lazy=True)
+
+class InstallerSwitch(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    installer_id = db.Column(db.Integer, db.ForeignKey('installer.id'))
+    switch_key = db.Column(db.String(50))
+    switch_value = db.Column(db.String(255))
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
