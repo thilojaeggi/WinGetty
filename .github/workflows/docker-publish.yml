@@ -1,96 +1,93 @@
-name: Docker
+name: Build And Push Docker image
 
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
+# When calling this workflow, ensure you use
+#   secrets: inherit
+# So the DOCKER_USERNAME and DOCKER_PASSWORD are available.
 
 on:
-  schedule:
-    - cron: '33 23 * * *'
-  push:
-    branches: [ "main" ]
-    # Publish semver tags as releases.
-    tags: [ 'v*.*.*' ]
-  pull_request:
-    branches: [ "main" ]
-
-env:
-  # Use docker.io for Docker Hub if empty
-  REGISTRY: ghcr.io
-  # github.repository as <account>/<repo>
-  IMAGE_NAME: ${{ github.repository }}
-
+  workflow_call:
+    inputs:
+      publish:
+        type: boolean
+        description: Wether to publish the image to Github Registry
+        required: false
+        default: false
+      publish_dockerhub:
+        type: boolean
+        description: | 
+          Whether to publish the image to Docker Hub (only if publish=true).
+          Needs DOCKER_USERNAME and DOCKER_PASSWORD secrets (use secrets: inherit on the calling workflow).
+        required: false
+        default: false
+      version:
+        type: string
+        required: false
+        description: the string to extract semver labels from. If empty, the ref/tag will be used (if on.tag trigger).
+        default: ''
 
 jobs:
-  build:
-
+  build_and_push:
+    name: Docker Build and Push
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      # This is used to complete the identity challenge
-      # with sigstore/fulcio when running outside of PRs.
-      id-token: write
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      # Install the cosign tool except on PR
-      # https://github.com/sigstore/cosign-installer
-      - name: Install cosign
-        if: github.event_name != 'pull_request'
-        uses: sigstore/cosign-installer@f3c664df7af409cb4873aa5068053ba9d61a57b6 #v2.6.0
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
         with:
-          cosign-release: 'v1.13.1'
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ inputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ inputs.version }}
+            type=semver,pattern={{major}},value=${{ inputs.version }}
+            type=ref,event=branch,suffix=-{{ sha }}
+            type=ref,event=pr
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
+          flavor: |
+            latest=false
 
+      - name: Compute final image tags
+        id: tags
+        run: |
+          echo "tags<<EOF" >> $GITHUB_OUTPUT
+          echo '${{ steps.meta.outputs.tags }}' >> $GITHUB_OUTPUT
+          if [ 'true' == '${{ inputs.publish_dockerhub }}' ]; then
+            echo '${{ steps.meta_dockerhub.outputs.tags }}' >> $GITHUB_OUTPUT
+          fi
+          echo "EOF" >> $GITHUB_OUTPUT
 
-      # Workaround: https://github.com/docker/build-push-action/issues/461
-      - name: Setup Docker buildx
-        uses: docker/setup-buildx-action@79abd3f86f79a9d68a23c75a09a9a85889262adf
-
-      # Login against a Docker registry except on PR
-      # https://github.com/docker/login-action
-      - name: Log into registry ${{ env.REGISTRY }}
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+      - name: Scan Dockerfile vulnerabilities using Checkov
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
         with:
-          registry: ${{ env.REGISTRY }}
+          directory: .
+          framework: dockerfile
+          quiet: true # show only failed checks
+          container_user: 1000 # UID to run the container under to prevent permission issues
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Extract metadata (tags, labels) for Docker
-      # https://github.com/docker/metadata-action
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
-      # Build and push Docker image with Buildx (don't push on PR)
-      # https://github.com/docker/build-push-action
       - name: Build and push Docker image
-        id: build-and-push
-        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        uses: docker/build-push-action@v4
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
+          platforms: linux/amd64,linux/arm64 # also support the new mac architecture (requires buildx)
+          push: ${{ inputs.publish }}
+          tags: ${{ steps.tags.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # use layer caching. Don't forget mode=max to also cache the build image
+          # (vs only the final image - mode: min)
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-
-      # Sign the resulting Docker image digest except on PRs.
-      # This will only write to the public Rekor transparency log when the Docker
-      # repository is public to avoid leaking data.  If you would like to publish
-      # transparency data even for private images, pass --force to cosign below.
-      # https://github.com/sigstore/cosign
-      - name: Sign the published Docker image
-        if: ${{ github.event_name != 'pull_request' }}
-        env:
-          COSIGN_EXPERIMENTAL: "true"
-        # This step uses the identity token to provision an ephemeral certificate
-        # against the sigstore community Fulcio instance.
-        run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign {}@${{ steps.build-and-push.outputs.digest }}
