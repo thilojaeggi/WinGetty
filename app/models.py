@@ -56,11 +56,9 @@ class Package(db.Model):
             return installer_data
     
     def _get_installer_switches(self, installer):
-        switches = []
+        switches = {}
         for switch in installer.switches:
-            switches.append({
-                switch.switch_key: switch.switch_value
-            })
+            switches[switch.switch_key] = switch.switch_value
         return switches
 
     def generate_output_manifest_search(self):
