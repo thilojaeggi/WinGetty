@@ -12,18 +12,30 @@ from flask_login import LoginManager
 db = SQLAlchemy()
 htmx = HTMX()
 dynaconf = FlaskDynaconf()
+login_manager = LoginManager()
 
 def sort_versions(versions):
     return sorted(versions, key=lambda x: LooseVersion(x.version_code), reverse=True)
+
+def page_not_found(e):
+  return render_template('error/404.j2'), 404
+
+def internal_server_error(e):
+    return render_template('error/500.j2'), 500
+
 
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(settings)
+    app.register_error_handler(404, page_not_found)
+    app.register_error_handler(500, internal_server_error)
+
+
     db.init_app(app)
     htmx.init_app(app)
     dynaconf.init_app(app)
-    login_manager = LoginManager()
+
     login_manager.login_view = 'auth.login'
     login_manager.login_message = ''
     login_manager.init_app(app)
@@ -39,8 +51,6 @@ def create_app():
     app.register_blueprint(ui)
     app.register_blueprint(api, url_prefix='/api')
     app.register_blueprint(auth)
-    
-    
 
     app.jinja_env.filters['sort_versions'] = sort_versions
 
