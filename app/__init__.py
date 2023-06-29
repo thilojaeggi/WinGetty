@@ -18,10 +18,10 @@ def sort_versions(versions):
     return sorted(versions, key=lambda x: LooseVersion(x.version_code), reverse=True)
 
 def page_not_found(e):
-  return render_template('error/404.j2'), 404
+  return render_template('error/404.j2',error=True), 404
 
 def internal_server_error(e):
-    return render_template('error/500.j2'), 500
+    return render_template('error/500.j2',error=True), 500
 
 
 
