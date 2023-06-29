@@ -36,7 +36,7 @@
                 </path>
             </svg>
         </a>
-        <a hx-delete="{{ url_for('ui.package', identifier=package.identifier)}}"
+        <a hx-delete="{{ url_for('api.delete_package', identifier=package.identifier)}}"
             hx-confirm="Are you sure you want to delete {{ package.identifier }} and all of its versions and installers?"
             class="px-1 group py-1 text-gray-500 transition-colors hover:bg-red-100 dark:hover:bg-neutral-800/60 duration-300 rounded-lg cursor-pointer">
 
