@@ -57,6 +57,10 @@ def create_app():
     @app.context_processor
     def inject_now():
         return {'now': datetime.utcnow()}
+    
+    @app.route('/favicon.ico')
+    def favicon():
+        return url_for('static', filename='img/favicon.ico')
 
     with app.app_context():
         db.create_all()
