@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ghcr.io/thilojaeggi/wingetty:main
+    image: ghcr.io/thilojaeggi/wingetty:latest
     ports:
       - 8080:8080
     volumes:
