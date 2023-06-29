@@ -52,7 +52,7 @@
 ## Installation and Setup:
 You can find the install and setup guide in the [Wiki](https://github.com/thilojaeggi/WinGetty/wiki/Getting-started)  
 
-### What currently works:
+### Features:
 * Webinterface for managing packages, versions and installers
 * Adding package with or without installer and version
 * Adding version to existing package with or without installer and version
