@@ -1,5 +1,6 @@
 import os
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, current_app, send_from_directory, flash
+from flask_login import login_required
 from werkzeug.http import parse_range_header
 from werkzeug.utils import secure_filename
 
@@ -15,6 +16,7 @@ def index():
     return "API is running, see documentation for more information", 200
 
 @api.route('/add_package', methods=['POST'])
+@login_required
 def add_package():
     name = request.form['name'].strip()
     identifier = request.form['identifier'].strip()
@@ -43,6 +45,7 @@ def add_package():
     return "Package added", 200
 
 @api.route('/package/<identifier>', methods=['POST'])
+@login_required
 def update_package(identifier):
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
@@ -55,6 +58,7 @@ def update_package(identifier):
     return redirect(request.referrer)
 
 @api.route('/package/<identifier>', methods=['DELETE'])
+@login_required
 def delete_package(identifier):
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
@@ -74,6 +78,7 @@ def delete_package(identifier):
 
 
 @api.route('/package/<identifier>/add-version', methods=['POST'])
+@login_required
 def add_version(identifier):
     version = request.form['version']
     architecture = request.form['architecture']
@@ -101,6 +106,7 @@ def add_version(identifier):
 
 
 @api.route('/package/<identifier>/add-installer', methods=['POST'])
+@login_required
 def add_installer(identifier):
     architecture = request.form['architecture']
     installer_type = request.form['type']
@@ -128,6 +134,7 @@ def add_installer(identifier):
         return redirect(request.referrer)
 
 @api.route('/package/<identifier>/<version>/<installer>', methods=['DELETE'])
+@login_required
 def delete_installer(identifier, version, installer):
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
