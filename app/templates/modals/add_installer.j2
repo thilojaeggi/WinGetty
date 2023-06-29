@@ -1,7 +1,14 @@
 <!-- Main modal -->
-<div x-cloak x-show="showAddInstallerModal" id="addVersionModal" tabindex="-1" aria-hidden="true" x-data="addInstallerFormData();"
-    class="fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-full max-h-full dark:bg-neutral-700/40 flex justify-center items-center" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 " x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-    <div class="relative w-full max-w-2xl max-h-full " @click.away="hideModal()" x-show="showAddInstallerModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="ease-in duration-300" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-90">
+<div x-cloak x-show="showAddInstallerModal" id="addVersionModal" tabindex="-1" aria-hidden="true"
+    x-data="addInstallerFormData();"
+    class="fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-full max-h-full dark:bg-neutral-700/40 flex justify-center items-center"
+    x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 "
+    x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-300"
+    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+    <div class="relative w-full max-w-2xl max-h-full " @click.away="hideModal()" x-show="showAddInstallerModal"
+        x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-90"
+        x-transition:enter-end="opacity-100 scale-100" x-transition:leave="ease-in duration-300"
+        x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-90">
         <!-- Modal content -->
         <div class="relative bg-white rounded-lg shadow dark:bg-neutral-900">
             <!-- Modal header -->
@@ -31,54 +38,56 @@
             <!-- Modal body -->
             <div class="p-6 space-y-6">
                 <form x-ref="addInstallerForm" id="addInstallerForm" @submit.prevent="submitForm" class="mt-5"
-                x-data="{ fileChosen: false, name: '', publisher: '', identifier: '', identifierEditedManually : false}"
-                x-data="{'fileChosen': false}" action="{{ url_for('api.add_installer', identifier=package.identifier) }}" method="POST"
-                enctype="multipart/form-data">
+                    x-data="{ fileChosen: false, name: '', publisher: '', identifier: '', identifierEditedManually : false}"
+                    x-data="{'fileChosen': false}"
+                    action="{{ url_for('api.add_installer', identifier=package.identifier) }}" method="POST"
+                    enctype="multipart/form-data">
 
-                <input type="hidden" name="version" x-model="selectedVersion">
+                    <input type="hidden" name="version" x-model="selectedVersion">
 
-                <div class="mt-2">
-                    <label for="file" class="block  text-gray-700 dark:text-gray-300">File<span
-                                class="text-red-500">*</span></label>
-                    <input @change="fileChosen = $refs.fileInput.files.length > 0" x-ref="fileInput" name="file" required
-                        accept=".exe,.msi,.msix,.appx, .zip" type="file"
-                        class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-                </div>
-
-                <div x-show="fileChosen" x-collapse>
                     <div class="mt-2">
-                        <label for="architecture" class="block text-gray-700 dark:text-gray-300">Architecture<span
+                        <label for="file" class="block  text-gray-700 dark:text-gray-300">File<span
                                 class="text-red-500">*</span></label>
-                        <select name="architecture" x-bind:required="fileChosen"
+                        <input @change="fileChosen = $refs.fileInput.files.length > 0" x-ref="fileInput" name="file"
+                            required accept=".exe,.msi,.msix,.appx, .zip" type="file"
                             class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-                            <option value="x86">x86</option>
-                            <option value="x64">x64</option>
-                            <option value="arm">arm</option>
-                            <option value="arm64">arm64</option>
-                        </select>
                     </div>
-                    <div class="mt-2">
-                        <label for="type" class="block text-gray-700 dark:text-gray-300">Installer Type<span
-                                class="text-red-500">*</span></label>
-                        <select name="type" x-bind:required="fileChosen"
-                            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-                            <option value="msix">msix</option>
-                            <option value="msi">msi</option>
-                            <option value="appx">appx</option>
-                            <option value="exe">exe</option>
-                            <option value="zip">zip</option>
-                            <option value="inno">inno</option>
-                            <option value="nullsoft">nullsoft</option>
-                            <option value="wix">wix</option>
-                            <option value="burn">burn</option>
-                            <option value="pwa">pwa</option>
-                            <option value="msstore">msstore</option>
-                        </select>
-                    </div>
-                </div>
 
-                
-                <div x-show="!showUploadButton"
+                    <div x-show="fileChosen" x-collapse>
+                        <div class="mt-2">
+                            <label for="architecture" class="block text-gray-700 dark:text-gray-300">Architecture<span
+                                    class="text-red-500">*</span></label>
+                            <select name="architecture" x-bind:required="fileChosen"
+                                class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                                <option value="x86">x86</option>
+                                <option value="x64">x64</option>
+                                <option value="arm">arm</option>
+                                <option value="arm64">arm64</option>
+                            </select>
+                        </div>
+                        <div class="mt-2">
+                            <label for="type" class="block text-gray-700 dark:text-gray-300">Installer Type<span
+                                    class="text-red-500">*</span></label>
+                            <select name="type" x-bind:required="fileChosen"
+                                class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                                <option value="msix">msix</option>
+                                <option value="msi">msi</option>
+                                <option value="appx">appx</option>
+                                <option value="exe">exe</option>
+                                <option value="zip">zip</option>
+                                <option value="inno">inno</option>
+                                <option value="nullsoft">nullsoft</option>
+                                <option value="wix">wix</option>
+                                <option value="burn">burn</option>
+                                <option value="pwa">pwa</option>
+                                <option value="msstore">msstore</option>
+                            </select>
+                        </div>
+                        {% include 'inputs/advanced_options.j2' %}
+                    </div>
+
+
+                    <div x-show="!showUploadButton"
                         class="min-w-[5%] h-auto p-2 mt-4 rounded-md w-min bg-blue-600 flex flex-row justify-end text-white text-lg font-semibold "
                         x-bind:style="'width: ' + progress + '%; transition: width 0.5s ease-in-out;'">
                         <p x-text="progress"></p>
@@ -86,7 +95,7 @@
                 </form>
             </div>
             <!-- Modal footer -->
-            <div x-show="showUploadButton"  class="flex items-center justify-end p-6 space-x-2 dark:border-gray-600">
+            <div x-show="showUploadButton" class="flex items-center justify-end p-6 space-x-2 dark:border-gray-600">
                 <button type="submit" type="button" form="addInstallerForm"
                     class="px-3 py-2 tracking-wide text-white   transition-colors duration-300 transform bg-blue-700 hover:bg-blue-800 rounded-md focus:outline-none focus:bg-blue-800 focus:ring focus:ring-blue-300 focus:ring-opacity-50">Add
                     Installer</button>
