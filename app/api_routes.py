@@ -107,6 +107,14 @@ def add_version(identifier):
         if hash is None:
             return "Error saving file", 500
         installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file_name, installer_sha256=hash, scope="user")        
+        for field_name in installer_switches:
+            debugPrint(f"Checking for field name ${field_name}")
+            if field_name in request.form:
+                debugPrint("Field name found ${field_name}")
+                installer_switch = InstallerSwitch() 
+                installer_switch.switch_key = field_name
+                installer_switch.switch_value = request.form.get(field_name)
+                installer.switches.append(installer_switch)
         version_code.installers.append(installer)
 
     
@@ -139,6 +147,14 @@ def add_installer(identifier):
         if hash is None:
             return "Error saving file", 500
         installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file_name, installer_sha256=hash, scope="user")        
+        for field_name in installer_switches:
+            debugPrint(f"Checking for field name ${field_name}")
+            if field_name in request.form:
+                debugPrint("Field name found ${field_name}")
+                installer_switch = InstallerSwitch() 
+                installer_switch.switch_key = field_name
+                installer_switch.switch_value = request.form.get(field_name)
+                installer.switches.append(installer_switch)
         version.installers.append(installer)
         db.session.commit()
 
@@ -265,8 +281,6 @@ def download(identifier, version, architecture):
     if installer is None:
         return "Installer not found", 404
 
-    
-    
 
     installer_path = os.path.join(basedir, 'packages', package.publisher, package.identifier, version_code.version_code, installer.architecture)
     file_path = os.path.join(installer_path, installer.file_name)
