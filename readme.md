@@ -50,20 +50,16 @@
 <hr>
 
 ## Installation and Setup:
-You can find the install and setup guide in the [Wiki](https://github.com/thilojaeggi/WinGetty/wiki/Getting-started)  
+You can find the install and getting started guide in the [Wiki](https://github.com/thilojaeggi/WinGetty/wiki/Getting-started)  
 
 ### Features:
-* Webinterface for managing packages, versions and installers
-* Adding package with or without installer and version
-* Adding version to existing package with or without installer and version
-* Adding installers to existing versions
-* Updating Package Information except Identifier
+* Intuitive and easy to use Webinterface
+* Adding packages with multiple versions, installers including architectures and scope
+* Installer Switches such as silent, noninteractive and more.
+* Multiple users and authentication
+* Easy updating of packages and metadata
 * Searching/Showing for packages with WinGet
-* Downloading/Installing packages with WinGet with Download Count
-* Upgrading packages with WinGet
-* Adding "installer switches" under advanced settings allowing you to set parameters for silent installs, logs, install directory and more.
-### What is planned:
-* Adding support for user/machine/both installers.
+* Download count for packages
 <hr>
 
 <!-- MARKDOWN LINKS & IMAGES -->
