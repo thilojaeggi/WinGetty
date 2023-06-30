@@ -1,10 +1,11 @@
 from flask import Blueprint, config, render_template, redirect, url_for, request, current_app, flash
 from flask_login import login_required, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_bcrypt import Bcrypt
 
 
 from app.models import User
-from app import db
+from app import db, bcrypt
 auth = Blueprint('auth', __name__)
 
 @auth.route('/login')
@@ -25,9 +26,10 @@ def login_post():
 
     user = User.query.filter_by(email=email).first()
 
+
     # check if the user actually exists
     # take the user-supplied password, hash it, and compare it to the hashed password in the database
-    if not user or not check_password_hash(user.password, password):
+    if not user or not bcrypt.check_password_hash(user.password, password):
         flash('Please check your login details and try again.', 'error')
         return redirect(url_for('auth.login')) # if the user doesn't exist or password is wrong, reload the page
 
@@ -66,7 +68,8 @@ def signup_post():
         return redirect(url_for('auth.signup'))
 
     # create a new user with the form data. Hash the password so the plaintext version isn't saved.
-    new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'))
+
+    new_user = User(email=email, name=name, password=bcrypt.generate_password_hash(password).decode('utf-8'))
 
     # add the new user to the database
     db.session.add(new_user)

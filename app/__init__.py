@@ -7,11 +7,13 @@ from distutils.version import LooseVersion
 from config import settings
 from dynaconf import FlaskDynaconf
 from flask_login import LoginManager
+from flask_bcrypt import Bcrypt
 
 db = SQLAlchemy()
 htmx = HTMX()
 dynaconf = FlaskDynaconf()
 login_manager = LoginManager()
+bcrypt = Bcrypt()
 
 def sort_versions(versions):
     return sorted(versions, key=lambda x: LooseVersion(x.version_code), reverse=True)
@@ -34,6 +36,7 @@ def create_app():
     db.init_app(app)
     htmx.init_app(app)
     dynaconf.init_app(app)
+    bcrypt.init_app(app)
 
     login_manager.login_view = 'auth.login'
     login_manager.login_message = ''
