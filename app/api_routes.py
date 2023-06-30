@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 
 from app.utils import create_installer, debugPrint, save_file, basedir
 from app import db
-from app.models import InstallerSwitch, Package, PackageVersion, Installer
+from app.models import InstallerSwitch, Package, PackageVersion, Installer, User
 
 
 api = Blueprint('api', __name__)
@@ -155,6 +155,43 @@ def delete_installer(identifier, version, installer):
 
     return "", 200
 
+@api.route('/update_user', methods=['POST'])
+def update_user():
+    id = request.form['id']
+    username = request.form['username'].lower().strip()
+    email = request.form['email'].lower().strip()
+    password = request.form['password']
+
+    user = User.query.filter_by(id=id).first()
+    if user is None:
+        return "User not found", 404
+    
+    # Check that email or username or both aren't used by another user before updating except for the current user
+    if User.query.filter(User.id != id, User.email == email).first():
+        flash('Email already in use', 'error')
+        return redirect(request.referrer)
+    if User.query.filter(User.id != id, User.username == username).first():
+        flash('Username already in use', 'error')
+        return redirect(request.referrer)
+
+
+
+    
+    user.username = username
+    user.email = email
+    if password:
+        user.set_password(password)
+        db.session.commit()
+        flash('Password changed, please login again.', 'success')
+
+    db.session.commit()
+    flash('User updated successfully.', 'success')
+    return redirect(request.referrer)
+
+
+
+
+##### Routes used by WinGet #####
 
 @api.route('/information')
 def information():
