@@ -1,5 +1,6 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, current_app
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_htmx import HTMX
 from datetime import datetime
@@ -9,11 +10,16 @@ from dynaconf import FlaskDynaconf
 from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
 
+
+
+
 db = SQLAlchemy()
 htmx = HTMX()
 dynaconf = FlaskDynaconf()
 login_manager = LoginManager()
 bcrypt = Bcrypt()
+migrate = Migrate()
+
 
 def sort_versions(versions):
     return sorted(versions, key=lambda x: LooseVersion(x.version_code), reverse=True)
@@ -28,12 +34,13 @@ def internal_server_error(e):
 
 def create_app():
     app = Flask(__name__)
+    
     app.config.from_object(settings)
     app.register_error_handler(404, page_not_found)
     app.register_error_handler(500, internal_server_error)
 
-
     db.init_app(app)
+    migrate.init_app(app, db)
     htmx.init_app(app)
     dynaconf.init_app(app)
     bcrypt.init_app(app)
@@ -66,4 +73,5 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+
     return app
