@@ -6,7 +6,6 @@ from datetime import datetime
 from distutils.version import LooseVersion
 from config import settings
 from dynaconf import FlaskDynaconf
-from .utils import basedir
 from flask_login import LoginManager
 
 db = SQLAlchemy()

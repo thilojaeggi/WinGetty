@@ -1,8 +1,30 @@
 import hashlib
 import os
-from flask import current_app
+from flask import current_app, request
+from werkzeug.utils import secure_filename
+from app.models import Installer, InstallerSwitch
+from app.constants import installer_switches
+
 
 basedir = os.path.abspath(os.path.dirname(__file__))
+
+def create_installer(file, publisher, identifier, version, architecture, installer_type):
+    file_name = secure_filename(file.filename)
+    hash = save_file(file, file_name, publisher, identifier, version, architecture)
+    if hash is None:
+        return None
+
+    installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file_name, installer_sha256=hash, scope="user")
+    for field_name in installer_switches:
+        debugPrint(f"Checking for field name {field_name}")
+        if field_name in request.form:
+            debugPrint(f"Field name found {field_name}")
+            installer_switch = InstallerSwitch()
+            installer_switch.switch_key = field_name
+            installer_switch.switch_value = request.form.get(field_name)
+            installer.switches.append(installer_switch)
+
+    return installer
 
 def calculate_sha256(filename):
     sha256_hash = hashlib.sha256()

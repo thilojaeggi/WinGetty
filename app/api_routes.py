@@ -4,9 +4,8 @@ from flask_login import login_required
 from werkzeug.http import parse_range_header
 from werkzeug.utils import secure_filename
 
-from app.utils import debugPrint, save_file, basedir
+from app.utils import create_installer, debugPrint, save_file, basedir
 from app import db
-from app.constants import installer_switches
 from app.models import InstallerSwitch, Package, PackageVersion, Installer
 
 
@@ -33,25 +32,17 @@ def add_package():
     package = Package(identifier=identifier, name=name, publisher=publisher)
     if file and version:
         debugPrint("File and version found")
-        file_name = secure_filename(file.filename)
-        hash = save_file(file, file_name, publisher, identifier, version, architecture)
-        version_code = PackageVersion(version_code=version, package_locale="en-US", short_description=name,identifier=identifier)
-        installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file_name, installer_sha256=hash, scope="user")        
-        for field_name in installer_switches:
-            debugPrint(f"Checking for field name ${field_name}")
-            if field_name in request.form:
-                debugPrint("Field name found ${field_name}")
-                installer_switch = InstallerSwitch() 
-                installer_switch.switch_key = field_name
-                installer_switch.switch_value = request.form.get(field_name)
-                installer.switches.append(installer_switch)
+        installer = create_installer(file, publisher, identifier, version, architecture, installer_type)
+        if installer is None:
+            return "Error creating installer", 500
+
+        version_code = PackageVersion(version_code=version, package_locale="en-US", short_description=name, identifier=identifier)
         version_code.installers.append(installer)
         package.versions.append(version_code)
         
     db.session.add(package)
-
-
     db.session.commit()
+
     flash('Package added successfully.', 'success')
     return "Package added", 200
 
@@ -88,7 +79,7 @@ def delete_package(identifier):
     return "", 200
 
 
-@api.route('/package/<identifier>/add-version', methods=['POST'])
+@api.route('/package/<identifier>/add_version', methods=['POST'])
 @login_required
 def add_version(identifier):
     version = request.form['version']
@@ -99,32 +90,22 @@ def add_version(identifier):
     if package is None:
         return "Package not found", 404
     file = request.files['file']
-    version_code = PackageVersion(version_code=version, package_locale="en-US", short_description=package.name,identifier=identifier)
+    version_code = PackageVersion(version_code=version, package_locale="en-US", short_description=package.name, identifier=identifier)
     if file and version:
         debugPrint("File and version found")
-        file_name = secure_filename(file.filename)
-        hash = save_file(file, file_name, package.publisher, identifier, version, architecture)
-        if hash is None:
-            return "Error saving file", 500
-        installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file_name, installer_sha256=hash, scope="user")        
-        for field_name in installer_switches:
-            debugPrint(f"Checking for field name ${field_name}")
-            if field_name in request.form:
-                debugPrint("Field name found ${field_name}")
-                installer_switch = InstallerSwitch() 
-                installer_switch.switch_key = field_name
-                installer_switch.switch_value = request.form.get(field_name)
-                installer.switches.append(installer_switch)
+        installer = create_installer(file, package.publisher, identifier, version, architecture, installer_type)
+        if installer is None:
+            return "Error creating installer", 500
+
         version_code.installers.append(installer)
 
-    
     package.versions.append(version_code)
     db.session.commit()
 
     return redirect(request.referrer)
 
 
-@api.route('/package/<identifier>/add-installer', methods=['POST'])
+@api.route('/package/<identifier>/add_installer', methods=['POST'])
 @login_required
 def add_installer(identifier):
     architecture = request.form['architecture']
@@ -135,26 +116,17 @@ def add_installer(identifier):
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
         return "Package not found", 404
-    
+
     version = PackageVersion.query.filter_by(identifier=identifier, version_code=version).first()
     if version is None:
         return "Version not found", 404
 
     if file:
         debugPrint("File found")
-        file_name = secure_filename(file.filename)
-        hash = save_file(file, file_name, package.publisher, package.identifier, version.version_code, architecture)
-        if hash is None:
-            return "Error saving file", 500
-        installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file_name, installer_sha256=hash, scope="user")        
-        for field_name in installer_switches:
-            debugPrint(f"Checking for field name ${field_name}")
-            if field_name in request.form:
-                debugPrint("Field name found ${field_name}")
-                installer_switch = InstallerSwitch() 
-                installer_switch.switch_key = field_name
-                installer_switch.switch_value = request.form.get(field_name)
-                installer.switches.append(installer_switch)
+        installer = create_installer(file, package.publisher, identifier, version.version_code, architecture, installer_type)
+        if installer is None:
+            return "Error creating installer", 500
+
         version.installers.append(installer)
         db.session.commit()
 
