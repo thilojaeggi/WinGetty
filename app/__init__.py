@@ -30,6 +30,12 @@ def page_not_found(e):
 def internal_server_error(e):
     return render_template('error/500.j2',error=True), 500
 
+def favicon():
+    return url_for('static', filename='img/favicon.ico')
+
+def current_year():
+    return {'now': datetime.now}
+
 
 
 def create_app():
@@ -57,8 +63,11 @@ def create_app():
     from app.ui_routes import ui
     from app.api_routes import api
     from app.auth_routes import auth
+    from app.winget_routes import winget
+
     app.register_blueprint(ui)
     app.register_blueprint(api, url_prefix='/api')
+    app.register_blueprint(winget, url_prefix='/wg')
     app.register_blueprint(auth)
 
     app.jinja_env.filters['sort_versions'] = sort_versions
