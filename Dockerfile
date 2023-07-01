@@ -20,7 +20,7 @@ COPY src/ src/
 COPY settings.toml .
 COPY config.py .
 COPY migrations/ migrations/
-COPY boot.sh .
+COPY start.sh .
 
 RUN ["chmod", "+x", "./start.sh"]
 
