@@ -40,6 +40,7 @@ def create_app():
     app.register_error_handler(500, internal_server_error)
 
     db.init_app(app)
+    from app.models import User, Package, PackageVersion, Installer, InstallerSwitch
     migrate.init_app(app, db)
     htmx.init_app(app)
     dynaconf.init_app(app)
@@ -49,7 +50,6 @@ def create_app():
     login_manager.login_message = ''
     login_manager.init_app(app)
 
-    from app.models import User
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
@@ -71,7 +71,5 @@ def create_app():
     def favicon():
         return url_for('static', filename='img/favicon.ico')
 
-    with app.app_context():
-        db.create_all()
 
     return app
