@@ -22,6 +22,8 @@ COPY config.py .
 COPY migrations/ migrations/
 COPY boot.sh .
 
+RUN ["chmod", "+x", "./boot.sh"]
+
 # Set the environment variables
 ENV FLASK_APP=app
 ENV FLASK_ENV=production
