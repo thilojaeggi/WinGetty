@@ -22,7 +22,7 @@ COPY config.py .
 COPY migrations/ migrations/
 COPY boot.sh .
 
-RUN ["chmod", "+x", "./boot.sh"]
+RUN ["chmod", "+x", "./start.sh"]
 
 # Set the environment variables
 ENV FLASK_APP=app
@@ -41,4 +41,4 @@ VOLUME /app/app/packages
 EXPOSE 8080
 
 # Start the app using Gunicorn boot.sh
-ENTRYPOINT ["./boot.sh"]
+ENTRYPOINT ["./start.sh"]
