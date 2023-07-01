@@ -1,3 +1,4 @@
+from datetime import datetime
 from app import db, bcrypt
 from flask import url_for, current_app
 import os
@@ -87,7 +88,7 @@ class PackageVersion(db.Model):
     default_locale = db.Column(db.String(50))
     package_locale = db.Column(db.String(50))
     short_description = db.Column(db.String(50))
-    date_added = db.Column(db.DateTime, default=db.func.current_timestamp())
+    date_added = db.Column(db.DateTime, default=datetime.now())
     installers = db.relationship('Installer', backref='package_version', lazy=True)
 
 class Installer(db.Model):
