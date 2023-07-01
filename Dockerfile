@@ -29,7 +29,7 @@ ENV FLASK_APP=app
 ENV FLASK_ENV=production
 
 # Build the CSS using Tailwind
-RUN apk update && apk add --no-cache nodejs npm
+RUN apk update && apk add --no-cache nodejs npm && apk add tzdata
 RUN npm ci
 RUN npm run build:css
 
