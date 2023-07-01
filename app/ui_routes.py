@@ -1,7 +1,7 @@
 from flask_login import login_required
 from app import db, htmx
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for
-from app.models import Package, PackageVersion, Installer
+from app.models import Package, PackageVersion, Installer, User
 from app.utils import debugPrint
 import os
 ui = Blueprint('ui', __name__)
@@ -60,6 +60,13 @@ def setup():
 @login_required
 def settings():
     return render_template('settings.j2')
+
+@ui.route('/users')
+@login_required
+def users():
+    users = User.query.all()
+    return render_template('users.j2', users=users)
+
 
 @ui.route('/package/<identifier>', methods=['GET'])
 @login_required
