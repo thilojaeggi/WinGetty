@@ -33,9 +33,6 @@ RUN apk update && apk add --no-cache nodejs npm && apk add tzdata
 RUN npm ci
 RUN npm run build:css
 
-# Create volumes for the 'instance' and 'packages' folders
-VOLUME /app/instance
-VOLUME /app/app/packages
 
 # Expose port 8080 for Gunicorn
 EXPOSE 8080
