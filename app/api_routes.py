@@ -159,9 +159,9 @@ def delete_installer(identifier, version, installer):
 @login_required
 def update_user():
     id = request.form['id']
-    username = request.form['username'].lower().strip()
-    email = request.form['email'].lower().strip()
-    password = request.form['password']
+    username = request.form['username'].lower().replace(" ", "")
+    email = request.form['email'].lower().replace(" ", "")
+    password = request.form['password']    
 
     user = User.query.filter_by(id=id).first()
     if user is None:
@@ -174,9 +174,6 @@ def update_user():
     if User.query.filter(User.id != id, User.username == username).first():
         flash('Username already in use', 'error')
         return redirect(request.referrer)
-
-
-
     
     user.username = username
     user.email = email
@@ -190,7 +187,16 @@ def update_user():
     return redirect(request.referrer)
 
 
-
+@api.route('/delete_user/<id>', methods=['DELETE'])
+@login_required
+def delete_user(id):
+    user = User.query.filter_by(id=id).first()
+    print(user)
+    if user is None:
+        return "User not found", 404
+    db.session.delete(user)
+    db.session.commit()
+    return "", 200
 
 ##### Routes used by WinGet #####
 
