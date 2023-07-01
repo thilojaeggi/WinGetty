@@ -19,6 +19,8 @@ COPY package-lock.json .
 COPY src/ src/ 
 COPY settings.toml .
 COPY config.py .
+COPY migrations/ migrations/
+COPY boot.sh .
 
 # Set the environment variables
 ENV FLASK_APP=app
@@ -36,5 +38,5 @@ VOLUME /app/app/packages
 # Expose port 8080 for Gunicorn
 EXPOSE 8080
 
-# Start the app using Gunicorn
-CMD ["gunicorn", "-b", "0.0.0.0:8080", "--workers", "2", "app:create_app()"]
+# Start the app using Gunicorn boot.sh
+ENTRYPOINT ["./boot.sh"]
