@@ -156,6 +156,7 @@ def delete_installer(identifier, version, installer):
     return "", 200
 
 @api.route('/update_user', methods=['POST'])
+@login_required
 def update_user():
     id = request.form['id']
     username = request.form['username'].lower().strip()
@@ -196,8 +197,6 @@ def update_user():
 @api.route('/information')
 def information():
     return jsonify({"Data": {"SourceIdentifier": current_app.config["REPO_NAME"], "ServerSupportedVersions": ["1.4.0"]}})
-    
-
     
 @api.route('/packageManifests/<name>', methods=['GET'])
 def get_package_manifest(name):
