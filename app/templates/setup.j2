@@ -10,6 +10,6 @@
 <div x-data>
 <p @click="navigator.clipboard.writeText($event.target.innerText)" 
     class="inline-block p-2 bg-white dark:bg-neutral-900 dark:text-gray-300 rounded-md cursor-pointer">winget source add -n
-    {{ config.REPO_NAME }} -t "Microsoft.Rest" -a {{ url_for('api.index', _external=True,_scheme="https") }}</p>
+    {{ config.REPO_NAME }} -t "Microsoft.Rest" -a {{ url_for('winget.index', _external=True,_scheme="https") }}</p>
 </div>
 {% endblock %}
