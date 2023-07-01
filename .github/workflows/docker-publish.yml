@@ -1,14 +1,16 @@
 name: Build And Push Docker image
 
 on:
+  schedule:
+    - cron: "0 23 * * *"
   push:
     branches:
-      - main
+      - "main"
     tags:
-      - "v*"
+      - "v*.*.*"
   pull_request:
     branches:
-      - 'main'
+      - "main"
 
 jobs:
   build_and_push:
@@ -23,21 +25,13 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=semver,pattern={{major}}.{{minor}}.{{patch}},value=${{ env.TAG }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ env.TAG }}
-            type=semver,pattern={{major}},value=${{ env.TAG }}
+            type=schedule
             type=ref,event=branch,suffix=-{{ sha }}
             type=ref,event=pr
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
+            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }}
+            type=raw,value=stable,enable=${{ startsWith(github.ref, 'refs/tags/') }}
           flavor: |
-            latest=false
-
-      - name: Compute final image tags
-        id: tags
-        run: |
-          echo "tags<<EOF" >> $GITHUB_OUTPUT
-          echo '${{ steps.meta.outputs.tags }}' >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+            latest=true
           
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -58,7 +52,7 @@ jobs:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64,linux/arm64 # also support the new mac architecture (requires buildx)
-          tags: ${{ steps.tags.outputs.tags }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           # use layer caching. Don't forget mode=max to also cache the build image
           # (vs only the final image - mode: min)
