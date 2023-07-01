@@ -1,0 +1,87 @@
+{% extends "base.j2" %}
+{% set title = "Users" %}
+{% block content %}
+<h1 class="text-3xl font-medium text-gray-800 dark:text-gray-200">{{title}}</h1>
+<div class="grid grid-cols-1 md:grid-cols-2 max-h-96 sm:h-96 gap-x-4 gap-y-6 mt-4">
+    <div class="h-full w-full ">
+        <h3 class="text-2xl mb-1 select-none font-medium dark:text-gray-200">You</h3>
+        <div
+            class="bg-white/70 dark:bg-neutral-900 rounded-md h-min max-h-full overflow-y-auto p-2 w-full flex flex-col space-y-2">
+            <h4 class="font-base text-2xl self-start hidden mr-2"></h4>
+            <form class="mt-5 flex flex-col h-full" action="{{ url_for('api.update_user') }}" method="POST">
+
+                <input type="hidden" name="id" value="{{ current_user.id }}">
+
+
+
+                <div class="mt-2">
+                    <label for="username" class="block  text-gray-700 dark:text-gray-300 ">Name</label>
+                    <input required name="username" placeholder="" type="text" value="{{current_user.username}}"
+                        class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 dark:bg-neutral-950 placeholder-gray-400 bg-white border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                </div>
+
+                <div class="mt-2">
+                    <label for="email" class="block text-gray-700 dark:text-gray-300 ">E-Mail</label>
+                    <input required name="email" placeholder="" type="email" value="{{current_user.email}}"
+                        class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 dark:bg-neutral-950 placeholder-gray-400 bg-white border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                </div>
+                <div class="mt-2">
+                    <label for="password" class="block  text-gray-700 dark:text-gray-300 ">New Password</label>
+                    <input name="password" placeholder="" type="password" value=""
+                        class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 dark:bg-neutral-950  placeholder-gray-400 bg-white border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                </div>
+
+
+
+                <div class=" grow flex flex-row justify-end mt-4">
+                    <button type="submit"
+                        class="self-end px-3 py-2 text-white transition-colors duration-300 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
+                        Update Info
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="h-full grow w-full">
+        <div class="flex flex-row">
+            <h3 class="text-2xl mb-1 select-none font-medium dark:text-gray-200">Users</h3>
+            <button type="button" @click="showAddVersionModal = true"
+                class="bg-blue-600 hover:bg-blue-500 transition-colors duration-300 p-0.25 rounded-md text-white h-min self-end ml-2 mb-1.5"><svg
+                    class="h-6 " xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+            </button>
+        </div>
+        <div
+            class="bg-white/70 dark:bg-neutral-900 rounded-md h-full p-2 flex flex-col overflow-y-auto space-y-2 scrollbar-none">
+
+
+            <div class="drop-shadow-md flex flex-col divide-y dark:divide-gray-200/25">
+                {% for user in users %}
+                <div class="bg-white dark:bg-neutral-950 {% if loop.first %}rounded-t-md{% elif loop.last %}rounded-b-md{% endif %} {% if users|length == 1 %} rounded-md {% endif %} flex flex-col"
+                    x-data="{ expanded: false }" @click.away="expanded = false">
+                    <div class="flex  flex-row justify-between items-center  p-2" @click="expanded = !expanded">
+
+                        <p class="font-semibold text-xl  dark:text-gray-200 flex-1">{{user.username}}</p>
+                        <p class="text-gray-700 dark:text-gray-300/70 mr-4">
+                            {{ user.email }} </p>
+                            <a
+                                class="px-1 group py-1 text-gray-500 transition-colors hover:bg-red-100 dark:bg-neutral-900 duration-300 rounded-md cursor-pointer">
+                                <svg class="group-hover:stroke-red-500 transition-color duration-300 h-6 w-6"
+                                    fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0">
+                                    </path>
+                                </svg>
+                            </a>
+                    </div>
+                </div>
+                {%endfor%}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
