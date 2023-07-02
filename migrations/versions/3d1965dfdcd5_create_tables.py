@@ -1,4 +1,4 @@
-"""empty message
+"""Create database tables for the first time
 
 Revision ID: 3d1965dfdcd5
 Revises: 

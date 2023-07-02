@@ -1,4 +1,4 @@
-"""empty message
+"""Change name to username in user table
 
 Revision ID: 50b652194afc
 Revises: 3d1965dfdcd5
