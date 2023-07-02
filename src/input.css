@@ -6,13 +6,10 @@
     display: none !important;
 }
 
-.font-poppins {
-    font-family: 'Poppins', sans-serif !important;
-}
-
 .htmx-swapping {
     opacity: 0;
     height: 0;
     transition: opacity 1s ease-out;
 
 }
+
