@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: wingetty:dev
+    image: ghcr.io/thilojaeggi/wingetty:stable
     ports:
       - 8080:8080
     volumes:
