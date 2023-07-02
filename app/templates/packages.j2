@@ -10,7 +10,7 @@
         <span
             class="px-3 py-1 mt-1 text-base text-center text-blue-600 dark:text-blue-300 bg-blue-200/60 dark:bg-blue-600/60 rounded-full">{{package_count}}
             {{ 'Packages' if
-            package_count > 1 else 'Package' }}</span>
+            (package_count > 1 or package_count == 0) else 'Package' }}</span>
     </div>
 
 
