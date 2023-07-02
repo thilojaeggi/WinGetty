@@ -1,3 +1,5 @@
+{% import 'inputs/macros.j2' as macros  %}
+
 <!-- Main modal -->
 <div x-cloak x-show="showAddInstallerModal" id="addVersionModal" tabindex="-1" aria-hidden="true"
     x-data="addInstallerFormData();"
@@ -45,46 +47,7 @@
 
                     <input type="hidden" name="version" x-model="selectedVersion">
 
-                    <div class="mt-2">
-                        <label for="file" class="block  text-gray-700 dark:text-gray-300">File<span
-                                class="text-red-500">*</span></label>
-                        <input @change="fileChosen = $refs.fileInput.files.length > 0" x-ref="fileInput" name="file"
-                            required accept=".exe,.msi,.msix,.appx, .zip" type="file"
-                            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-                    </div>
-
-                    <div x-show="fileChosen" x-collapse>
-                        <div class="mt-2">
-                            <label for="architecture" class="block text-gray-700 dark:text-gray-300">Architecture<span
-                                    class="text-red-500">*</span></label>
-                            <select name="architecture" x-bind:required="fileChosen"
-                                class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-                                <option value="x86">x86</option>
-                                <option value="x64">x64</option>
-                                <option value="arm">arm</option>
-                                <option value="arm64">arm64</option>
-                            </select>
-                        </div>
-                        <div class="mt-2">
-                            <label for="type" class="block text-gray-700 dark:text-gray-300">Installer Type<span
-                                    class="text-red-500">*</span></label>
-                            <select name="type" x-bind:required="fileChosen"
-                                class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-                                <option value="msix">msix</option>
-                                <option value="msi">msi</option>
-                                <option value="appx">appx</option>
-                                <option value="exe">exe</option>
-                                <option value="zip">zip</option>
-                                <option value="inno">inno</option>
-                                <option value="nullsoft">nullsoft</option>
-                                <option value="wix">wix</option>
-                                <option value="burn">burn</option>
-                                <option value="pwa">pwa</option>
-                                <option value="msstore">msstore</option>
-                            </select>
-                        </div>
-                        {% include 'inputs/advanced_options.j2' %}
-                    </div>
+                    {{ macros.file_upload(hasVersion=false) }}
 
 
                     <div x-show="!showUploadButton"
