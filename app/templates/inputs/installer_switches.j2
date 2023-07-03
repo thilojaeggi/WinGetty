@@ -1,5 +1,14 @@
 <div class="mt-2 "
-    x-data="{ switches: [], availableSwitches: ['Silent', 'SilentWithProgress', 'Interactive', 'InstallLocation', 'Log', 'Upgrade', 'Custom' ] }">
+    x-data="{ switches: [], availableSwitches: ['Silent', 'SilentWithProgress', 'Interactive', 'InstallLocation', 'Log', 'Upgrade', 'Custom' ] }"
+    x-init="
+    $watch('selectedInstaller', (value) => {
+        if (value) {
+            switches = value.switches.map(switchObj => ({ key: switchObj.parameter, value: switchObj.value }));
+            // Recreate availableSwitches but remove all switches that are already in use
+            availableSwitches = ['Silent', 'SilentWithProgress', 'Interactive', 'InstallLocation', 'Log', 'Upgrade', 'Custom' ].filter(switchOption => !switches.find(switchObj => switchObj.key === switchOption));
+        } 
+    });
+">
     <label for="InstallSwitches" class="block  text-gray-700 dark:text-gray-300 ">Installer Switches<span
             class="text-red-500">*</span></label>
     <select id="InstallSwitches" @change="
@@ -24,7 +33,7 @@
             </div>
             <button @click="
                 availableSwitches.push(item.key);
-                switches.splice(index, 1)"
+                switches.splice(index, 1)" type="button"
                 class="px-1 group py-1 text-gray-500 transition-colors hover:bg-red-100 dark:bg-neutral-900 duration-300 rounded-md cursor-pointer self-center justify-self-center">
                 <svg class="group-hover:stroke-red-500 transition-color duration-300 h-6 w-6" fill="none"
                     stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
