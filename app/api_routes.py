@@ -7,6 +7,7 @@ from werkzeug.utils import secure_filename
 from app.utils import create_installer, debugPrint, save_file, basedir
 from app import db
 from app.models import InstallerSwitch, Package, PackageVersion, Installer, User
+from app.constants import installer_switches
 
 
 api = Blueprint('api', __name__)
@@ -131,6 +132,43 @@ def add_installer(identifier):
         db.session.commit()
 
         return redirect(request.referrer)
+    
+
+@api.route('/package/<identifier>/edit_installer', methods=['POST'])
+@login_required
+def edit_installer(identifier):
+    id = request.form['installer_id']
+    # Get installer
+    installer = Installer.query.filter_by(id=id).first()
+    if installer is None:
+        return "Installer not found", 404
+    
+    # Go through each installer switch and update it if it exists
+    for field_name in installer_switches:
+        debugPrint(f"Checking for field name {field_name}")
+        if field_name in request.form:
+            debugPrint(f"Field name found {field_name}")
+            installer_switch = InstallerSwitch.query.filter_by(installer_id=id, parameter=field_name).first()
+            if installer_switch is None:
+                installer_switch = InstallerSwitch()
+                installer_switch.parameter = field_name
+                installer_switch.value = request.form.get(field_name)
+                installer.switches.append(installer_switch)
+            else:
+                installer_switch.value = request.form.get(field_name)
+        else:
+            # If the field name isn't in the request form, check if it exists in the database and delete it if it does
+            installer_switch = InstallerSwitch.query.filter_by(installer_id=id, parameter=field_name).first()
+            if installer_switch is not None:
+                db.session.delete(installer_switch)
+
+        db.session.commit()
+
+    return redirect(request.referrer)
+
+                
+
+
 
 @api.route('/package/<identifier>/<version>/<installer>', methods=['DELETE'])
 @login_required
