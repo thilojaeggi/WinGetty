@@ -101,11 +101,32 @@ class Installer(db.Model):
     scope = db.Column(db.String(50))
     switches = db.relationship('InstallerSwitch', backref='installer', lazy=True)
 
+    def to_json(self):
+        switches = [switch.to_json() for switch in self.switches]
+        return {
+            'id': self.id,
+            'version_id': self.version_id,
+            'architecture': self.architecture,
+            'installer_type': self.installer_type,
+            'file_name': self.file_name,
+            'installer_sha256': self.installer_sha256,
+            'scope': self.scope,
+            'switches': switches
+        }
+
 class InstallerSwitch(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     installer_id = db.Column(db.Integer, db.ForeignKey('installer.id'))
-    switch_key = db.Column(db.String(50))
-    switch_value = db.Column(db.String(255))
+    parameter = db.Column(db.String(50))
+    value = db.Column(db.String(255))
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'installer_id': self.installer_id,
+            'parameter': self.parameter,
+            'value': self.value
+        }
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
