@@ -1,6 +1,7 @@
 {% extends "base.j2" %}
 {% set title = "Package: " ~ package.name %}
-{% set alpine_data = "{ showAddVersionModal : false, showAddInstallerModal: false, selectedVersion: '' }" %}
+{% set alpine_data = "{ showAddVersionModal : false, showAddInstallerModal: false, showEditInstallerModal: false,
+selectedInstaller: '', selectedVersion: '' }" %}
 {% block content %}
 
 <div class="sm:flex sm:items-center sm:justify-between">
@@ -136,31 +137,59 @@
 
                             <h3 class="text-xl font-medium select-none dark:text-gray-200">Installers</h3>
                             <div class="flex flex-row">
-                                <div
-                                    class="bg-gray-100 text-gray-500 dark:text-gray-200 dark:bg-neutral-800 p-1.5 flex flex-col gap-y-1 rounded-md w-1/2" hx-target="closest div#installer" hx-swap="outerHTML swap:0s">
+                                <div class="bg-gray-100 text-gray-300 dark:text-gray-300 dark:bg-neutral-800 p-1.5 flex flex-col gap-y-1 rounded-md w-11/12"
+                                    hx-target="closest div#installer" hx-swap="outerHTML swap:0s">
                                     {% if version.installers|length == 0%}
                                     <p class="">No installers, consider adding one</p>
                                     {% endif %}
                                     {% for installer in version.installers %}
-                                    <div id="installer" class="flex flex-row p-2 bg-white dark:bg-neutral-950 rounded-md justify-between items-center"
+                                    <div id="installer"
+                                        class="flex flex-row p-2 bg-white dark:bg-neutral-950 rounded-md justify-between items-center"
                                         @click="navigator.clipboard.writeText('{{ url_for('api.download', identifier=package.identifier, version=version.version_code, architecture=installer.architecture, _external=True, _scheme='https') }}');">
 
-                                        <div class="flex flex-col">
-                                            <p class="font-bold">{{installer.architecture}}</p>
-                                            <p class="font-bold">{{installer.name}}</p>
-                                            <p class="text-gray-500">Type: {{installer.installer_type}}</p>
-                                            <p class="text-gray-500">Scope: {{installer.scope}}</p>
+                                        <div class="flex flex-col dark:text-gray-200 text-gray-900 items-start justify-start"
+                                            x-data="{ showInstallerSwitches: false}">
+                                            <p class="font-bold text-lg">{{installer.architecture}}</p>
+                                            <p><span class="font-medium">Type:</span> {{installer.installer_type}}</p>
+                                            <p><span class="font-medium">Scope:</span> {{installer.scope}}</p>
+                                            <div class="flex items-baseline {% if installer.switches|length < 1 %}hidden{% endif %}">
+                                                <h2 class="text-lg font-semibold">Installer Switches</h2>
+                                                <button type="button"
+                                                    class="ml-4 text-md font-semibold text-blue-600 hover:text-blue-500 focus:outline-none focus:underline transition ease-in-out duration-150"
+                                                    @click="showInstallerSwitches = !showInstallerSwitches"
+                                                    x-text="showInstallerSwitches ? 'Hide' : 'Show'"></button>
+                                            </div>
+                                            <div x-show="showInstallerSwitches" x-collapse>
+                                                {% for switch in installer.switches%}
+                                                <p><span class="font-medium">{{switch.parameter}}:</span> <span
+                                                        class="font-mono">{{switch.value}}</span>
+                                                </p>
+                                                {% endfor %}
+                                            </div>
                                         </div>
-                                        <div class="flex flex-col space-y-2 cursor-pointer">
+                                        <div class="flex flex-col space-y-2 cursor-pointer ">
                                             <a
                                                 class="px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
-                                                <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.5"
+                                                <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6"
+                                                    fill="none" stroke="currentColor" stroke-width="1.5"
                                                     viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
                                                     aria-hidden="true">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244">
                                                     </path>
                                                 </svg>
+
+                                            </a>
+                                            <a x-on:click="selectedInstaller = {{ installer.to_json() }}; showEditInstallerModal = true;"
+                                                class="px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
+
+                                                <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6"
+                                                    fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                                    stroke="currentColor" class="w-6 h-6">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                                </svg>
+
                                             </a>
                                             <a hx-delete="{{ url_for('api.delete_installer', identifier=package.identifier, version=version.version_code, installer=installer.id) }}"
                                                 hx-confirm="Are you sure you want to delete this installer?"
@@ -201,5 +230,13 @@
 </div>
 {% include 'modals/add_version.j2' %}
 {% include 'modals/add_installer.j2' %}
-
+{% include 'modals/edit_installer.j2' %}
+  <script>
+    document.addEventListener("htmx:afterDelete", function(event) {
+      if (event.detail.success) {
+        var redirectUrl = "{{url_for('ui.index')}}"; // Replace with your desired redirect URL
+        document.location.href = redirectUrl;
+      }
+    });
+  </script>
 {% endblock %}
