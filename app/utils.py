@@ -19,9 +19,10 @@ def create_installer(file, publisher, identifier, version, architecture, install
         debugPrint(f"Checking for field name {field_name}")
         if field_name in request.form:
             debugPrint(f"Field name found {field_name}")
+            field_value = request.form.get(field_name)
             installer_switch = InstallerSwitch()
             installer_switch.parameter = field_name
-            installer_switch.value = request.form.get(field_name)
+            installer_switch.value = field_value
             installer.switches.append(installer_switch)
 
     return installer

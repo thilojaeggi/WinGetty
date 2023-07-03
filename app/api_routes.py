@@ -148,14 +148,15 @@ def edit_installer(identifier):
         debugPrint(f"Checking for field name {field_name}")
         if field_name in request.form:
             debugPrint(f"Field name found {field_name}")
+            field_value = request.form.get(field_name)
             installer_switch = InstallerSwitch.query.filter_by(installer_id=id, parameter=field_name).first()
             if installer_switch is None:
                 installer_switch = InstallerSwitch()
-                installer_switch.parameter = field_name
-                installer_switch.value = request.form.get(field_name)
+                installer_switch.parameter = field_name                
+                installer_switch.value = field_value
                 installer.switches.append(installer_switch)
             else:
-                installer_switch.value = request.form.get(field_name)
+                installer_switch.value = field_value
         else:
             # If the field name isn't in the request form, check if it exists in the database and delete it if it does
             installer_switch = InstallerSwitch.query.filter_by(installer_id=id, parameter=field_name).first()
