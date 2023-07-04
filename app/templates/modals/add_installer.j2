@@ -47,7 +47,7 @@
 
                     <input type="hidden" name="version" x-model="selectedVersion">
 
-                    {{ macros.file_upload(hasVersion=false) }}
+                    {{ macros.file_upload(hasVersion=false, file_required=true) }}
 
 
                     <div x-show="!showUploadButton"
