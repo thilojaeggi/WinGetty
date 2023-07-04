@@ -120,7 +120,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
                             {{version.date_added.strftime('%d.%m.%Y %H:%M') or ""}} </p>
                     </div>
                     <div x-show="expanded" x-collapse>
-                        <div class="flex flex-col p-2">
+                        <div class="flex flex-col  p-2">
                             <h3 class="text-xl font-medium select-none dark:text-gray-200">Info</h3>
                             <div class="flex flex-row dark:text-gray-300">
                                 <div class="flex flex-col">
@@ -144,10 +144,10 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                     {% endif %}
                                     {% for installer in version.installers %}
                                     <div id="installer"
-                                        class="flex flex-row p-2 bg-white dark:bg-neutral-950 rounded-md justify-between items-center"
+                                        class="flex flex-row p-2 bg-white dark:bg-neutral-950 rounded-md justify-between items-start"
                                         @click="navigator.clipboard.writeText('{{ url_for('api.download', identifier=package.identifier, version=version.version_code, architecture=installer.architecture, _external=True, _scheme='https') }}');">
 
-                                        <div class="flex flex-col dark:text-gray-200 text-gray-900 items-start justify-start"
+                                        <div class="flex flex-col dark:text-gray-200 text-gray-900 "
                                             x-data="{ showInstallerSwitches: false}">
                                             <p class="font-bold text-lg">{{installer.architecture}}</p>
                                             <p><span class="font-medium">Type:</span> {{installer.installer_type}}</p>
@@ -159,7 +159,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                                     @click="showInstallerSwitches = !showInstallerSwitches"
                                                     x-text="showInstallerSwitches ? 'Hide' : 'Show'"></button>
                                             </div>
-                                            <div x-show="showInstallerSwitches" x-collapse>
+                                            <div x-show="showInstallerSwitches" x-collapse @click.away="showInstallerSwitches = false">
                                                 {% for switch in installer.switches%}
                                                 <p><span class="font-medium">{{switch.parameter}}:</span> <span
                                                         class="font-mono">{{switch.value}}</span>
@@ -167,7 +167,8 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                                 {% endfor %}
                                             </div>
                                         </div>
-                                        <div class="flex flex-col space-y-2 cursor-pointer ">
+
+                                        <div class="flex flex-col space-y-2 cursor-pointer h-full items-center justify-end ">
                                             <a
                                                 class="px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
                                                 <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6"
