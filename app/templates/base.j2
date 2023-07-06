@@ -50,7 +50,7 @@
 
 <body class="min-h-screen h-full font-poppins flex flex-col bg-slate-200 dark:bg-zinc-800">
     <nav x-data="{ menuVisible: window.innerWidth > 768 }" @click.away="if(window.innerWidth < 768) menuVisible = false"
-        class="flex items-center justify-between flex-wrap sm:flex-row bg-white dark:bg-zinc-900 text-neutral-700 dark:text-neutral-100	 p-4 drop-shadow-md sticky top-0 ">
+        class="flex items-center justify-between flex-wrap sm:flex-row bg-white dark:bg-zinc-900 text-neutral-700 dark:text-neutral-100	 p-4 drop-shadow-md sticky top-0 z-50 ">
         <a href="{{ url_for('ui.index') }}">
             <div class="flex flex-row items-center flex-shrink-0 text-neutral-900 dark:text-neutral-200 mr-6">
                 <img src="{{ url_for('static', filename='img/wingetty.png')}}" alt="Logo" class="h-10 mr-2">
@@ -84,13 +84,15 @@
                 </a>
 
             </div>
-
             <a href="{{ url_for('ui.users') }}"
                 class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ml-auto">
                 Users
             </a>
+
+
+
             <a href="{{ url_for('ui.settings') }}"
-                class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ">
+                class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500">
                 Settings
             </a>
 
@@ -145,6 +147,7 @@
         </div>
         {% endif %}
         {% block content %}{% endblock %}
+
 
     </main>
 
