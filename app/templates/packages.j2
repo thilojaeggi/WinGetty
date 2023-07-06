@@ -15,7 +15,7 @@
 
 
     <div class="flex items-center  gap-x-3">
-
+        {% if current_user.role.has_permission('add:package') %}
         <div x-data="{ 'showAddPackageModal': false }">
             <button type="button" @click="showAddPackageModal = true"
                 class="flex items-center justify-center mt-2 sm:mt-0 px-3 py-1.5 text-sm text-white transition-colors duration-300 bg-blue-600 rounded-lg shrink-0 gap-x-2 hover:bg-blue-500">
@@ -27,13 +27,12 @@
             </button>
             {% include 'modals/add_package.j2' %}
         </div>
+        {% endif %}
 
     </div>
 </div>
 <div x-data="{ search: '' }">
     <div class="mt-6 md:flex md:items-center md:justify-between">
-
-
         <div class="relative flex items-center mt-4 md:mt-0">
             <span class="absolute">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
