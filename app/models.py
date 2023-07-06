@@ -127,15 +127,39 @@ class InstallerSwitch(db.Model):
             'parameter': self.parameter,
             'value': self.value
         }
+    
+roles_permissions = db.Table(
+    'roles_permissions',
+    db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True),
+    db.Column('permission_id', db.Integer, db.ForeignKey('permission.id'), primary_key=True)
+)
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(100), unique=True)
     email = db.Column(db.String(100), unique=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     password = db.Column(db.String(100))
+    role = db.relationship('Role')
 
     def set_password(self, password):
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
         self.password = hashed_password
         
 
+class Role(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True)
+
+    # Relationship with Permission model
+    permissions = db.relationship('Permission', secondary=roles_permissions)
+
+    def has_permission(self, name):
+        # Check if the permission name is in there
+        return name in [permission.name for permission in self.permissions]
+        
+
+
+class Permission(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True)
