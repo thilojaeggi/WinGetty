@@ -4,8 +4,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_bcrypt import Bcrypt
 
 
-from app.models import User
-from app import db, bcrypt
+from app.models import Role, User
+from app import db, bcrypt, permissions
 auth = Blueprint('auth', __name__)
 
 @auth.route('/login')
@@ -64,17 +64,27 @@ def signup_post():
         return redirect(url_for('ui.index'))
 
     user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
-    if not user:
-        user = User.query.filter_by(username=username).first()
 
     if user: # if a user is found, we want to redirect back to signup page so user can try again
         flash('Email address already in use.', 'error')
         return redirect(url_for('auth.signup'))
+    
+    user = User.query.filter_by(username=username).first()
 
-    # create a new user with the form data. Hash the password so the plaintext version isn't saved.
+    if user:
+        flash('Username already in use.', 'error')
+        return redirect(url_for('auth.signup'))
+    
+    # iF this is the first user, make them an admin
+    if not User.query.first():
+        # Create roles and permissions if they don't exist
+        permissions.create_all()
+        role = Role.query.filter_by(name='admin').first()
+    else:
+        role = Role.query.filter_by(name='viewer').first()
 
-    new_user = User(email=email, username=username, password=bcrypt.generate_password_hash(password).decode('utf-8'))
-
+    new_user = User(email=email, username=username,  password=bcrypt.generate_password_hash(password).decode('utf-8'), role=role)
+    
     # add the new user to the database
     db.session.add(new_user)
     db.session.commit()
@@ -82,7 +92,5 @@ def signup_post():
     # Sign in the new user
     login_user(new_user)
 
-
     flash('Account successfully created', 'success')
-
     return redirect(url_for('ui.index'))
