@@ -3,6 +3,7 @@ from flask import Blueprint, jsonify, render_template, request, redirect, url_fo
 from flask_login import login_required
 from werkzeug.http import parse_range_header
 from werkzeug.utils import secure_filename
+from app.decorators import permission_required
 
 from app.utils import create_installer, debugPrint, save_file, basedir
 from app import db
@@ -18,6 +19,7 @@ def index():
 
 @api.route('/add_package', methods=['POST'])
 @login_required
+@permission_required('add:package')
 def add_package():
     name = request.form['name'].strip()
     identifier = request.form['identifier'].strip()
@@ -49,6 +51,7 @@ def add_package():
 
 @api.route('/package/<identifier>', methods=['POST'])
 @login_required
+@permission_required('edit:package')
 def update_package(identifier):
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
@@ -62,6 +65,7 @@ def update_package(identifier):
 
 @api.route('/package/<identifier>', methods=['DELETE'])
 @login_required
+@permission_required('delete:package')
 def delete_package(identifier):
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
@@ -82,6 +86,7 @@ def delete_package(identifier):
 
 @api.route('/package/<identifier>/add_version', methods=['POST'])
 @login_required
+@permission_required('add:version')
 def add_version(identifier):
     version = request.form['version']
     architecture = request.form['architecture']
@@ -108,6 +113,7 @@ def add_version(identifier):
 
 @api.route('/package/<identifier>/add_installer', methods=['POST'])
 @login_required
+@permission_required('add:installer')
 def add_installer(identifier):
     architecture = request.form['architecture']
     installer_type = request.form['type']
@@ -136,6 +142,7 @@ def add_installer(identifier):
 
 @api.route('/package/<identifier>/edit_installer', methods=['POST'])
 @login_required
+@permission_required('edit:installer')
 def edit_installer(identifier):
     id = request.form['installer_id']
     # Get installer
@@ -173,6 +180,7 @@ def edit_installer(identifier):
 
 @api.route('/package/<identifier>/<version>/<installer>', methods=['DELETE'])
 @login_required
+@permission_required('delete:installer')
 def delete_installer(identifier, version, installer):
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
@@ -196,6 +204,7 @@ def delete_installer(identifier, version, installer):
 
 @api.route('/update_user', methods=['POST'])
 @login_required
+@permission_required('edit:user')
 def update_user():
     id = request.form['id']
     username = request.form['username'].lower().replace(" ", "")
@@ -228,6 +237,7 @@ def update_user():
 
 @api.route('/delete_user/<id>', methods=['DELETE'])
 @login_required
+@permission_required('delete:user')
 def delete_user(id):
     user = User.query.filter_by(id=id).first()
     print(user)
