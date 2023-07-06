@@ -3,6 +3,7 @@ from app import db, htmx
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for
 from app.models import Package, PackageVersion, Installer, User
 from app.utils import debugPrint
+from app.decorators import permission_required
 import os
 ui = Blueprint('ui', __name__)
 
@@ -13,6 +14,7 @@ def index():
 
 @ui.route('/packages')
 @login_required
+@permission_required('view:package')
 def packages():
     page = request.args.get('page', 1, type=int)
     search_query = request.args.get('q')
@@ -63,6 +65,7 @@ def settings():
 
 @ui.route('/users')
 @login_required
+@permission_required('view:user')
 def users():
     users = User.query.all()
     return render_template('users.j2', users=users)
@@ -70,6 +73,7 @@ def users():
 
 @ui.route('/package/<identifier>', methods=['GET'])
 @login_required
+@permission_required('view:package')
 def package(identifier):
     package = Package.query.filter_by(identifier=identifier).first()
 
