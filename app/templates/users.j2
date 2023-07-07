@@ -34,10 +34,12 @@
 
 
                 <div class=" grow flex flex-row justify-end mt-4">
+                {% if current_user.role.has_permission('edit:own_user') %}
                     <button type="submit"
                         class="self-end px-3 py-2 text-white transition-colors duration-300 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
                         Update Info
                     </button>
+                {% endif %}
                 </div>
             </form>
         </div>
@@ -62,9 +64,9 @@
                     class="bg-white dark:bg-neutral-950 {% if loop.first %}rounded-t-md{% elif loop.last %}rounded-b-md{% endif %} {% if users|length == 1 %} rounded-md {% endif %} flex flex-col"
                     x-data="{ expanded: false }" @click.away="expanded = false">
                     <div class="flex  flex-row justify-between items-center  p-2" @click="expanded = !expanded">
-                        <p class="font-semibold text-xl  dark:text-gray-200 flex-1">{{user.username}}</p>
-                        <p class="text-gray-700 dark:text-gray-300/70 mr-4">
-                            {{ user.email }} </p>
+                        <p class="font-semibold text-xl  dark:text-gray-200 flex-1">{{ user.username }}</p>
+                        <p class="text-gray-700 dark:text-gray-300/70 mr-4">{{ user.role.name|capitalize }}</p>
+                        <p class="text-gray-700 dark:text-gray-300/70 mr-4">{{ user.email }}</p>
                         <a hx-delete="{{ url_for('api.delete_user', id=user.id) }}" hx-target="closest div#user"
                             hx-swap="outerHTML swap:0s"
                             class="px-1 group py-1 text-gray-500 transition-colors hover:bg-red-100 dark:bg-neutral-900 duration-300 rounded-md cursor-pointer {% if user == current_user %}opacity-0 pointer-events-none{% endif %}">
