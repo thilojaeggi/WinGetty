@@ -54,7 +54,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
         <div
             class="bg-white/70 dark:bg-neutral-900 rounded-md h-min max-h-full overflow-y-auto p-2 w-full flex flex-col space-y-2">
             <h4 class="font-base text-2xl self-start hidden mr-2"></h4>
-            <form class="mt-5 flex flex-col h-full" x-data="{'fileChosen': false}"
+            <form class="mt-5 flex flex-col h-full {% if not current_user.role.has_permission('edit:package') %} pointer-events-none {% endif %}" x-data="{'fileChosen': false}"
                 action="{{ url_for('api.update_package', identifier=package.identifier) }}" method="POST"
                 enctype="multipart/form-data">
 
@@ -91,7 +91,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
         </div>
     </div>
 
-    <div class="md:row-span-2 max-h-96">
+    <div class="md:row-span-2 h-96">
         <div class="flex flex-row">
             <h3 class="text-2xl mb-1 select-none font-medium dark:text-gray-200">Versions</h3>
             {% if current_user.role.has_permission('add:version') %}
