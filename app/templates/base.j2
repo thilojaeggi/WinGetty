@@ -50,7 +50,7 @@
 
 <body class="min-h-screen h-full font-poppins flex flex-col bg-slate-200 dark:bg-zinc-800">
     <nav x-data="{ menuVisible: window.innerWidth > 768 }" @click.away="if(window.innerWidth < 768) menuVisible = false"
-        class="flex items-center justify-between flex-wrap sm:flex-row bg-white dark:bg-zinc-900 text-neutral-700 dark:text-neutral-100	 p-4 drop-shadow-md sticky top-0 z-50 ">
+        class="flex items-center justify-between flex-wrap sm:flex-row bg-white dark:bg-zinc-900 text-neutral-700 dark:text-neutral-100	 p-4 drop-shadow-md sticky top-0 ">
         <a href="{{ url_for('ui.index') }}">
             <div class="flex flex-row items-center flex-shrink-0 text-neutral-900 dark:text-neutral-200 mr-6">
                 <img src="{{ url_for('static', filename='img/wingetty.png')}}" alt="Logo" class="h-10 mr-2">
@@ -160,7 +160,7 @@
                 x-transition:leave-start="transform translate-x-0 opacity-100"
                 x-transition:leave-end="transform -translate-y-2 sm:translate-y-0 sm:translate-x-full opacity-0"
                 @click="remove(notice.id)"
-                class="rounded-lg mt-2 sm:m-4 w-auto mx-auto sm:w-auto p-8  h-16 flex items-center border-2 justify-center text-black dark:text-gray-200 bg-gray-100 dark:bg-zinc-800 shadow-lg font-bold text-lg cursor-pointer z-50"
+                class="rounded-lg mt-2 sm:m-4 w-auto mx-auto sm:w-auto p-8  h-16 flex items-center border-2 justify-center text-black dark:text-gray-200 bg-gray-100 dark:bg-zinc-800 shadow-lg font-bold text-lg cursor-pointer  z-50 "
                 :class="{
 				'border-green-500': notice.type === 'success',
 				'border-blue-500': notice.type === 'info',
