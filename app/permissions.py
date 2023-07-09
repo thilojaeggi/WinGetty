@@ -1,4 +1,3 @@
-import itertools
 from app.models import Permission, Role
 from app import db
 
@@ -7,16 +6,27 @@ def create_all():
     create_permissions()
 
 def create_default_roles():
-    roles = [
-        Role(name='admin'),
-        Role(name='user'),
-        Role(name='viewer')
-    ]
-    db.session.add_all(roles)
+    # Create the default roles if they don't exist
+    admin_role = Role.query.filter_by(name='admin').first()
+    if not admin_role:
+        admin_role = Role(name='admin')
+        db.session.add(admin_role)
+
+    user_role = Role.query.filter_by(name='user').first()
+    if not user_role:
+        user_role = Role(name='user')
+        db.session.add(user_role)
+
+    viewer_role = Role.query.filter_by(name='viewer').first()
+    if not viewer_role:
+        viewer_role = Role(name='viewer')
+        db.session.add(viewer_role)
+    
     db.session.commit()
 
 def create_permissions():
     package_permissions = [
+        'add:kockbrot',
         'view:package',
         'add:package',
         'edit:package',
@@ -83,30 +93,43 @@ def create_permissions():
     )
 
     # Create all permissions
-    permissions = [Permission(name=permission) for permission in all_permissions]
-    db.session.add_all(permissions)
+    for permission in all_permissions:
+        existing_permission = Permission.query.filter_by(name=permission).first()
+        if not existing_permission:
+            print(f'Creating permission: {permission}')
+            new_permission = Permission(name=permission)
+            db.session.add(new_permission)
     db.session.commit()
 
     admin_role = Role.query.filter_by(name='admin').first()
     user_role = Role.query.filter_by(name='user').first()
     viewer_role = Role.query.filter_by(name='viewer').first()
 
-    # For each permission assign to the correct role
-    admin_role.permissions = Permission.query.all()
+    # Assign the permissions to the roles if they are not already assigned to the role
+    admin_role_permissions = [
+    permission for permission in Permission.query.filter(
+        Permission.name.in_(all_permissions)
+    ) if permission not in admin_role.permissions
+    ]
+    admin_role.permissions.extend(admin_role_permissions)
 
-    user_role_permissions = Permission.query.filter(
-        Permission.name.in_(all_permissions),
-        ~Permission.name.in_(role_permissions + permission_permissions + user_permissions)
-    ).all()
-    user_role.permissions = user_role_permissions
-    # All permissions that start with 'view:' are allowed for the viewer role except those in role_permissions and permission_permissions and user_permissions
-    # All permissions that start with 'view:' are allowed for the viewer role except those in role_permissions and permission_permissions and user_permissions
-    viewer_role_permissions = Permission.query.filter(
-        Permission.name.in_(all_permissions),
-        Permission.name.like('view:%'),
-        ~Permission.name.in_(role_permissions + permission_permissions + user_permissions)
-    ).all()
-    viewer_role.permissions = viewer_role_permissions
+    user_role_permissions = [
+        permission for permission in Permission.query.filter(
+            Permission.name.in_(user_permissions + own_user_permissions)
+        ) if permission not in user_role.permissions
+    ]
+
+    user_role.permissions.extend(user_role_permissions)
+
+
+    # Assign the permissions to the viewer role if they are not already assigned
+    viewer_role_permissions = [
+        permission for permission in Permission.query.filter(
+            Permission.name.like('view:%'),
+            ~Permission.name.in_(role_permissions + permission_permissions + user_permissions)
+        ) if permission not in viewer_role.permissions
+    ]
+    viewer_role.permissions.extend(viewer_role_permissions)
 
     db.session.commit()
 
