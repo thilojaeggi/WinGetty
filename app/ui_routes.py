@@ -65,7 +65,7 @@ def settings():
 
 @ui.route('/users')
 @login_required
-@permission_required('view:user')
+@permission_required('view:own_user')
 def users():
     users = User.query.all()
     return render_template('users.j2', users=users)
