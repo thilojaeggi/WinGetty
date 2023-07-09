@@ -27,6 +27,7 @@ def add_package():
     architecture = request.form['architecture']
     installer_type = request.form['type']
     version = request.form['version'].strip()
+    scope = request.form['scope']
     file = request.files['file']
     
     if not all([name, identifier, publisher]) or (file and not all([architecture, installer_type, version])):
@@ -35,7 +36,7 @@ def add_package():
     package = Package(identifier=identifier, name=name, publisher=publisher)
     if file and version:
         debugPrint("File and version found")
-        installer = create_installer(file, publisher, identifier, version, architecture, installer_type)
+        installer = create_installer(file, publisher, identifier, version, architecture, installer_type, scope)
         if installer is None:
             return "Error creating installer", 500
 
@@ -91,6 +92,7 @@ def add_version(identifier):
     version = request.form['version']
     architecture = request.form['architecture']
     installer_type = request.form['type']
+    scope = request.form['scope']
 
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
@@ -99,7 +101,7 @@ def add_version(identifier):
     version_code = PackageVersion(version_code=version, package_locale="en-US", short_description=package.name, identifier=identifier)
     if file and version:
         debugPrint("File and version found")
-        installer = create_installer(file, package.publisher, identifier, version, architecture, installer_type)
+        installer = create_installer(file, package.publisher, identifier, version, architecture, installer_type, scope)
         if installer is None:
             return "Error creating installer", 500
 
@@ -118,6 +120,7 @@ def add_installer(identifier):
     architecture = request.form['architecture']
     installer_type = request.form['type']
     version = request.form['version']
+    scope = request.form['scope']
 
     file = request.files['file']
     package = Package.query.filter_by(identifier=identifier).first()
@@ -130,7 +133,7 @@ def add_installer(identifier):
 
     if file:
         debugPrint("File found")
-        installer = create_installer(file, package.publisher, identifier, version.version_code, architecture, installer_type)
+        installer = create_installer(file, package.publisher, identifier, version.version_code, architecture, installer_type, scope)
         if installer is None:
             return "Error creating installer", 500
 
