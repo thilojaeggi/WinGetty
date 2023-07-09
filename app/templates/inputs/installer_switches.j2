@@ -3,10 +3,14 @@
     x-init="
     $watch('selectedInstaller', (value) => {
         if (value) {
+
             switches = value.switches.map(switchObj => ({ key: switchObj.parameter, value: switchObj.value }));
             // Recreate availableSwitches but remove all switches that are already in use
             availableSwitches = ['Silent', 'SilentWithProgress', 'Interactive', 'InstallLocation', 'Log', 'Upgrade', 'Custom' ].filter(switchOption => !switches.find(switchObj => switchObj.key === switchOption));
-        } 
+        } else {
+            switches = [];
+            availableSwitches = ['Silent', 'SilentWithProgress', 'Interactive', 'InstallLocation', 'Log', 'Upgrade', 'Custom' ];
+        }
     });
 ">
     <label for="InstallSwitches" class="block  text-gray-700 dark:text-gray-300 ">Installer Switches<span
@@ -47,9 +51,6 @@
                             </svg>
                         </button>
                     </div>
-
-
-
                 </div>
             </div>
         </template>
