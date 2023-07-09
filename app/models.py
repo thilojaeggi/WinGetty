@@ -45,15 +45,28 @@ class Package(db.Model):
     def _get_installer_data(self, version):
             installer_data = []
             for installer in version.installers:
-                data = {
-                    "Architecture": installer.architecture,
-                    "InstallerType": installer.installer_type,
-                    "InstallerUrl": url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, _external=True, _scheme="https"),
-                    "InstallerSha256": installer.installer_sha256,
-                    "Scope": installer.scope,
-                    "InstallerSwitches": self._get_installer_switches(installer)
-                }
-                installer_data.append(data)
+                if installer.scope == "both":
+                    # If installer is for both user and machine, create two entries for each scope (user and machine) but use it with download url
+                    for scope in ["user", "machine"]:
+                        data = {
+                            "Architecture": installer.architecture,
+                            "InstallerType": installer.installer_type,
+                            "InstallerUrl": url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, _external=True, _scheme="https"),
+                            "InstallerSha256": installer.installer_sha256,
+                            "Scope": scope,
+                            "InstallerSwitches": self._get_installer_switches(installer)
+                        }
+                        installer_data.append(data)
+                else:
+                    data = {
+                        "Architecture": installer.architecture,
+                        "InstallerType": installer.installer_type,
+                        "InstallerUrl": url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, _external=True, _scheme="https"),
+                        "InstallerSha256": installer.installer_sha256,
+                        "Scope": installer.scope,
+                        "InstallerSwitches": self._get_installer_switches(installer)
+                    }
+                    installer_data.append(data)
             return installer_data
     
     def _get_installer_switches(self, installer):
@@ -113,6 +126,8 @@ class Installer(db.Model):
             'scope': self.scope,
             'switches': switches
         }
+
+        
 
 class InstallerSwitch(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
