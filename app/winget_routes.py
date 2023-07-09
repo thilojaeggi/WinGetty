@@ -18,7 +18,7 @@ def index():
 
 @winget.route('/information')
 def information():
-    return jsonify({"Data": {"SourceIdentifier": current_app.config["REPO_NAME"], "ServerSupportedVersions": ["1.4.0"]}})
+    return jsonify({"Data": {"SourceIdentifier": current_app.config["REPO_NAME"], "ServerSupportedVersions": ["1.4.0", "1.5.0"]}})
     
 @winget.route('/packageManifests/<name>', methods=['GET'])
 def get_package_manifest(name):
