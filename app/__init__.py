@@ -1,4 +1,5 @@
 import os
+import sys
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -88,6 +89,13 @@ def create_app():
     @app.route('/favicon.ico')
     def favicon():
         return url_for('static', filename='img/favicon.ico')
+    
 
+    if not 'flask' in sys.argv and not 'db' in sys.argv:
+        with app.app_context():
+            from app.permissions import create_all
+            create_all()
+
+        
 
     return app
