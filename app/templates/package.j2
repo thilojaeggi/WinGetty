@@ -96,7 +96,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
             <h3 class="text-2xl mb-1 select-none font-medium dark:text-gray-200">Versions</h3>
             {% if current_user.role.has_permission('add:version') %}
 
-            <button type="button" @click="showAddVersionModal = true"
+            <button type="button" @click="selectedInstaller = ''; showAddVersionModal = true;"
                 class="bg-blue-600 hover:bg-blue-500 transition-colors duration-300 p-0.25 rounded-md text-white h-min self-end ml-2 mb-1.5"><svg
                     class="h-6 " xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor">
@@ -223,7 +223,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
                             </div>
                             {% if current_user.role.has_permission('add:installer') %}
                             <button type="button"
-                                @click="selectedVersion = '{{version.version_code}}'; showAddInstallerModal = true;"
+                                @click="selectedVersion = '{{version.version_code}}'; selectedInstaller = '';  showAddInstallerModal = true;"
                                 class="bg-blue-600 hover:bg-blue-500 transition-colors duration-300 p-0.5 rounded-md text-white h-min self-end ml-2"><svg
                                     class="h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor">
