@@ -81,7 +81,8 @@ def signup_post():
     else:
         role = Role.query.filter_by(name='viewer').first()
 
-    new_user = User(email=email, username=username,  password=bcrypt.generate_password_hash(password).decode('utf-8'), role=role)
+    new_user = User(email=email, username=username, role=role)
+    new_user.set_password(password)
     
     # add the new user to the database
     db.session.add(new_user)
