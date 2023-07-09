@@ -77,8 +77,6 @@ def signup_post():
     
     # iF this is the first user, make them an admin
     if not User.query.first():
-        # Create roles and permissions if they don't exist
-        permissions.create_all()
         role = Role.query.filter_by(name='admin').first()
     else:
         role = Role.query.filter_by(name='viewer').first()
