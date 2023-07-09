@@ -8,13 +8,13 @@ from app.constants import installer_switches
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-def create_installer(file, publisher, identifier, version, architecture, installer_type):
+def create_installer(file, publisher, identifier, version, architecture, installer_type, scope):
     file_name = secure_filename(file.filename)
     hash = save_file(file, file_name, publisher, identifier, version, architecture)
     if hash is None:
         return None
 
-    installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file_name, installer_sha256=hash, scope="user")
+    installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file_name, installer_sha256=hash, scope=scope)
     for field_name in installer_switches:
         debugPrint(f"Checking for field name {field_name}")
         if field_name in request.form:
