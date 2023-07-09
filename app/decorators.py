@@ -10,10 +10,8 @@ def permission_required(permission):
             if not current_user.is_authenticated:
                 abort(401)  # Return an unauthorized status code if the user is not authenticated
 
-            user_role = current_user.role  # Replace 'role' with the actual attribute representing the user's role
-            # print all permissions for the user's role
-            print(f'User role: {user_role.name}')
-            print(f'User permissions: {[permission.name for permission in user_role.permissions]}')
+            user_role = current_user.role
+
             # Check if the user's role has the required permission
             if not user_role.has_permission(permission):
                 # flash error message
