@@ -199,7 +199,10 @@ def delete_installer(identifier, version, installer):
     if installer is None:
         return "Installer not found", 404
     
-    os.remove(os.path.join(basedir, 'packages', package.publisher, package.identifier, version.version_code, installer.architecture, installer.file_name))
+    installer_path = os.path.join(basedir, 'packages', package.publisher, package.identifier, version.version_code, installer.architecture, installer.file_name)
+    if os.path.exists(installer_path):
+        os.remove(installer_path)    
+    
     db.session.delete(installer)
     db.session.commit()
 
@@ -250,24 +253,26 @@ def delete_user(id):
     db.session.commit()
     return "", 200
 
-@api.route('/download/<identifier>/<version>/<architecture>')
-def download(identifier, version, architecture):
+@api.route('/download/<identifier>/<version>/<architecture>/<scope>')
+def download(identifier, version, architecture, scope):
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
+        debugPrint("Package not found")
         return "Package not found", 404
     
     # Get version of package and also match package
     version_code = PackageVersion.query.filter_by(version_code=version, identifier=identifier).first()
     if version_code is None:
+        debugPrint("Package version not found")
         return "Package version not found", 404
     # Get installer of package version and also match architecture and identifier
-    installer = Installer.query.filter_by(version_id=version_code.id, architecture=architecture).first()
+    installer = Installer.query.filter_by(version_id=version_code.id, architecture=architecture, scope=scope).first()
     if installer is None:
+        debugPrint("Installer not found")
         return "Installer not found", 404
 
 
     installer_path = os.path.join(basedir, 'packages', package.publisher, package.identifier, version_code.version_code, installer.architecture)
-    file_path = os.path.join(installer_path, installer.file_name)
     debugPrint("Starting download for package:")
     debugPrint(f"Package name: {package.name}")
     debugPrint(f"Package identifier: {package.identifier}")
@@ -275,7 +280,7 @@ def download(identifier, version, architecture):
     debugPrint(f"Architecture: {installer.architecture}")
     debugPrint(f"Installer file name: {installer.file_name}")
     debugPrint(f"Installer SHA256: {installer.installer_sha256}")
-    debugPrint(f"Download URL: {installer_path}")
+    debugPrint(f"Download URL: {installer_path}/{installer.file_name}")
 
 
     # Check if the Range header is present
