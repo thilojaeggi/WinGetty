@@ -143,16 +143,15 @@ selectedInstaller: '', selectedVersion: '' }" %}
 
                             <h3 class="text-xl font-medium select-none dark:text-gray-200">Installers</h3>
                             <div class="flex flex-row">
-                                <div class="bg-gray-100 text-gray-300 dark:text-gray-300 dark:bg-neutral-800 p-1.5 flex flex-col gap-y-1 rounded-md sm:w-4/5"
+                                <div class="bg-gray-100  dark:text-gray-300 dark:bg-neutral-800 p-1.5 flex flex-col gap-y-1 rounded-md sm:w-4/5"
                                     hx-target="closest div#installer" hx-swap="outerHTML swap:0s">
                                     {% if version.installers|length == 0%}
-                                    <p class="">No installers added yet</p>
+                                    <p class="dark:text-gray-300">No installers added yet</p>
                                     {% endif %}
                                     {% for installer in version.installers %}
                                     <div id="installer"
                                         class="flex flex-row p-2 bg-white dark:bg-neutral-950 rounded-md justify-between items-start"
-                                        @click="navigator.clipboard.writeText('{{ url_for('api.download', identifier=package.identifier, version=version.version_code, architecture=installer.architecture, _external=True, _scheme='https') }}');">
-
+                                        @click="navigator.clipboard.writeText('{{ url_for('api.download', identifier=package.identifier, version=version.version_code, architecture=installer.architecture, scope=installer.scope, _external=True, _scheme='https') }}');">
                                         <div class="flex flex-col dark:text-gray-200 text-gray-900 "
                                             x-data="{ showInstallerSwitches: false}">
                                             <p class="font-bold text-lg">{{installer.architecture}}</p>
@@ -176,11 +175,10 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                         </div>
                                         {% endif %}
                                     </div>
-
                                     <div
-                                        class="flex flex-col space-y-2 cursor-pointer h-full items-center justify-end ">
+                                        class="grid grid-cols-2 grid-rows-2 gap-2">
                                         <a
-                                            class="px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
+                                            class="w-min h-min px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
                                             <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6"
                                                 fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
                                                 xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -192,7 +190,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                         </a>
                                         {% if current_user.role.has_permission('edit:installer') %}
                                         <a x-on:click="selectedInstaller = {{ installer.to_json() }}; showEditInstallerModal = true;"
-                                            class="px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
+                                            class="w-min h-min px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
 
                                             <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6"
                                                 fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
@@ -206,7 +204,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                         {% if current_user.role.has_permission('delete:installer') %}
                                         <a hx-delete="{{ url_for('api.delete_installer', identifier=package.identifier, version=version.version_code, installer=installer.id) }}"
                                             hx-confirm="Are you sure you want to delete this installer?"
-                                            class="px-1 group py-1 text-gray-500 transition-colors hover:bg-red-100 dark:bg-neutral-900 duration-300 rounded-md cursor-pointer">
+                                            class="w-min h-min col-start-2 px-1 group py-1 text-gray-500 transition-colors hover:bg-red-100 dark:bg-neutral-900 duration-300 rounded-md cursor-pointer">
                                             <svg class="group-hover:stroke-red-500 transition-color duration-300 h-6 w-6"
                                                 fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
                                                 xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
