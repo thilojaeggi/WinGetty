@@ -51,7 +51,7 @@ class Package(db.Model):
                         data = {
                             "Architecture": installer.architecture,
                             "InstallerType": installer.installer_type,
-                            "InstallerUrl": url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, _external=True, _scheme="https"),
+                            "InstallerUrl": url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, scope=installer.scope, _external=True, _scheme="https"),
                             "InstallerSha256": installer.installer_sha256,
                             "Scope": scope,
                             "InstallerSwitches": self._get_installer_switches(installer)
@@ -61,7 +61,7 @@ class Package(db.Model):
                     data = {
                         "Architecture": installer.architecture,
                         "InstallerType": installer.installer_type,
-                        "InstallerUrl": url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, _external=True, _scheme="https"),
+                        "InstallerUrl": url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, scope=installer.scope,  _external=True, _scheme="https"),
                         "InstallerSha256": installer.installer_sha256,
                         "Scope": installer.scope,
                         "InstallerSwitches": self._get_installer_switches(installer)
