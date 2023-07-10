@@ -20,7 +20,6 @@ def packages():
     search_query = request.args.get('q')
     per_page = 10
 
-
     if search_query:
         packages = Package.query.filter(
             db.or_(
@@ -42,14 +41,15 @@ def packages():
     # Get total item count available
     package_count = packages_paginated.total
     
-
-
     debugPrint(f'Page: {page}')
     debugPrint(f'Available pages: {available_pages}')
 
 
     if htmx:
         return render_template('packages_rows.j2', packages=packages)
+    
+    
+
     return render_template('packages.j2', packages=packages, page=page, pages=available_pages, package_count=package_count)
 
 
@@ -77,4 +77,8 @@ def users():
 def package(identifier):
     package = Package.query.filter_by(identifier=identifier).first()
 
-    return render_template('package.j2', package=package,env=os.environ)
+        
+
+    
+
+    return render_template('package.j2', package=package)
