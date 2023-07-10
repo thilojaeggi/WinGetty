@@ -10,10 +10,12 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 def create_installer(file, publisher, identifier, version, architecture, installer_type, scope):
     file_name = secure_filename(file.filename)
+    file_name = f'{scope}.' + file_name.rsplit('.', 1)[1]
+
     hash = save_file(file, file_name, publisher, identifier, version, architecture)
     if hash is None:
-        return None
-
+        return "Error saving file", 500
+    
     installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file_name, installer_sha256=hash, scope=scope)
     for field_name in installer_switches:
         debugPrint(f"Checking for field name {field_name}")
@@ -47,6 +49,8 @@ def save_file(file, file_name, publisher, identifier, version, architecture):
         # Create directory if it doesn't exist
     if not os.path.exists(save_directory):
         os.makedirs(save_directory)
+
+
     # Save file
     file_path = os.path.join(save_directory, file_name)
     file.save(file_path)
