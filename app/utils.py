@@ -2,13 +2,21 @@ import hashlib
 import os
 from flask import current_app, request
 from werkzeug.utils import secure_filename
-from app.models import Installer, InstallerSwitch
+from app.models import Installer, InstallerSwitch, NestedInstallerFile
 from app.constants import installer_switches
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-def create_installer(file, publisher, identifier, version, architecture, installer_type, scope):
+def create_installer(publisher, identifier, version, installer_form):
+    file = installer_form.file.data
+    architecture = installer_form.architecture.data
+    installer_type = installer_form.installer_type.data
+    scope = installer_form.installer_scope.data
+    nestedinstallertype = installer_form.nestedinstallertype.data
+    nestedinstallerpath = installer_form.nestedinstallerpath.data
+
+
     file_name = secure_filename(file.filename)
     file_name = f'{scope}.' + file_name.rsplit('.', 1)[1]
 
@@ -26,6 +34,13 @@ def create_installer(file, publisher, identifier, version, architecture, install
             installer_switch.parameter = field_name
             installer_switch.value = field_value
             installer.switches.append(installer_switch)
+    if nestedinstallertype is not None:
+        if nestedinstallerpath is not None:
+            installer.nested_installer_type = nestedinstallertype
+            nested_installer_file = NestedInstallerFile(relative_file_path=nestedinstallerpath)
+            installer.nested_installer_files.append(nested_installer_file)
+        else:
+            return "Nested installer type was provided but no path was provided", 500
 
     return installer
 
@@ -44,6 +59,11 @@ def debugPrint(message):
         print(message)
 
 def save_file(file, file_name, publisher, identifier, version, architecture):
+    publisher = secure_filename(publisher)
+    identifier = secure_filename(identifier)
+    version = secure_filename(version)
+    architecture = secure_filename(architecture)
+
     # Create directory if it doesn't exist
     save_directory = os.path.join(basedir, 'packages', publisher, identifier, version, architecture)
         # Create directory if it doesn't exist
