@@ -1,4 +1,4 @@
-from app.models import Permission, Role
+from app.models import Permission, Role, User
 from app import db
 
 def create_all():
@@ -26,7 +26,6 @@ def create_default_roles():
 
 def create_permissions():
     package_permissions = [
-        'add:kockbrot',
         'view:package',
         'add:package',
         'edit:package',
@@ -115,7 +114,8 @@ def create_permissions():
 
     user_role_permissions = [
         permission for permission in Permission.query.filter(
-            Permission.name.in_(user_permissions + own_user_permissions)
+        Permission.name.in_(all_permissions),
+        ~Permission.name.in_(role_permissions + permission_permissions + user_permissions)
         ) if permission not in user_role.permissions
     ]
 
@@ -130,6 +130,15 @@ def create_permissions():
         ) if permission not in viewer_role.permissions
     ]
     viewer_role.permissions.extend(viewer_role_permissions)
+
+    # if no user with the admin role exists, assign the admin role to the first user
+    if not User.query.filter_by(role=admin_role).first():
+        first_user = User.query.first()
+        if first_user:
+            first_user.role = admin_role
+    # all other users get the viewer role
+    for user in User.query.filter_by(role=None):
+        user.role = viewer_role
 
     db.session.commit()
 
