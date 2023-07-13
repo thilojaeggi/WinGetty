@@ -1,4 +1,4 @@
-{% import 'inputs/macros.j2' as macros  %}
+{% import 'inputs/macros.j2' as macros %}
 
 <!-- Main modal -->
 <div x-cloak x-show="showAddInstallerModal" id="addVersionModal" tabindex="-1" aria-hidden="true"
@@ -45,7 +45,8 @@
                     action="{{ url_for('api.add_installer', identifier=package.identifier) }}" method="POST"
                     enctype="multipart/form-data">
 
-                    <input type="hidden" name="version" x-model="selectedVersion">
+
+                    <input type="hidden" name="installer-version" x-model="selectedVersion">
 
                     {{ macros.file_upload(hasVersion=false, file_required=true) }}
 
@@ -79,35 +80,33 @@
                 var hasFile = this.$refs.fileInput.files.length > 0;
                 let formData = new FormData(this.$refs.addInstallerForm);
 
-                $.ajax({
-                    url: this.$refs.addInstallerForm.action,
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    xhr: () => {
-                        let xhr = new window.XMLHttpRequest();
-                        if (hasFile) {
-                            let fileSize = this.$refs.fileInput.files[0].size;
-                            xhr.upload.addEventListener('progress', (event) => {
-                                if (event.lengthComputable) {
-                                    this.progress = Math.round((event.loaded / fileSize) * 100);
-                                }
-                            });
+                const config = {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    },
+                    onUploadProgress: progressEvent => {
+                        this.progress = Math.round(progressEvent.progress * 100);
+                        console.log(this.progress);
+
+                    }
+                }
+
+                axios.post(this.$refs.addInstallerForm.action, formData, config)
+                    .then(response => {
+                        if (response.status === 200) {
+                            this.progress = 0;
+                            this.showAddInstallerModal = false;
+                            this.$refs.addInstallerForm.reset();
+                            location.reload();
                         }
-                        return xhr;
-                    },
-                    success: () => {
-                        this.progress = 0;
-                        this.showAddInstallerModal = false;
-                        this.$refs.addInstallerForm.reset();
-                        location.reload();
-                    },
-                    complete: () => {
+                    })
+                    .catch(error => {
+                        console.error(error);
+                    })
+                    .finally(() => {
                         this.showUploadButton = true;
                         this.$refs.addInstallerForm.reset();
-                    }
-                });
+                    });
             },
             hideUploadButton() {
                 this.showUploadButton = false;

@@ -1,9 +1,9 @@
-{% import 'inputs/macros.j2' as macros  %}
+{% import 'inputs/macros.j2' as macros %}
 
 <!-- Main modal -->
 <div x-cloak x-show="showAddPackageModal" id="defaultModal" tabindex="-1" aria-hidden="true"
     x-data="addPackageFormData();"
-    class="fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-full max-h-full dark:bg-neutral-700/40 flex justify-center items-center"
+    class="fixed top-0 left-0 right-0 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-full max-h-full dark:bg-neutral-700/40 flex justify-center items-center z-40"
     x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 "
     x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-300"
     x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
@@ -99,35 +99,41 @@
                 var hasFile = this.$refs.fileInput.files.length > 0;
                 let formData = new FormData(this.$refs.addPackageForm);
 
-                $.ajax({
-                    url: this.$refs.addPackageForm.action,
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    xhr: () => {
-                        let xhr = new window.XMLHttpRequest();
-                        if (hasFile) {
-                            let fileSize = this.$refs.fileInput.files[0].size;
-                            xhr.upload.addEventListener('progress', (event) => {
-                                if (event.lengthComputable) {
-                                    this.progress = Math.round((event.loaded / fileSize) * 100);
-                                }
-                            });
-                        }
-                        return xhr;
+                const config = {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
                     },
-                    success: () => {
-                        this.progress = 0;
-                        this.showAddPackageModal = false;
-                        this.$refs.addPackageForm.reset();
-                        location.reload();
-                    },
-                    complete: () => {
-                        this.showUploadButton = true;
-                        this.$refs.addPackageForm.reset();
+                    onUploadProgress: progressEvent => {
+                        this.progress = Math.round(progressEvent.progress * 100);
+                        console.log(this.progress);
+
                     }
-                });
+                }
+
+                axios.post(this.$refs.addPackageForm.action, formData, config)
+                    .then(response => {
+                        if (response.status === 200) {
+                            this.progress = 0;
+                            this.showAddPackageModal = false;
+                            this.$refs.addPackageForm.reset();
+                            location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        window.dispatchEvent(new CustomEvent('notice', {
+                            detail: {
+                                text: error.response.data,
+                                type: 'error'
+                            }
+                        }));
+
+
+
+                    })
+                    .finally(() => {
+                        this.showUploadButton = true;
+                    });
             },
             hideUploadButton() {
                 this.showUploadButton = false;
