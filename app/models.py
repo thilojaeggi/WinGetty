@@ -54,7 +54,9 @@ class Package(db.Model):
                             "InstallerUrl": url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, scope=installer.scope, _external=True, _scheme="https"),
                             "InstallerSha256": installer.installer_sha256,
                             "Scope": scope,
-                            "InstallerSwitches": self._get_installer_switches(installer)
+                            "InstallerSwitches": self._get_installer_switches(installer),
+                            "NestedInstallerType": installer.nested_installer_type,
+                            "NestedInstallerFiles": self._get_nested_installer_data(installer)
                         }
                         installer_data.append(data)
                 else:
@@ -64,7 +66,9 @@ class Package(db.Model):
                         "InstallerUrl": url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, scope=installer.scope,  _external=True, _scheme="https"),
                         "InstallerSha256": installer.installer_sha256,
                         "Scope": installer.scope,
-                        "InstallerSwitches": self._get_installer_switches(installer)
+                        "InstallerSwitches": self._get_installer_switches(installer),
+                        "NestedInstallerType": installer.nested_installer_type,
+                        "NestedInstallerFiles": self._get_nested_installer_data(installer)
                     }
                     installer_data.append(data)
             return installer_data
@@ -74,6 +78,16 @@ class Package(db.Model):
         for switch in installer.switches:
             switches[switch.parameter] = switch.value
         return switches
+    
+    def _get_nested_installer_data(self, installer):
+        nested_installer_data = []
+        for nested_installer_file in installer.nested_installer_files:
+            data = {
+                "RelativeFilePath": nested_installer_file.relative_file_path,
+                "PortableCommandAlias": nested_installer_file.portable_command_alias
+            }
+            nested_installer_data.append(data)
+        return nested_installer_data
 
     def generate_output_manifest_search(self):
         output = {
@@ -113,6 +127,11 @@ class Installer(db.Model):
     installer_sha256 = db.Column(db.String(100))
     scope = db.Column(db.String(50))
     switches = db.relationship('InstallerSwitch', backref='installer', lazy=True)
+    nested_installer_type = db.Column(db.String(50), nullable=True)
+    nested_installer_files = db.relationship('NestedInstallerFile', backref='installer', lazy=True)
+    
+
+
 
     def to_json(self):
         switches = [switch.to_json() for switch in self.switches]
@@ -127,6 +146,19 @@ class Installer(db.Model):
             'switches': switches
         }
 
+class NestedInstallerFile(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    installer_id = db.Column(db.Integer, db.ForeignKey('installer.id'))
+    relative_file_path = db.Column(db.String(255))
+    portable_command_alias = db.Column(db.String(100))
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'installer_id': self.installer_id,
+            'relative_file_path': self.relative_file_path,
+            'portable_command_alias': self.portable_command_alias
+        }
         
 
 class InstallerSwitch(db.Model):
