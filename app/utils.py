@@ -16,7 +16,6 @@ def create_installer(publisher, identifier, version, installer_form):
     nestedinstallertype = installer_form.nestedinstallertype.data
     nestedinstallerpath = installer_form.nestedinstallerpath.data
 
-
     file_name = secure_filename(file.filename)
     file_name = f'{scope}.' + file_name.rsplit('.', 1)[1]
 
@@ -24,7 +23,14 @@ def create_installer(publisher, identifier, version, installer_form):
     if hash is None:
         return "Error saving file", 500
     
-    installer = Installer(architecture=architecture, installer_type=installer_type, file_name=file_name, installer_sha256=hash, scope=scope)
+    installer = Installer(
+        architecture=architecture,
+        installer_type=installer_type,
+        file_name=file_name,
+        installer_sha256=hash,
+        scope=scope
+    )
+
     for field_name in installer_switches:
         debugPrint(f"Checking for field name {field_name}")
         if field_name in request.form:
@@ -34,13 +40,13 @@ def create_installer(publisher, identifier, version, installer_form):
             installer_switch.parameter = field_name
             installer_switch.value = field_value
             installer.switches.append(installer_switch)
-    if nestedinstallertype is not None:
-        if nestedinstallerpath is not None:
-            installer.nested_installer_type = nestedinstallertype
-            nested_installer_file = NestedInstallerFile(relative_file_path=nestedinstallerpath)
-            installer.nested_installer_files.append(nested_installer_file)
-        else:
-            return "Nested installer type was provided but no path was provided", 500
+
+    if nestedinstallertype is not None and nestedinstallerpath is not None:
+        installer.nested_installer_type = nestedinstallertype
+        nested_installer_file = NestedInstallerFile(relative_file_path=nestedinstallerpath)
+        installer.nested_installer_files.append(nested_installer_file)
+    elif nestedinstallertype is not None or nestedinstallerpath is not None:
+        return "Nested installer type and path should be provided together", 500
 
     return installer
 
