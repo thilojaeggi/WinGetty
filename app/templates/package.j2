@@ -50,9 +50,9 @@ selectedInstaller: '', selectedVersion: '' }" %}
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-y-12 gap-x-3 mt-4">
     <div class="md:row-span-1">
-        <h3 class="text-2xl mb-1 select-none font-medium dark:text-gray-200">Info</h3>
+        <h3 class="text-2xl ml-2 select-none font-medium dark:text-gray-200">Info</h3>
         <div
-            class="bg-white/70 dark:bg-neutral-900 rounded-md h-min max-h-full overflow-y-auto p-2 w-full flex flex-col space-y-2">
+            class="bg-white/70 dark:bg-neutral-900 rounded-xl h-min max-h-full overflow-y-auto p-2 w-full flex flex-col space-y-0">
             <h4 class="font-base text-2xl self-start hidden mr-2"></h4>
             <form
                 class="mt-5 flex flex-col h-full {% if not current_user.role.has_permission('edit:package') %} pointer-events-none {% endif %}"
@@ -85,7 +85,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
                     {% if current_user.role.has_permission('edit:package') %}
                     <button type="submit"
                         class="self-end px-3 py-2 text-white transition-colors duration-300 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
-                        Update Metadata
+                        Update
                     </button>
                     {% endif %}
                 </div>
@@ -94,22 +94,23 @@ selectedInstaller: '', selectedVersion: '' }" %}
     </div>
 
     <div class="md:row-span-2 h-96">
-        <div class="flex flex-row">
-            <h3 class="text-2xl mb-1 select-none font-medium dark:text-gray-200">Versions</h3>
+        <div class="flex flex-row justify-start items-center ">
+            <h3 class="text-2xl ml-2 select-none font-medium dark:text-gray-200">Versions</h3>
             {% if current_user.role.has_permission('add:version') %}
-
-            <button type="button" @click="selectedInstaller = ''; showAddVersionModal = true;"
-                class="bg-blue-600 hover:bg-blue-500 transition-colors duration-300 p-0.25 rounded-md text-white h-min self-end ml-2 mb-1.5"><svg
-                    class="h-6 " xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            <a @click="selectedInstaller = ''; showAddVersionModal = true;"
+                class="ml-2 w-min h-min p-0.25 group  text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer ">
+                <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6 stroke-2" fill="none"
+                    stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
                 </svg>
-            </button>
+
+            </a>
             {% endif %}
         </div>
         <!-- Adding flex-col here hides the scrollbar -->
         <div
-            class="bg-white/70 dark:bg-neutral-900 rounded-md h-full p-2 flex flex-col overflow-y-auto space-y-2 scrollbar-none">
+            class="bg-white/70 dark:bg-neutral-900 rounded-xl h-full p-2 flex flex-col overflow-y-auto space-y-2 scrollbar-none">
 
             {% if package.versions|length == 0%}
             <div class="h-full w-full flex flex-col justify-center items-Icenter">
@@ -124,8 +125,15 @@ selectedInstaller: '', selectedVersion: '' }" %}
                     <div class="flex  flex-row justify-between items-center cursor-pointer p-2"
                         @click="expanded = !expanded">
                         <p class="font-semibold text-xl select-none dark:text-gray-200">{{version.version_code}}</p>
-                        <p class="text-gray-700 dark:text-gray-300/70 select-none">
+
+                        <p class="text-gray-700 dark:text-gray-300/70 select-none ml-auto mx-1">
                             {{version.date_added.strftime('%d.%m.%Y %H:%M') or ""}} </p>
+                        <svg class="h-6 w-6 dark:text-gray-200 mx-1 transition-transform duration-300"
+                            x-bind:class="expanded ? 'rotate-180' : 'rotate-0'" fill="none" stroke="currentColor"
+                            stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
+                        </svg>
                     </div>
                     <div x-show="expanded" x-collapse>
                         <div class="flex flex-col  p-2">
@@ -142,10 +150,22 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                     <p>{{version.short_description}}</p>
                                 </div>
                             </div>
+                            <div class="flex flex-row items-center mb-1">
+                                <h3 class="text-xl font-medium select-none dark:text-gray-200">Installers</h3>
+                                {% if current_user.role.has_permission('add:installer') %}
+                                <a @click="selectedVersion = '{{version.id}}'; selectedInstaller = '';  showAddInstallerModal = true;"
+                                    class="ml-2 w-min h-min group  text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer ">
+                                    <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-5 w-5 stroke-2"
+                                        fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6"></path>
+                                    </svg>
 
-                            <h3 class="text-xl font-medium select-none dark:text-gray-200">Installers</h3>
+                                </a>
+                                {% endif %}
+                            </div>
                             <div class="flex flex-row">
-                                <div class="bg-gray-100  dark:text-gray-300 dark:bg-neutral-800 p-1.5 flex flex-col gap-y-1 rounded-md sm:w-4/5"
+                                <div class="bg-gray-100  dark:text-gray-300 dark:bg-neutral-800 p-1 flex flex-col gap-y-1 rounded-lg sm:w-4/5"
                                     hx-target="closest div#installer" hx-swap="outerHTML swap:0s">
                                     {% if version.installers|length == 0%}
                                     <p class="dark:text-gray-300">No installers added yet</p>
@@ -223,17 +243,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                     </div>
                                     {% endfor %}
                                 </div>
-                                {% if current_user.role.has_permission('add:installer') %}
-                                <button type="button"
-                                    @click="selectedVersion = '{{version.id}}'; selectedInstaller = '';  showAddInstallerModal = true;"
-                                    class="bg-blue-600 hover:bg-blue-500 transition-colors duration-300 p-0.5 rounded-md text-white h-min self-end ml-2"><svg
-                                        class="h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M12 4.5v15m7.5-7.5h-15" />
-                                    </svg>
-                                </button>
-                                {% endif %}
+
                             </div>
                         </div>
                     </div>

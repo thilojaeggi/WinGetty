@@ -10,7 +10,7 @@
 
 
 <div x-data="{ copyText: function() { navigator.clipboard.writeText(document.getElementById('winget_source_url').innerText).then(function(){ console.log('Copied to clipboard'); }).catch(function(error){ console.error('Unable to copy text: ' + error); }); } }"
-    class="flex justify-between max-w-3xl items-center pl-2 pr-1 py-1 bg-white dark:bg-neutral-950 dark:text-gray-300 rounded-md">
+    class="flex justify-between max-w-3xl items-center pl-2 pr-1 py-1 bg-white dark:bg-neutral-950 dark:text-gray-300 rounded-lg">
     <p id="winget_source_url" @click="navigator.clipboard.writeText($event.target.innerText)">winget source add
         -n
         {{ config.REPO_NAME }} -t "Microsoft.Rest" -a {{ url_for('winget.index', _external=True,_scheme="https") }}</p>
