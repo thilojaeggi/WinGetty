@@ -4,6 +4,7 @@ from flask_login import login_required
 from werkzeug.http import parse_range_header
 from werkzeug.utils import secure_filename
 from app.decorators import permission_required
+from app.forms import AddInstallerForm, AddPackageForm, AddVersionForm
 
 from app.utils import create_installer, debugPrint, save_file, basedir
 from app import db
@@ -21,22 +22,25 @@ def index():
 @login_required
 @permission_required('add:package')
 def add_package():
-    name = request.form['name'].strip()
-    identifier = request.form['identifier'].strip()
-    publisher = request.form['publisher'].strip()
-    architecture = request.form['architecture']
-    installer_type = request.form['type']
-    version = request.form['version'].strip()
-    scope = request.form['scope']
-    file = request.files['file']
+    form = AddPackageForm(meta={'csrf': False})
+    installer_form = form.installer
+
+    if not form.validate_on_submit():
+        validation_errors = form.errors
+        print(validation_errors)
+        return jsonify(validation_errors), 400
     
-    if not all([name, identifier, publisher]) or (file and not all([architecture, installer_type, version])):
-        return "Missing required fields", 400
+    name = form.name.data
+    publisher = form.publisher.data
+    identifier = form.identifier.data
+    version = installer_form.version.data
+    file = installer_form.file.data
+    
 
     package = Package(identifier=identifier, name=name, publisher=publisher)
     if file and version:
         debugPrint("File and version found")
-        installer = create_installer(file, publisher, identifier, version, architecture, installer_type, scope)
+        installer = create_installer(publisher, identifier, version, installer_form)
         if installer is None:
             return "Error creating installer", 500
 
@@ -45,7 +49,12 @@ def add_package():
         package.versions.append(version_code)
         
     db.session.add(package)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception as e:
+        # Return exception origin
+        return str(e.__cause__), 500
+
 
     flash('Package added successfully.', 'success')
     return "Package added", 200
@@ -89,19 +98,27 @@ def delete_package(identifier):
 @login_required
 @permission_required('add:version')
 def add_version(identifier):
-    version = request.form['version']
-    architecture = request.form['architecture']
-    installer_type = request.form['type']
-    scope = request.form['scope']
+    form = AddVersionForm(meta={'csrf': False})
+
+    installer_form = form.installer
+
+    if not form.validate_on_submit():
+        validation_errors = form.errors
+        print(validation_errors)
+        return jsonify(validation_errors), 400
+    
+    version = installer_form.version.data
+    
+    
 
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
         return "Package not found", 404
-    file = request.files['file']
+    file = installer_form.file.data
     version_code = PackageVersion(version_code=version, package_locale="en-US", short_description=package.name, identifier=identifier)
     if file and version:
         debugPrint("File and version found")
-        installer = create_installer(file, package.publisher, identifier, version, architecture, installer_type, scope)
+        installer = create_installer(package.publisher, identifier, version, installer_form)
         if installer is None:
             return "Error creating installer", 500
 
@@ -117,23 +134,29 @@ def add_version(identifier):
 @login_required
 @permission_required('add:installer')
 def add_installer(identifier):
-    architecture = request.form['architecture']
-    installer_type = request.form['type']
-    version = request.form['version']
-    scope = request.form['scope']
+    form = AddInstallerForm(meta={'csrf': False})
+    installer_form = form.installer
 
-    file = request.files['file']
+    if not form.validate_on_submit():
+        validation_errors = form.errors
+        print(validation_errors)
+        return jsonify(validation_errors), 400
+    
+    print(installer_form.version.data)
+    
+    
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
         return "Package not found", 404
-
-    version = PackageVersion.query.filter_by(identifier=identifier, version_code=version).first()
+    
+    # get version by id
+    version = PackageVersion.query.filter_by(id=installer_form.version.data).first()
     if version is None:
-        return "Version not found", 404
+        return "Package version not found", 404
 
-    if file:
+    if installer_form.file:
         debugPrint("File found")
-        installer = create_installer(file, package.publisher, identifier, version.version_code, architecture, installer_type, scope)
+        installer = create_installer(package.publisher, identifier, version.version_code, installer_form)
         if installer is None:
             return "Error creating installer", 500
 
@@ -255,6 +278,8 @@ def delete_user(id):
 
 @api.route('/download/<identifier>/<version>/<architecture>/<scope>')
 def download(identifier, version, architecture, scope):
+    # TODO: Improve this function to be more efficient, also when a package's publisher is renamed the file won't be found anymore
+
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
         debugPrint("Package not found")
@@ -296,5 +321,8 @@ def download(identifier, version, architecture, scope):
     if (is_partial and range_header and range_header == "bytes=0-1") or not is_partial:
         package.download_count += 1
         db.session.commit()
+
+    debugPrint(f"Installer path: {installer_path + '/' + installer.file_name}")
+
 
     return send_from_directory(installer_path, installer.file_name, as_attachment=True)
