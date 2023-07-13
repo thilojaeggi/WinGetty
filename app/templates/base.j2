@@ -13,7 +13,7 @@
     <script defer src="{{ url_for('static', filename='js/collapse.min.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/alpine.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/htmx.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/jquery-3.7.0.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/axios.min.js') }}"></script>
 
     <!-- This is to load fonts asap -->
     {% include 'fonts.j2' %}
@@ -67,7 +67,7 @@
     {% include "footer.j2" %}
 
 
-    <div x-data="noticesHandler()" class="fixed inset-0 flex flex-col items-end justify-start h-screen w-screen"
+    <div x-data="noticesHandler()" class="fixed inset-0 flex flex-col items-end justify-start h-screen w-screen z-50"
         @notice.window="add($event.detail)" style="pointer-events:none">
         <template x-for="notice of notices" :key="notice.id">
             <div x-show="visible.includes(notice)" x-transition:enter="transition ease-in duration-200"
@@ -76,7 +76,7 @@
                 x-transition:leave-start="transform translate-x-0 opacity-100"
                 x-transition:leave-end="transform -translate-y-2 sm:translate-y-0 sm:translate-x-full opacity-0"
                 @click="remove(notice.id)"
-                class="rounded-lg mt-2 sm:m-4 w-auto mx-auto sm:w-auto p-8  h-16 flex items-center border-2 justify-center text-black dark:text-gray-200 bg-gray-100 dark:bg-zinc-800 shadow-lg font-bold text-lg cursor-pointer  z-50 "
+                class="rounded-lg mt-2 sm:m-4 w-auto mx-auto sm:w-auto p-8  h-16 flex items-center border-2 justify-center text-black dark:text-gray-200 bg-gray-100 dark:bg-zinc-900 shadow-lg font-bold text-lg cursor-pointer  z-50 "
                 :class="{
 				'border-green-500': notice.type === 'success',
 				'border-blue-500': notice.type === 'info',
