@@ -79,7 +79,7 @@ def signup_post():
     if not User.query.first():
         role = Role.query.filter_by(name='admin').first()
     else:
-        role = Role.query.filter_by(name='viewer').first()
+        role = Role.query.filter_by(name='user').first()
 
     new_user = User(email=email, username=username, role=role)
     new_user.set_password(password)
