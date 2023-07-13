@@ -14,3 +14,5 @@ docker-compose.override.yml
 ./app/packages/
 *.db
 node_modules/
+
+**/node_modules/
