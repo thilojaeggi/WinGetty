@@ -1,7 +1,9 @@
 <div class="mt-2" x-data="{ showAdvancedOptions: false}">
     <div class="flex items-center justify-between">
         <h2 class="text-lg font-medium text-gray-900 dark:text-white">Advanced Options</h2>
-        <button type="button" class="text-sm font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:underline transition ease-in-out duration-150" @click="showAdvancedOptions = !showAdvancedOptions" x-text="showAdvancedOptions ? 'Hide' : 'Show'"></button>
+        <button type="button"
+            class="text-sm font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:underline transition ease-in-out duration-150"
+            @click="showAdvancedOptions = !showAdvancedOptions" x-text="showAdvancedOptions ? 'Hide' : 'Show'"></button>
     </div>
     <div x-show="showAdvancedOptions" x-collapse>
         {% include 'inputs/installer_switches.j2' %}
