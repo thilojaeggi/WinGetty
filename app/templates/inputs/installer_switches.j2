@@ -13,8 +13,7 @@
         }
     });
 ">
-    <label for="InstallSwitches" class="block  text-gray-700 dark:text-gray-300 ">Installer Switches<span
-            class="text-red-500">*</span></label>
+    <label for="InstallSwitches" class="block  text-gray-700 dark:text-gray-300 ">Installer Switches</label>
     <select id="InstallSwitches" @change="
         if ($event.target.value !== '') {
             switches.push({ key: $event.target.value, value: '' });
