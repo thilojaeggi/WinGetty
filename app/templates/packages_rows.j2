@@ -4,16 +4,16 @@
 
 
     <td class="px-4 py-4 text-md whitespace-nowrap">
-        <h4 class=" font-semibold ">{{ package.name }}</h4>
+        <p class=" font-semibold ">{{ package.name }}</p>
     </td>
     <td class="px-4 py-4 text-md whitespace-nowrap">
-        <h4 class=" ">{{ package.identifier }}</h4>
+        <p class=" ">{{ package.identifier }}</p>
     </td>
 
     <td class="px-4 py-4 text-md whitespace-nowrap">
-        <h4 @click="search = '{{ package.publisher }}'"
+        <p @click="search = '{{ package.publisher }}'"
             class=" hover:font-bold cursor-pointer transition-[font-weight] duration-300 ">
-            {{ package.publisher }}</h4>
+            {{ package.publisher }}</p>
     </td>
 
     <td class="pl-3 py-4 text-sm font-medium whitespace-nowrap">
@@ -26,7 +26,7 @@
 
     <td class="px-4 py-4 text-sm whitespace-nowrap flex flex-row gap-x-1 justify-center">
         {% if current_user.role.has_permission('view:package') %}
-        <a href="{{ url_for('ui.package', identifier=package.identifier) }}"
+        <a href="{{ url_for('ui.package', identifier=package.identifier) }}" aria-label="View package"
             class="px-1 group  py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-neutral-800/60 duration-300 rounded-lg  ">
             {% if current_user.role.has_permission('edit:package') %}
             <svg class="group-hover:dark:stroke-gray-200 transition-colors duration-300 h-6 w-6" fill="none"
