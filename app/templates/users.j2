@@ -5,8 +5,8 @@
 <div class="grid grid-cols-1 md:grid-cols-7 gap-y-12 gap-x-3 mt-4">
     {% if current_user.role.has_permission('view:own_user') %}
     <div class="md:col-span-3 md:row-span-3">
-        <h3 class="text-2xl mb-1 select-none font-medium dark:text-gray-200">You</h3>
-        <div class="bg-white/70 dark:bg-neutral-900 rounded-md h-full md:h-auto  p-2 flex flex-col space-y-2">
+        <h3 class="text-2xl mb-1 select-none font-medium dark:text-gray-200 ml-2">You</h3>
+        <div class="bg-white/70 dark:bg-neutral-900 rounded-xl h-full md:h-auto  p-2 flex flex-col space-y-2">
             <form
                 class="flex flex-col h-full {% if not current_user.role.has_permission('edit:own_user') %} pointer-events-none {% endif %} "
                 action="{{ url_for('api.update_user') }}" method="POST">
@@ -37,7 +37,7 @@
                     {% if current_user.role.has_permission('edit:own_user') %}
                     <button type="submit"
                         class="self-end px-3 py-2 text-white transition-colors duration-300 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
-                        Update Info
+                        Update
                     </button>
                     {% endif %}
                 </div>
@@ -48,7 +48,7 @@
     {% if current_user.role.has_permission('view:user') %}
     <div class="md:col-span-4 md:row-span-3 md:col-start-4 ">
         <div class="flex flex-row">
-            <h3 class="text-2xl mb-1 select-none font-medium dark:text-gray-200">Users</h3>
+            <h3 class="text-2xl mb-1 select-none font-medium dark:text-gray-200 ml-2">Users</h3>
             <button type="button" @click="showAddVersionModal = true"
                 class="hidden bg-blue-600 hover:bg-blue-500 transition-colors duration-300 p-0.25 rounded-md text-white h-min self-end ml-2 mb-1.5">
                 <svg class="h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -57,7 +57,7 @@
                 </svg>
             </button>
         </div>
-        <div class="bg-white/70 dark:bg-neutral-900 rounded-md h-full p-2 flex flex-col space-y-2">
+        <div class="bg-white/70 dark:bg-neutral-900 rounded-xl h-full p-2 flex flex-col space-y-2">
             <div class="drop-shadow-md flex flex-col divide-y dark:divide-gray-200/25">
                 {% for user in users %}
                 <div id="user"
@@ -66,6 +66,7 @@
                     <div class="flex  flex-row justify-between items-center  p-2" @click="expanded = !expanded">
                         <p class="font-semibold text-xl  dark:text-gray-200 flex-1">{{ user.username }}</p>
                         <p class="text-gray-700 dark:text-gray-300/70 mr-4">{{ user.role.name|capitalize }}</p>
+
                         <p class="text-gray-700 dark:text-gray-300/70 mr-4">{{ user.email }}</p>
                         <a hx-delete="{{ url_for('api.delete_user', id=user.id) }}" hx-target="closest div#user"
                             hx-swap="outerHTML swap:0s"
@@ -78,6 +79,7 @@
                                 </path>
                             </svg>
                         </a>
+
                     </div>
                 </div>
                 {%endfor%}
@@ -87,19 +89,26 @@
     {% endif %}
     {% if current_user.role.has_permission('view:role') %}
     <div class="md:col-span-2 md:row-span-3 md:row-start-4">
-        <h3 class="text-2xl mb-1 select-none font-medium dark:text-gray-200">Roles</h3>
-        <div class="bg-white/70 dark:bg-neutral-900 rounded-md h-auto p-2 flex flex-col space-y-2">
+        <h3 class="text-2xl mb-1 select-none font-medium dark:text-gray-200 ml-2">Roles</h3>
+        <div
+            class="bg-white/70 dark:bg-neutral-900 rounded-xl max-h-96 overflow-y-auto scrollbar-none p-2 flex flex-col space-y-2">
             <div class="drop-shadow-md flex flex-col divide-y dark:divide-gray-200/25">
                 {% for role in roles %}
                 <div class="bg-white dark:bg-neutral-950 {% if loop.first %}rounded-t-md{% elif loop.last %}rounded-b-md{% endif %} {% if roles|length == 1 %} rounded-md {% endif %} flex flex-col"
                     x-data="{ expanded: false }" @click.away="expanded = false">
-                    <div class="flex  flex-row justify-between items-center cursor-pointer p-2"
+                    <div class="flex flex-row justify-between items-center cursor-pointer p-2"
                         @click="expanded = !expanded">
-                        <p class="font-semibold text-xl select-none dark:text-gray-200">{{role.name}}</p>
-                        
+                        <p class="font-semibold text-xl select-none dark:text-gray-200">{{role.name|capitalize}}</p>
+                        <svg class="h-6 w-6 dark:text-gray-200 mr-1 transition-transform duration-300"
+                            x-bind:class="expanded ? 'rotate-180' : 'rotate-0'" fill="none" stroke="currentColor"
+                            stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
+                        </svg>
                     </div>
-                    <div x-show="expanded" x-collapse>
-                        <div class="flex flex-col space-y-1 justify-between items-start p-2 ">
+                    <div class="px-2" x-show="expanded" x-collapse>
+                        <div
+                            class="flex flex-col space-y-1 justify-between items-start p-2 max-h-48 overflow-y-auto scrollbar scrollbar-track-transparent dark:scrollbar-thumb-gray-300 scrollbar-thumb-neutral-600 scrollbar-w-2 scrollbar-corner-rounded-full scrollbar-thumb-rounded-full    ">
                             {% for permission in role.permissions %}
 
                             <p class="text-gray-700 dark:text-gray-300/70">{{ permission.name }}</p>
