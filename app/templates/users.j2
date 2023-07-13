@@ -2,11 +2,11 @@
 {% set title = "Users" %}
 {% block content %}
 <h1 class="text-3xl font-medium text-gray-800 dark:text-gray-200">{{ title }}</h1>
-<div class="grid grid-cols-1 md:grid-cols-7 grid-rows-4 gap-y-12 gap-x-3 mt-4">
+<div class="grid grid-cols-1 md:grid-cols-7 gap-y-12 gap-x-3 mt-4">
     {% if current_user.role.has_permission('view:own_user') %}
     <div class="md:col-span-3 md:row-span-3">
         <h3 class="text-2xl mb-1 select-none font-medium dark:text-gray-200">You</h3>
-        <div class="bg-white/70 dark:bg-neutral-900 rounded-md  p-2 flex flex-col space-y-2">
+        <div class="bg-white/70 dark:bg-neutral-900 rounded-md h-full md:h-auto  p-2 flex flex-col space-y-2">
             <form
                 class="flex flex-col h-full {% if not current_user.role.has_permission('edit:own_user') %} pointer-events-none {% endif %} "
                 action="{{ url_for('api.update_user') }}" method="POST">
@@ -34,12 +34,12 @@
 
 
                 <div class=" grow flex flex-row justify-end mt-4">
-                {% if current_user.role.has_permission('edit:own_user') %}
+                    {% if current_user.role.has_permission('edit:own_user') %}
                     <button type="submit"
                         class="self-end px-3 py-2 text-white transition-colors duration-300 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
                         Update Info
                     </button>
-                {% endif %}
+                    {% endif %}
                 </div>
             </form>
         </div>
@@ -85,16 +85,31 @@
         </div>
     </div>
     {% endif %}
-    {% if current_user.role.has_permission('view:permission') %}
-    <div class="md:col-span-4 ">
-        <h3 class="text-2xl mb-1 select-none font-medium dark:text-gray-200">Permissions</h3>
+    {% if current_user.role.has_permission('view:role') %}
+    <div class="md:col-span-2 md:row-span-3 md:row-start-4">
+        <h3 class="text-2xl mb-1 select-none font-medium dark:text-gray-200">Roles</h3>
         <div class="bg-white/70 dark:bg-neutral-900 rounded-md h-auto p-2 flex flex-col space-y-2">
-            <h4 class="font-base text-2xl self-start mr-2"></h4>
-            <form
-                class="flex flex-col h-full {% if not current_user.role.has_permission('edit:own_user') %} pointer-events-none {% endif %} "
-                action="{{ url_for('api.update_user') }}" method="POST">
-                <!-- Form content -->
-            </form>
+            <div class="drop-shadow-md flex flex-col divide-y dark:divide-gray-200/25">
+                {% for role in roles %}
+                <div class="bg-white dark:bg-neutral-950 {% if loop.first %}rounded-t-md{% elif loop.last %}rounded-b-md{% endif %} {% if roles|length == 1 %} rounded-md {% endif %} flex flex-col"
+                    x-data="{ expanded: false }" @click.away="expanded = false">
+                    <div class="flex  flex-row justify-between items-center cursor-pointer p-2"
+                        @click="expanded = !expanded">
+                        <p class="font-semibold text-xl select-none dark:text-gray-200">{{role.name}}</p>
+                        
+                    </div>
+                    <div x-show="expanded" x-collapse>
+                        <div class="flex flex-col space-y-1 justify-between items-start p-2 ">
+                            {% for permission in role.permissions %}
+
+                            <p class="text-gray-700 dark:text-gray-300/70">{{ permission.name }}</p>
+                            {% endfor %}
+
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
     </div>
     {% endif %}
