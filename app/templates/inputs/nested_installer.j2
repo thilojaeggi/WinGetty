@@ -1,0 +1,24 @@
+<div class="mt-2 bg-gray-100 dark:bg-neutral-800 p-2 pb-2.5 rounded-md " x-show="selectedType === 'zip'" x-collapse>
+    <label for="installer-nestedinstallertype" class="block  text-gray-700 dark:text-gray-300 ">Nested Installer<span
+            class="text-red-500">*</span></label>
+    <select id="installer-nestedinstallertype" name="installer-nestedinstallertype" x-bind:required="selectedType === 'zip'"
+        class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+        <option value="msix" >msix</option>
+        <option value="msi">msi</option>
+        <option value="appx">appx</option>
+        <option value="exe">exe</option>
+        <option value="inno">inno</option>
+        <option value="nullsoft">nullsoft</option>
+        <option value="wix">wix</option>
+        <option value="burn">burn</option>
+    </select>
+
+    <div class="mt-2">
+        <label id="installer-nestedinstallerpath" for="nestedinstallerpath" class="block  text-gray-700 dark:text-gray-300 ">Relative Path<span
+                class="text-red-500">*</span></label>
+        <input name="installer-nestedinstallerpath" placeholder="" type="text" x-bind:required="selectedType === 'zip'"
+            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+    </div>
+
+
+</div>
