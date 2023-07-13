@@ -233,7 +233,7 @@ def delete_installer(identifier, version, installer):
 
 @api.route('/update_user', methods=['POST'])
 @login_required
-@permission_required('edit:user')
+@permission_required('edit:own_user')
 def update_user():
     id = request.form['id']
     username = request.form['username'].lower().replace(" ", "")
