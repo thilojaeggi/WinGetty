@@ -54,10 +54,11 @@ class Package(db.Model):
                             "InstallerUrl": url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, scope=installer.scope, _external=True, _scheme="https"),
                             "InstallerSha256": installer.installer_sha256,
                             "Scope": scope,
-                            "InstallerSwitches": self._get_installer_switches(installer),
-                            "NestedInstallerType": installer.nested_installer_type,
-                            "NestedInstallerFiles": self._get_nested_installer_data(installer)
+                            "InstallerSwitches": self._get_installer_switches(installer)
                         }
+                        if installer.installer_type == 'zip':
+                            data["NestedInstallerType"] = installer.nested_installer_type
+                            data["NestedInstallerFiles"] = self._get_nested_installer_data(installer)
                         installer_data.append(data)
                 else:
                     data = {
@@ -66,10 +67,11 @@ class Package(db.Model):
                         "InstallerUrl": url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, scope=installer.scope,  _external=True, _scheme="https"),
                         "InstallerSha256": installer.installer_sha256,
                         "Scope": installer.scope,
-                        "InstallerSwitches": self._get_installer_switches(installer),
-                        "NestedInstallerType": installer.nested_installer_type,
-                        "NestedInstallerFiles": self._get_nested_installer_data(installer)
+                        "InstallerSwitches": self._get_installer_switches(installer)
                     }
+                    if installer.installer_type == 'zip':
+                            data["NestedInstallerType"] = installer.nested_installer_type
+                            data["NestedInstallerFiles"] = self._get_nested_installer_data(installer)
                     installer_data.append(data)
             return installer_data
     
@@ -130,9 +132,6 @@ class Installer(db.Model):
     nested_installer_type = db.Column(db.String(50), nullable=True)
     nested_installer_files = db.relationship('NestedInstallerFile', backref='installer', lazy=True)
     
-
-
-
     def to_json(self):
         switches = [switch.to_json() for switch in self.switches]
         return {
