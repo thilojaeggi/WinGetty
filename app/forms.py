@@ -7,19 +7,26 @@ import wtforms
 from wtforms import Form, StringField, SelectField, validators, ValidationError
 
 class RequiredIf(object):
+
     def __init__(self, **kwargs):
         self.conditions = kwargs
 
     def __call__(self, form, field):
+        # NOTE! you can create here any custom processing
         current_value = form.data.get(field.name)
-
-        if current_value is None or current_value == "" or str(current_value).isspace():
+        if current_value == 'None':
             for condition_field, reserved_value in self.conditions.items():
                 dependent_value = form.data.get(condition_field)
-
-                if dependent_value == reserved_value:
-                    raise ValidationError('This field is required.')
-
+                if condition_field not in form.data:
+                    continue
+                elif dependent_value == reserved_value:
+                    # just an example of error
+                    raise Exception(
+                        'Invalid value of field "%s". Field is required when %s==%s' % (
+                            field.name,
+                            condition_field,
+                            dependent_value
+                        ))
 
 class RequiredIfFile(object):
     def __init__(self, field):
