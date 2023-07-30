@@ -27,8 +27,7 @@ def add_package():
 
     if not form.validate_on_submit():
         validation_errors = form.errors
-        print(validation_errors)
-        return jsonify(validation_errors), 400
+        return str("Form validation error"), 500
     
     name = form.name.data
     publisher = form.publisher.data
@@ -48,11 +47,9 @@ def add_package():
         version_code.installers.append(installer)
         package.versions.append(version_code)
         
-    db.session.add(package)
     try:
         db.session.commit()
     except Exception as e:
-        # Return exception origin
         return str(e.__cause__), 500
 
 

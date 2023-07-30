@@ -89,17 +89,17 @@ class AddInstallerFormFieldsWithoutFile(AddInstallerFormFields):
 class AddPackageForm(FlaskForm):
     name = StringField('Name', validators=[
     InputRequired(),
-    Length(min=1, max=20)
+    Length(min=1, max=50)
     ])
 
     publisher = StringField('Publisher', validators=[
     InputRequired(),
-    Length(min=1, max=20)
+    Length(min=1, max=50)
     ])
 
     identifier = StringField('Identifier', validators=[
     InputRequired(),
-    Length(min=1, max=20)
+    Length(min=1, max=101)
     ])
 
     # Include the AddInstallerFormFields without csrf protection
