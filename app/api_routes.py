@@ -48,10 +48,13 @@ def add_package():
         package.versions.append(version_code)
         
     try:
+        db.session.add(package)
         db.session.commit()
+        print("Commited to db")
     except Exception as e:
-        return str(e.__cause__), 500
-
+        db.session.rollback()
+        print("Error committing to the database:", str(e))
+        return "Database error", 500
 
     flash('Package added successfully.', 'success')
     return "Package added", 200
