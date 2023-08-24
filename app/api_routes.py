@@ -231,6 +231,30 @@ def delete_installer(identifier, version, installer):
 
     return "", 200
 
+@api.route('/package/<identifier>/<version>', methods=['DELETE'])
+@login_required
+@permission_required('delete:version')
+def delete_version(identifier, version):
+    package = Package.query.filter_by(identifier=identifier).first()
+    if package is None:
+        debugPrint("Package not found")
+        return "Package not found", 404
+    
+    version = PackageVersion.query.filter_by(identifier=identifier, version_code=version).first()
+    if version is None:
+        debugPrint("Version not found")
+        return "Version not found", 404
+
+    for installer in version.installers:
+        installer_path = os.path.join(basedir, 'packages', package.publisher, package.identifier, version.version_code, installer.architecture, installer.file_name)
+        if os.path.exists(installer_path):
+            os.remove(installer_path)    
+        db.session.delete(installer)
+    db.session.delete(version)
+    db.session.commit()
+
+    return "", 200
+
 @api.route('/update_user', methods=['POST'])
 @login_required
 @permission_required('edit:own_user')
