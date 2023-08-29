@@ -1,17 +1,19 @@
 import os
-from flask import Blueprint, jsonify, render_template, request, redirect, url_for, current_app, send_from_directory, flash
+
+from flask import (
+    Blueprint, jsonify, render_template, request,
+    redirect, url_for, current_app, send_from_directory, flash
+)
 from flask_login import login_required
 from werkzeug.http import parse_range_header
 from werkzeug.utils import secure_filename
+
+from app import db
 from app.decorators import permission_required
 from app.forms import AddInstallerForm, AddPackageForm, AddVersionForm
-
-from app.utils import create_installer, debugPrint, save_file, basedir
-from app import db
 from app.models import InstallerSwitch, Package, PackageVersion, Installer, User
+from app.utils import create_installer, debugPrint, save_file, basedir
 from app.constants import installer_switches
-
-
 api = Blueprint('api', __name__)
 
 @api.route('/')
