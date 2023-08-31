@@ -65,7 +65,7 @@ class AddInstallerFormFields(FlaskForm):
             RequiredIfFile('file')
         ])
     
-    installer_type = SelectField('Type', choices=[('exe', 'exe'), ('msi', 'msi'), ('msix', 'msix'), ('appx', 'appx'), ('zip', 'zip')], validators=[
+    installer_type = SelectField('Type', choices=[('exe', 'exe'), ('msi', 'msi'), ('msix', 'msix'), ('appx', 'appx'), ('zip', 'zip'), ('inno', 'inno'), ('nullsoft', 'nullsoft'), ('wix', 'wix'), ('burn', 'burn'), ('pwa', 'pwa'), ('msstore', 'msstore')], validators=[
             RequiredIfFile('file')
         ])
     
