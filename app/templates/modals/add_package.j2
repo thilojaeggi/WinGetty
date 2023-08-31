@@ -64,8 +64,8 @@
                         <label for="identifier" class="block  text-gray-700 dark:text-gray-300 ">Identifier<span
                                 class="text-red-500">*</span></label>
                         <input required name="identifier" placeholder="" type="text" x-model="identifier"
-                            x-bind:value="identifierEditedManually ? identifier : (publisher.replace(/\s/g, '').replace(/[^a-zA-Z.äöüÄÖÜ]/g, '') + '.' + name.replace(/\s/g, '').replace(/[^a-zA-Z.äöüÄÖÜ]/g, ''))"
-                            @input="identifierEditedManually = true; identifier = identifier.replace(/\s/g, '').replace(/[^a-zA-Z.äöüÄÖÜ]/g, '')"
+                            x-bind:value="identifierEditedManually ? identifier : (publisher.replace(/\s/g, '').replace(/[^a-zA-Z0-9]/g, '') + '.' + name.replace(/\s/g, '').replace(/[^a-zA-Z0-9]/g, ''))"
+                            @input="identifierEditedManually = true; identifier = identifier.replace(/\s/g, '').replace(/[^a-zA-Z0-9]/g, '')"
                             class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                     </div>
 
