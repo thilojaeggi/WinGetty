@@ -1,9 +1,15 @@
 <div class="mt-2" x-data="{ showAdvancedOptions: false}">
-    <div class="flex items-center justify-between">
-        <h2 class="text-lg font-medium text-gray-900 dark:text-white">Advanced Options</h2>
+    <!--
         <button type="button"
             class="text-sm font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:underline transition ease-in-out duration-150"
-            @click="showAdvancedOptions = !showAdvancedOptions" x-text="showAdvancedOptions ? 'Hide' : 'Show'"></button>
+            @click="showAdvancedOptions = !showAdvancedOptions" x-text="showAdvancedOptions ? 'Hide' : 'Show'"></button>-->
+    <div class="flex flex-row items-center cursor-pointer" @click="showAdvancedOptions = !showAdvancedOptions">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white">Advanced Options</h2>
+        <svg class="h-6 w-6 dark:text-gray-200 ml-2 transition-transform duration-300"
+            x-bind:class="showAdvancedOptions ? 'rotate-180' : 'rotate-0'" fill="none" stroke="currentColor"
+            stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
+        </svg>
     </div>
     <div x-show="showAdvancedOptions" x-collapse>
         {% include 'inputs/installer_switches.j2' %}
