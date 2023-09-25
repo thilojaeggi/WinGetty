@@ -15,7 +15,7 @@ services:
       - WINGETTY_SQLALCHEMY_DATABASE_URI="sqlite:///database.db" # You can use any database URI supported by SQLAlchemy, so you can use MySQL, PostgreSQL, etc.
       - WINGETTY_SECRET_KEY="secret" # Change this to a random string
       - WINGETTY_ENABLE_REGISTRATION=1 # Disable registration by setting this to 0, suggested after you have created your first user
-      - WINGETTY_REPO_NAME = "WinGetty" # You can change this to whatever you want
+      - WINGETTY_REPO_NAME="WinGetty" # You can change this to whatever you want
       - TZ=Europe/Paris # Change this to your timezone
 volumes:
   instance_volume:
