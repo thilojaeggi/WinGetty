@@ -1,5 +1,6 @@
 from app.models import Permission, Role, User
 from app import db
+from sqlalchemy.exc import IntegrityError
 
 def create_all():
     create_default_roles()
@@ -97,8 +98,12 @@ def create_permissions():
         if not existing_permission:
             print(f'Creating permission: {permission}')
             new_permission = Permission(name=permission)
-            db.session.add(new_permission)
-    db.session.commit()
+            try:
+                db.session.add(new_permission)
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+                print(f"Permission {permission} already exists.")
 
     admin_role = Role.query.filter_by(name='admin').first()
     user_role = Role.query.filter_by(name='user').first()
