@@ -73,9 +73,4 @@ def users():
 @permission_required('view:package')
 def package(identifier):
     package = Package.query.filter_by(identifier=identifier).first()
-
-        
-
-    
-
     return render_template('package.j2', package=package)
