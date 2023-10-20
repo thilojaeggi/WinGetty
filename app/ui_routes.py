@@ -58,10 +58,6 @@ def packages():
 def setup():
     return render_template('setup.j2')
 
-@ui.route('/settings')
-@login_required
-def settings():
-    return render_template('settings.j2')
 
 @ui.route('/users')
 @login_required
