@@ -48,40 +48,36 @@
     </div>
 
     <div class="flex flex-col mt-2">
-        <div class=" overflow-x-auto">
-            <div class="inline-block w-full align-middle ">
-                <div class="overflow-auto rounded-lg">
-                    <table id="packages_table" hx-target="#packages_table tbody" hx-swap="innerHTML"
-                        class="min-w-full divide-y divide-gray-200 dark:divide-gray-400 ">
-                        <thead class="bg-gray-50 dark:bg-neutral-950 ">
-                            <tr class="text-gray-500 dark:text-gray-200">
-                                <th scope="col" class="pl-3 py-3.5  text-sm font-normal text-left rtl:text-right ">
-                                    Name
-                                </th>
+        <div class="w-full align-middle rounded-lg overflow-y-hidden overflow-x-auto">
+                <table id="packages_table" hx-target="#packages_table tbody" hx-swap="innerHTML"
+                    class="min-w-full divide-y divide-gray-300 dark:divide-neutral-500 rounded ">
+                    <thead class="bg-gray-50 dark:bg-neutral-950  rounded-md ">
+                        <tr class="text-gray-500 dark:text-gray-200">
+                            <th scope="col" class="pl-3 py-3.5  text-sm font-normal text-left rtl:text-right ">
+                                Name
+                            </th>
 
-                                <th scope="col" class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
-                                    Identifier
-                                </th>
+                            <th scope="col" class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
+                                Identifier
+                            </th>
 
-                                <th scope="col" class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
-                                    Publisher</th>
+                            <th scope="col" class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
+                                Publisher</th>
 
-                                <th scope="col" class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
-                                    Latest Version</th>
+                            <th scope="col" class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
+                                Latest Version</th>
 
-                                <th scope="col" class="relative py-3.5 px-4">
-                                    <span class="sr-only">Edit</span>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody
-                            class="bg-white dark:bg-neutral-900 divide-y divide-gray-200 dark:divide-gray-700 text-gray-700 dark:text-gray-300" hx-target="closest tr" hx-swap="outerHTML swap:1s">
-                            {% include("packages_rows.j2") %}
-                        </tbody>
-                    </table>
-                </div>
+                            <th scope="col" class="relative py-3.5 px-4">
+                                <span class="sr-only">Edit</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody
+                        class="bg-white dark:bg-neutral-900 divide-y divide-gray-200 dark:divide-neutral-700 text-gray-700 dark:text-gray-300" hx-target="closest tr" hx-swap="outerHTML swap:1s">
+                        {% include("packages_rows.j2") %}
+                    </tbody>
+                </table>
             </div>
-        </div>
     </div>
 </div>
 <div class="mt-6 sm:flex sm:items-center sm:justify-between " x-data="{ currentPage: {{page}}}">
