@@ -50,7 +50,7 @@
 <hr>
 
 ## Installation and Setup:
-You can find the install and getting started guide in the [Wiki](https://github.com/thilojaeggi/WinGetty/wiki/Getting-started)  
+You can find the install and getting started guide in the [Wiki](https://github.com/thilojaeggi/WinGetty/wiki)  
 
 ### Features:
 * Intuitive and easy to use Webinterface
