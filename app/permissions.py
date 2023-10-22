@@ -115,7 +115,9 @@ def create_permissions():
         Permission.name.in_(all_permissions)
     ) if permission not in admin_role.permissions
     ]
-    admin_role.permissions.extend(admin_role_permissions)
+    for permission in admin_role_permissions:
+        if permission not in admin_role.permissions:
+            admin_role.permissions.append(permission)
 
     user_role_permissions = [
         permission for permission in Permission.query.filter(
@@ -124,7 +126,9 @@ def create_permissions():
         ) if permission not in user_role.permissions
     ]
 
-    user_role.permissions.extend(user_role_permissions)
+    for permission in user_role_permissions:
+        if permission not in user_role.permissions:
+            user_role.permissions.append(permission)
 
 
     # Assign the permissions to the viewer role if they are not already assigned
@@ -134,7 +138,9 @@ def create_permissions():
             ~Permission.name.in_(role_permissions + permission_permissions + user_permissions)
         ) if permission not in viewer_role.permissions
     ]
-    viewer_role.permissions.extend(viewer_role_permissions)
+    for permission in viewer_role_permissions:
+        if permission not in viewer_role.permissions:
+            viewer_role.permissions.append(permission)
 
     # if no user with the admin role exists, assign the admin role to the first user
     if not User.query.filter_by(role=admin_role).first():
