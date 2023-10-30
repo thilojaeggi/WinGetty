@@ -32,7 +32,7 @@ def add_package():
         return str("Form validation error"), 500
     
     name = form.name.data
-    publisher = form.publisher.data
+    publisher = secure_filename(form.publisher.data)
     identifier = form.identifier.data
     version = installer_form.version.data
     file = installer_form.file.data
