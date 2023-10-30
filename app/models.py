@@ -64,7 +64,7 @@ class Package(db.Model):
                     data = {
                         "Architecture": installer.architecture,
                         "InstallerType": installer.installer_type,
-                        "InstallerUrl": url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, scope=installer.scope,  _external=True, _scheme="https"),
+                        "InstallerUrl": installer.external_url if installer.external_url not in [None, ''] else url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, scope=installer.scope, _external=True, _scheme="https"),
                         "InstallerSha256": installer.installer_sha256,
                         "Scope": installer.scope,
                         "InstallerSwitches": self._get_installer_switches(installer)
@@ -125,7 +125,8 @@ class Installer(db.Model):
     version_id = db.Column(db.Integer, db.ForeignKey('package_version.id'))
     architecture = db.Column(db.String(50))
     installer_type = db.Column(db.String(50))
-    file_name = db.Column(db.String(100))
+    file_name = db.Column(db.String(100), nullable=True)
+    external_url = db.Column(db.String(255), nullable=True)
     installer_sha256 = db.Column(db.String(100))
     scope = db.Column(db.String(50))
     switches = db.relationship('InstallerSwitch', backref='installer', lazy=True)
