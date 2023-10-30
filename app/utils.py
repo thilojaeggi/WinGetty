@@ -1,5 +1,6 @@
 import hashlib
 import os
+import requests
 from flask import current_app, request
 from werkzeug.utils import secure_filename
 from app.models import Installer, InstallerSwitch, NestedInstallerFile
@@ -8,25 +9,59 @@ from app.constants import installer_switches
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+
+def get_file_hash_from_url(url, max_content_length=1024 * 1024 * 1024 * 10):  # Default max content length set to 10GB
+    """Download file from the given URL and return its SHA256 hash."""
+    
+    # Ensure the URL uses HTTPS
+    if not url.startswith("https://"):
+        raise ValueError("URL must use HTTPS.")
+    
+    response = requests.get(url, stream=True, timeout=15)  # Timeout set to 10 seconds
+    response.raise_for_status()  # Ensure we got an OK response
+    
+    # Check if the content length exceeds the max content length
+    content_length = int(response.headers.get('content-length', 0))
+    if content_length > max_content_length:
+        raise ValueError(f"Content length exceeds allowed limit of {max_content_length} bytes.")
+    
+    hash_sha256 = hashlib.sha256()
+    for chunk in response.iter_content(chunk_size=4096):
+        hash_sha256.update(chunk)
+
+    return hash_sha256.hexdigest()
+
+
 def create_installer(publisher, identifier, version, installer_form):
     file = installer_form.file.data
+    external_url = installer_form.url.data
     architecture = installer_form.architecture.data
     installer_type = installer_form.installer_type.data
     scope = installer_form.installer_scope.data
     nestedinstallertype = installer_form.nestedinstallertype.data
     nestedinstallerpath = installer_form.nestedinstallerpath.data
 
-    file_name = secure_filename(file.filename)
-    file_name = f'{scope}.' + file_name.rsplit('.', 1)[1]
-
-    hash = save_file(file, file_name, publisher, identifier, version, architecture)
-    if hash is None:
-        return "Error saving file", 500
+    # If file is provided, save the file
+    if file:
+        file_name = secure_filename(file.filename)
+        file_name = f'{scope}.' + file_name.rsplit('.', 1)[1]
+        hash = save_file(file, file_name, publisher, identifier, version, architecture)
+        if hash is None:
+            return "Error saving file", 500
+    # If no file is provided, but an external_url is available, use that
+    elif external_url:
+        print("Found external url")
+        hash = get_file_hash_from_url(external_url)
+        file_name = None
+    else:
+        print("Either a file or an external URL must be provided.")
+        raise ValueError("Either a file or an external URL must be provided.")
     
     installer = Installer(
         architecture=architecture,
         installer_type=installer_type,
         file_name=file_name,
+        external_url=external_url,
         installer_sha256=hash,
         scope=scope
     )
