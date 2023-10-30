@@ -80,38 +80,35 @@
             showUploadButton: true,
             submitForm() {
                 this.showUploadButton = false;
-                var hasFile = this.$refs.fileInput.files.length > 0;
                 let formData = new FormData(this.$refs.addVersionForm);
 
-                $.ajax({
-                    url: this.$refs.addVersionForm.action,
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    xhr: () => {
-                        let xhr = new window.XMLHttpRequest();
-                        if (hasFile) {
-                            let fileSize = this.$refs.fileInput.files[0].size;
-                            xhr.upload.addEventListener('progress', (event) => {
-                                if (event.lengthComputable) {
-                                    this.progress = Math.round((event.loaded / fileSize) * 100);
-                                }
-                            });
+                const config = {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    },
+                    onUploadProgress: progressEvent => {
+                        this.progress = Math.round(progressEvent.progress * 100);
+                        console.log(this.progress);
+
+                    }
+                }
+
+                axios.post(this.$refs.addVersionForm.action, formData, config)
+                    .then(response => {
+                        if (response.status === 200) {
+                            this.progress = 0;
+                            this.showAddVersionModal = false;
+                            this.$refs.addVersionForm.reset();
+                            location.reload();
                         }
-                        return xhr;
-                    },
-                    success: () => {
-                        this.progress = 0;
-                        this.showAddVersionModal = false;
-                        this.$refs.addVersionForm.reset();
-                        location.reload();
-                    },
-                    complete: () => {
+                    })
+                    .catch(error => {
+                        console.error(error);
+                    })
+                    .finally(() => {
                         this.showUploadButton = true;
                         this.$refs.addVersionForm.reset();
-                    }
-                });
+                    });
             },
             hideUploadButton() {
                 this.showUploadButton = false;
@@ -133,7 +130,6 @@
             showUploadButton: true,
             submitForm() {
                 this.showUploadButton = false;
-                var hasFile = this.$refs.fileInput.files.length > 0;
                 let formData = new FormData(this.$refs.addVersionForm);
 
                 const config = {
