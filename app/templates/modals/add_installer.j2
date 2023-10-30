@@ -72,7 +72,6 @@
             showUploadButton: true,
             submitForm() {
                 this.showUploadButton = false;
-                var hasFile = this.$refs.fileInput.files.length > 0;
                 let formData = new FormData(this.$refs.addInstallerForm);
 
                 const config = {

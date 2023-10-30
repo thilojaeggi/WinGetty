@@ -98,7 +98,6 @@
             showUploadButton: true,
             submitForm() {
                 this.showUploadButton = false;
-                var hasFile = this.$refs.fileInput.files.length > 0;
                 let formData = new FormData(this.$refs.addPackageForm);
 
                 const config = {
