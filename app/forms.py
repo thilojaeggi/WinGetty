@@ -73,9 +73,8 @@ class AddInstallerFormFields(FlaskForm):
             RequiredIfFile('file')
         ])
     
-    nestedinstallertype = SelectField('Nested Installer Type', choices=[('msi', 'msi'), ('msix', 'msix'), ('appx', 'appx'), ('exe', 'exe')], validators=[
+    nestedinstallertype = SelectField('Nested Installer Type', choices=[('msi', 'msi'), ('msix', 'msix'), ('appx', 'appx'), ('exe', 'exe'), ('inno', 'inno'),('nullsoft', 'nullsoft'), ('wix', 'wix'), ('burn', 'burn'), ('portable','portable')], validators=[
         RequiredIf(installer_type='zip')
-        
         ])
     
     nestedinstallerpath = StringField('Nested Installer Path', validators=[
