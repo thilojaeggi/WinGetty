@@ -38,6 +38,28 @@ class RequiredIfFile(object):
                 raise ValidationError('This field is required.')
 
 
+class FileOrURLRequired:
+    def __init__(self, url_field, file_required=True):
+        self.url_field = url_field
+        self.file_required = file_required
+
+    def __call__(self, form, field):
+        if self.file_required and not field.data and not form[self.url_field].data:
+            raise ValidationError('Either file must be uploaded or URL must be provided.')
+
+
+class RequiredIfFileOrURL:
+    def __init__(self, file_field, url_field):
+        self.file_field = file_field
+        self.url_field = url_field
+
+    def __call__(self, form, field):
+        if (not form[self.file_field].data and not form[self.url_field].data):
+            return  # If neither file nor url is provided, make the field optional
+        elif (form[self.file_field].data or form[self.url_field].data) and not field.data:
+            raise ValidationError('This field is required if either file is uploaded or URL is provided.')
+
+
 
 # this is type of form to just to escape csrf protection
 class AddInstallerFormFields(FlaskForm):
@@ -47,31 +69,30 @@ class AddInstallerFormFields(FlaskForm):
 
     def __init__(self, file_required=True, *args, **kwargs):
         super(AddInstallerFormFields, self).__init__(*args, **kwargs)
-        # Add validator filerequired if file_required is True
         if file_required:
-            self.file.validators.append(FileRequired())
+            self.file.validators.append(FileOrURLRequired(url_field="url", file_required=True))
+            self.url.validators.append(Optional())  # Setting the URL field to optional when file is required
         else:
             self.file.validators.append(Optional())
+            self.url.validators.append(Optional())  # Both fields are optional when file_required is False
+
+
+
 
     file = FileField('File', validators=[FileAllowed(['exe', 'zip', 'msi', 'msix', 'appx'])])
+
+
+    url = StringField('URL', validators=[Optional()])
+
+
+    version = StringField('Version',validators=[RequiredIfFileOrURL('file', 'url')])
     
 
-    version = StringField('Version', validators=[
-            RequiredIfFile('file')
-        ])
+    architecture = SelectField('Architecture', choices=[('x86', 'x86'), ('x64', 'x64'), ('arm', 'arm'), ('arm64', 'arm64')],validators=[RequiredIfFileOrURL('file', 'url')])
     
-
-    architecture = SelectField('Architecture', choices=[('x86', 'x86'), ('x64', 'x64'), ('arm', 'arm'), ('arm64', 'arm64')], validators=[
-            RequiredIfFile('file')
-        ])
+    installer_type = SelectField('Type', choices=[('exe', 'exe'), ('msi', 'msi'), ('msix', 'msix'), ('appx', 'appx'), ('zip', 'zip'), ('inno', 'inno'), ('nullsoft', 'nullsoft'), ('wix', 'wix'), ('burn', 'burn'), ('pwa', 'pwa'), ('msstore', 'msstore')],validators=[RequiredIfFileOrURL('file', 'url')])
     
-    installer_type = SelectField('Type', choices=[('exe', 'exe'), ('msi', 'msi'), ('msix', 'msix'), ('appx', 'appx'), ('zip', 'zip'), ('inno', 'inno'), ('nullsoft', 'nullsoft'), ('wix', 'wix'), ('burn', 'burn'), ('pwa', 'pwa'), ('msstore', 'msstore')], validators=[
-            RequiredIfFile('file')
-        ])
-    
-    installer_scope = SelectField('Scope', choices=[('user', 'user'), ('machine', 'machine'), ('both', 'both')], validators=[
-            RequiredIfFile('file')
-        ])
+    installer_scope = SelectField('Scope', choices=[('user', 'user'), ('machine', 'machine'), ('both', 'both')],validators=[RequiredIfFileOrURL('file', 'url')])
     
     nestedinstallertype = SelectField('Nested Installer Type', choices=[('msi', 'msi'), ('msix', 'msix'), ('appx', 'appx'), ('exe', 'exe'), ('inno', 'inno'),('nullsoft', 'nullsoft'), ('wix', 'wix'), ('burn', 'burn'), ('portable','portable')], validators=[
         RequiredIf(installer_type='zip')
