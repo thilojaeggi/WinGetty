@@ -1,13 +1,13 @@
 import os
-
+import boto3
 from flask import (
-    Blueprint, jsonify, render_template, request,
-    redirect, url_for, current_app, send_from_directory, flash
+    Blueprint, Response, jsonify, render_template, request,
+    redirect, stream_with_context, url_for, current_app, send_from_directory, flash
 )
 from flask_login import login_required
 from werkzeug.http import parse_range_header
 from werkzeug.utils import secure_filename
-
+import requests
 from app import db
 from app.decorators import permission_required
 from app.forms import AddInstallerForm, AddPackageForm, AddVersionForm
@@ -15,10 +15,47 @@ from app.models import InstallerSwitch, Package, PackageVersion, Installer, User
 from app.utils import create_installer, debugPrint, save_file, basedir
 from app.constants import installer_switches
 api = Blueprint('api', __name__)
-
+s3_client = boto3.client('s3')
 @api.route('/')
 def index():
     return "API is running, see documentation for more information", 200
+S3_BUCKET_NAME = "flask-testbucket"
+URL_EXPIRATION_SECONDS = 3600
+
+@api.route('/generate_presigned_url', methods=['POST'])
+def generate_presigned_url():
+    try:
+        # Extract file information from the request
+        file_name = request.form.get('file_name')
+        file_extension = file_name.rsplit('.', 1)[1]
+        content_type = request.form.get('content_type')
+
+        # Specify the S3 object key where the file will be uploaded
+        publisher = secure_filename(request.form.get('publisher'))
+        identifier = secure_filename(request.form.get('identifier'))
+        version = secure_filename(request.form.get('installer-version'))
+        architecture = secure_filename(request.form.get('installer-architecture'))
+        scope = request.form.get('installer-installer_scope')  # Add this to the request form
+        # Define the S3 object key with the same format as 'scope.file_extension'
+        s3_object_key = f'packages/{publisher}/{identifier}/{version}/{architecture}/{scope}.{file_extension}'
+
+        # Generate a pre-signed URL for S3 uploads
+        presigned_url = s3_client.generate_presigned_url(
+            'put_object',
+            Params={'Bucket': S3_BUCKET_NAME, 'Key': s3_object_key, 'ContentType': content_type},
+            ExpiresIn=URL_EXPIRATION_SECONDS
+        )
+
+        # Return the pre-signed URL and other information in the response
+        return jsonify({
+            'presigned_url': presigned_url,
+            'content_type': content_type,
+            'file_name': file_name,
+            'file_path': s3_object_key  # Include the S3 object key for reference
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @api.route('/add_package', methods=['POST'])
 @login_required
@@ -27,9 +64,13 @@ def add_package():
     form = AddPackageForm(meta={'csrf': False})
     installer_form = form.installer
 
-    if not form.validate_on_submit():
-        validation_errors = form.errors
-        return str("Form validation error"), 500
+
+    if os.environ.get('USE_S3') == "true":
+        if not form.validate_on_submit():
+            validation_errors = form.errors
+            return str("Form validation error"), 500
+        
+    
     
     name = form.name.data
     publisher = secure_filename(form.publisher.data)
@@ -39,7 +80,7 @@ def add_package():
     
 
     package = Package(identifier=identifier, name=name, publisher=publisher)
-    if file and version:
+    if file or os.environ.get('USE_S3') == 'true' and version:
         debugPrint("File and version found")
         installer = create_installer(publisher, identifier, version, installer_form)
         if installer is None:
@@ -305,7 +346,6 @@ def delete_user(id):
 @api.route('/download/<identifier>/<version>/<architecture>/<scope>')
 def download(identifier, version, architecture, scope):
     # TODO: Improve this function to be more efficient, also when a package's publisher is renamed the file won't be found anymore
-
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
         debugPrint("Package not found")
@@ -314,13 +354,47 @@ def download(identifier, version, architecture, scope):
     # Get version of package and also match package
     version_code = PackageVersion.query.filter_by(version_code=version, identifier=identifier).first()
     if version_code is None:
-        debugPrint("Package version not found")
+        #debugPrint("Package version not found")
         return "Package version not found", 404
     # Get installer of package version and also match architecture and identifier
     installer = Installer.query.filter_by(version_id=version_code.id, architecture=architecture, scope=scope).first()
     if installer is None:
         debugPrint("Installer not found")
         return "Installer not found", 404
+    
+    if os.environ.get('USE_S3') == "true":
+        print("Using S3")
+        # Generate a pre-signed URL for S3 uploads
+        presigned_url = s3_client.generate_presigned_url(
+            'get_object',
+            Params={
+                'Bucket': S3_BUCKET_NAME, 
+                'Key': 'packages/' + package.publisher + '/' + package.identifier + '/' + version_code.version_code + '/' + installer.architecture + '/' + installer.file_name, 
+                'ResponseContentDisposition': 'attachment; filename=' + installer.file_name, 
+                'ResponseContentType': 'application/octet-stream'
+            },
+            ExpiresIn=URL_EXPIRATION_SECONDS
+        )
+        package.download_count += 1
+        db.session.commit()
+
+        # Make a request to S3 to get the file content
+        response = requests.get(presigned_url, stream=True, timeout=10)
+
+        # Check if the request was successful
+        if response.status_code != 200:
+            return "Error fetching the file", 500
+
+        # Stream the content back to the client
+        def generate():
+            for chunk in response.iter_content(chunk_size=8192):
+                yield chunk
+
+        return Response(
+            stream_with_context(generate()),
+            content_type='application/octet-stream',
+            headers={"Content-Disposition": f"attachment; filename={installer.file_name}"}
+        )
 
 
     installer_path = os.path.join(basedir, 'packages', package.publisher, package.identifier, version_code.version_code, installer.architecture)
