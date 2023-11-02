@@ -131,7 +131,7 @@
             submitForm() {
                 this.showUploadButton = false;
                 let formData = new FormData(this.$refs.addVersionForm);
-
+                formData.append('installer-is_aws', false);
                 const config = {
                     headers: {
                         'Content-Type': 'multipart/form-data'

@@ -73,6 +73,7 @@
             submitForm() {
                 this.showUploadButton = false;
                 let formData = new FormData(this.$refs.addInstallerForm);
+                formData.append('installer-is_aws', false);
 
                 const config = {
                     headers: {
