@@ -19,7 +19,6 @@ s3_client = boto3.client('s3')
 @api.route('/')
 def index():
     return "API is running, see documentation for more information", 200
-S3_BUCKET_NAME = "flask-testbucket"
 URL_EXPIRATION_SECONDS = 3600
 
 @api.route('/generate_presigned_url', methods=['POST'])
@@ -42,7 +41,7 @@ def generate_presigned_url():
         # Generate a pre-signed URL for S3 uploads
         presigned_url = s3_client.generate_presigned_url(
             'put_object',
-            Params={'Bucket': S3_BUCKET_NAME, 'Key': s3_object_key, 'ContentType': content_type},
+            Params={'Bucket': current_app.config['BUCKET_NAME'], 'Key': s3_object_key, 'ContentType': content_type},
             ExpiresIn=URL_EXPIRATION_SECONDS
         )
 
@@ -65,7 +64,7 @@ def add_package():
     installer_form = form.installer
 
 
-    if os.environ.get('USE_S3') == "true":
+    if current_app.config['USE_S3']:
         if not form.validate_on_submit():
             validation_errors = form.errors
             return str("Form validation error"), 500
@@ -80,7 +79,7 @@ def add_package():
     
 
     package = Package(identifier=identifier, name=name, publisher=publisher)
-    if file or os.environ.get('USE_S3') == 'true' and version:
+    if file or current_app.config['USE_S3'] and version:
         debugPrint("File and version found")
         installer = create_installer(publisher, identifier, version, installer_form)
         if installer is None:
@@ -362,13 +361,13 @@ def download(identifier, version, architecture, scope):
         debugPrint("Installer not found")
         return "Installer not found", 404
     
-    if os.environ.get('USE_S3') == "true":
+    if current_app.config['USE_S3']:
         print("Using S3")
         # Generate a pre-signed URL for S3 uploads
         presigned_url = s3_client.generate_presigned_url(
             'get_object',
             Params={
-                'Bucket': S3_BUCKET_NAME, 
+                'Bucket': current_app.config['BUCKET_NAME'],
                 'Key': 'packages/' + package.publisher + '/' + package.identifier + '/' + version_code.version_code + '/' + installer.architecture + '/' + installer.file_name, 
                 'ResponseContentDisposition': 'attachment; filename=' + installer.file_name, 
                 'ResponseContentType': 'application/octet-stream'
