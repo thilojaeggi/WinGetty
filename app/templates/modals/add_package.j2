@@ -221,4 +221,63 @@
         };
     }
 </script>
+{% else %}
+<script>
+    function addPackageFormData() {
+        return {
+            progress: 0,
+
+            showUploadButton: true,
+            submitForm() {
+                this.showUploadButton = false;
+                let formData = new FormData(this.$refs.addPackageForm);
+
+                const config = {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    },
+                    onUploadProgress: progressEvent => {
+                        this.progress = Math.round(progressEvent.progress * 100);
+                        console.log(this.progress);
+
+                    }
+                }
+
+                axios.post(this.$refs.addPackageForm.action, formData, config)
+                    .then(response => {
+                        if (response.status === 200) {
+                            this.progress = 0;
+                            this.showAddPackageModal = false;
+                            this.$refs.addPackageForm.reset();
+                            location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        window.dispatchEvent(new CustomEvent('notice', {
+                            detail: {
+                                text: error.response.data,
+                                type: 'error'
+                            }
+                        }));
+
+
+
+                    })
+                    .finally(() => {
+                        this.showUploadButton = true;
+                    });
+            },
+            hideUploadButton() {
+                this.showUploadButton = false;
+            },
+            hideModal() {
+                this.showAddPackageModal = false;
+                // Get the form by its id and reset it
+                fileChosen = false;
+                document.getElementById("addPackageForm").reset();
+            }
+        };
+    }
+</script>
 {% endif %}
