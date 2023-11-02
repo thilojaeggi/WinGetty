@@ -36,11 +36,13 @@ def get_file_hash_from_url(url, max_content_length=1024 * 1024 * 1024 * 10):  # 
 def create_installer(publisher, identifier, version, installer_form):
     file = installer_form.file.data
     external_url = installer_form.url.data
+    is_aws = installer_form.is_aws.data
     architecture = installer_form.architecture.data
     installer_type = installer_form.installer_type.data
     scope = installer_form.installer_scope.data
     nestedinstallertype = installer_form.nestedinstallertype.data
     nestedinstallerpath = installer_form.nestedinstallerpath.data
+
 
     # If file is provided, save the file
     if file:
@@ -49,7 +51,7 @@ def create_installer(publisher, identifier, version, installer_form):
         hash = save_file(file, file_name, publisher, identifier, version, architecture)
         if hash is None:
             return "Error saving file", 500
-    elif not file and external_url and current_app.config['USE_S3']:
+    elif not file and external_url and is_aws:
         file_name = external_url
         s3_object_key = f'packages/{publisher}/{identifier}/{version}/{architecture}/{file_name}'
         external_url = None
