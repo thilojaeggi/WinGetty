@@ -363,37 +363,24 @@ def download(identifier, version, architecture, scope):
     
     if current_app.config['USE_S3']:
         print("Using S3")
-        # Generate a pre-signed URL for S3 uploads
+        # Generate a pre-signed URL for the S3 object
         presigned_url = s3_client.generate_presigned_url(
             'get_object',
             Params={
                 'Bucket': current_app.config['BUCKET_NAME'],
-                'Key': 'packages/' + package.publisher + '/' + package.identifier + '/' + version_code.version_code + '/' + installer.architecture + '/' + installer.file_name, 
-                'ResponseContentDisposition': 'attachment; filename=' + installer.file_name, 
+                'Key': 'packages/' + package.publisher + '/' + package.identifier + '/' + version_code.version_code + '/' + installer.architecture + '/' + installer.file_name,
+                'ResponseContentDisposition': 'attachment; filename=' + installer.file_name,
                 'ResponseContentType': 'application/octet-stream'
             },
             ExpiresIn=URL_EXPIRATION_SECONDS
         )
+
+        # Increment the download count and commit to the database
         package.download_count += 1
         db.session.commit()
 
-        # Make a request to S3 to get the file content
-        response = requests.get(presigned_url, stream=True, timeout=10)
-
-        # Check if the request was successful
-        if response.status_code != 200:
-            return "Error fetching the file", 500
-
-        # Stream the content back to the client
-        def generate():
-            for chunk in response.iter_content(chunk_size=8192):
-                yield chunk
-
-        return Response(
-            stream_with_context(generate()),
-            content_type='application/octet-stream',
-            headers={"Content-Disposition": f"attachment; filename={installer.file_name}"}
-        )
+        # Redirect the client to the pre-signed URL
+        return redirect(presigned_url)
 
 
     installer_path = os.path.join(basedir, 'packages', package.publisher, package.identifier, version_code.version_code, installer.architecture)
