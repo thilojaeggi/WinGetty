@@ -113,6 +113,22 @@ def calculate_sha256(filename):
 
     return sha256_hash.hexdigest()
 
+
+def delete_installer(package, installer, version):
+    if not installer.external_url and installer.file_name:
+        base_path = ['packages', package.publisher, package.identifier, version.version_code, installer.architecture]
+        if current_app.config['USE_S3']:
+            s3_key = '/'.join(base_path + [installer.file_name])
+            s3_client.delete_object(
+                Bucket=current_app.config['BUCKET_NAME'],
+                Key=s3_key
+            )
+        else:
+            # Construct the file system path
+            installer_path = os.path.join(basedir, *base_path, installer.file_name)
+            if os.path.exists(installer_path):
+                os.remove(installer_path)
+
 def debugPrint(message):
     if current_app.config['DEBUG']:
         print(message)

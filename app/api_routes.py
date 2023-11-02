@@ -123,10 +123,7 @@ def delete_package(identifier):
 
     for version in package.versions:
         for installer in version.installers:
-            filepath = os.path.join(basedir, 'packages', package.publisher, package.identifier, version.version_code, installer.architecture, installer.file_name)
-            if os.path.exists(filepath):
-                os.remove(filepath)
-            db.session.delete(installer)
+            delete_installer(package, installer, version)
         db.session.delete(version)
     db.session.delete(package)
     db.session.commit()
@@ -262,19 +259,7 @@ def delete_installer(identifier, version, installer):
     if installer is None:
         return "Installer not found", 404
     
-    if not installer.external_url and installer.file_name:
-        base_path = ['packages', package.publisher, package.identifier, version.version_code, installer.architecture]
-        if current_app.config['USE_S3']:
-            s3_key = '/'.join(base_path + [installer.file_name])
-            s3_client.delete_object(
-                Bucket=current_app.config['BUCKET_NAME'],
-                Key=s3_key
-            )
-        else:
-            # Construct the file system path
-            installer_path = os.path.join(basedir, *base_path, installer.file_name)
-            if os.path.exists(installer_path):
-                os.remove(installer_path)
+    delete_installer(package, installer, version)
 
     
     db.session.delete(installer)
@@ -297,10 +282,7 @@ def delete_version(identifier, version):
         return "Version not found", 404
 
     for installer in version.installers:
-        installer_path = os.path.join(basedir, 'packages', package.publisher, package.identifier, version.version_code, installer.architecture, installer.file_name)
-        if os.path.exists(installer_path):
-            os.remove(installer_path)    
-        db.session.delete(installer)
+        delete_installer(package, installer, version)
     db.session.delete(version)
     db.session.commit()
 
