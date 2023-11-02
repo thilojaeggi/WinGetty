@@ -38,7 +38,7 @@
                 </button>
             </div>
             <!-- Modal body -->
-            <div class="px-4 space-y-6">
+            <div class="px-4 pb-4 space-y-6">
                 <form id="addPackageForm" x-ref="addPackageForm" @submit.prevent="submitForm" class="mt-5"
                     x-data="{ fileChosen: false, name: '', publisher: '', identifier: '', identifierEditedManually : false}"
                     action="{{ url_for('api.add_package') }}" method="POST" enctype="multipart/form-data">
@@ -72,7 +72,7 @@
                     {{ macros.file_upload() }}
 
                     <div x-show="!showUploadButton"
-                        class="min-w-[5%] h-auto p-2 mt-2 rounded-md w-min bg-blue-600 flex flex-row justify-end text-white text-lg font-semibold "
+                        class="min-w-[5%] h-auto p-2 mt-2  rounded-md w-min bg-blue-600 flex flex-row justify-end text-white text-lg font-semibold "
                         x-bind:style="'width: ' + progress + '%; transition: width 0.5s ease-in-out;'">
                         <p x-text="progress"></p>
                     </div>
@@ -107,14 +107,24 @@
                     formData.append('content_type', file.type);
                 }
 
-                const config = {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    },
-                    onUploadProgress: progressEvent => {
-                        this.progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-                    }
+                if (file && file.size > 0) {
+                    this.generate_presigned_url(formData, file);
+                } else {
+                    this.addToPackages(null);
                 }
+                
+            },
+
+            generate_presigned_url(formData, file) {
+                formData.delete('installer-file');
+                const config = {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        },
+                        onUploadProgress: progressEvent => {
+                            this.progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                        }
+                    }
 
                 axios.post('{{ url_for('api.generate_presigned_url')}}', formData, config)
                     .then(response => {
@@ -169,14 +179,20 @@
 
             addToPackages(file) {
                 const formData = new FormData(this.$refs.addPackageForm);
+                if (file) {
+                    formData.append('installer-is_aws', true);
+                    formData.append('installer-url', file.name);
+                } else {
+                    formData.append('installer-is_aws', false);
+                }
                 formData.delete('installer-file');
-                formData.append('installer-url', file.name); // Adjusted to use passed file
 
                 axios.post('{{ url_for('api.add_package')}}', formData)
                     .then(response => {
                         if (response.status === 200) {
                             this.showAddPackageModal = false;
                             this.$refs.addPackageForm.reset();
+                            location.reload();
                         }
                     })
                     .catch(error => {
@@ -190,7 +206,7 @@
                     })
                     .finally(() => {
                         this.showUploadButton = true;
-                       // location.reload();
+                        
                     });
             },
 

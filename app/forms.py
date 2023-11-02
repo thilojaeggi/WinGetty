@@ -1,3 +1,4 @@
+from flask import current_app
 from flask_wtf import FlaskForm
 from wtforms import (StringField, TextAreaField, IntegerField, BooleanField,
                      RadioField, FileField, SelectField)
@@ -76,6 +77,9 @@ class AddInstallerFormFields(FlaskForm):
             self.file.validators.append(Optional())
             self.url.validators.append(Optional())  # Both fields are optional when file_required is False
 
+        if current_app.config['USE_S3'] and file_required:
+            self.is_aws.validators.append(InputRequired())
+
 
 
 
@@ -84,6 +88,7 @@ class AddInstallerFormFields(FlaskForm):
 
     url = StringField('URL', validators=[Optional()])
 
+    is_aws = BooleanField('Is AWS', validators=[Optional()])
 
     version = StringField('Version',validators=[RequiredIfFileOrURL('file', 'url')])
     

@@ -62,8 +62,6 @@ def generate_presigned_url():
 def add_package():
     form = AddPackageForm(meta={'csrf': False})
     installer_form = form.installer
-
-
     
     if not form.validate_on_submit():
         validation_errors = form.errors
@@ -74,10 +72,12 @@ def add_package():
     identifier = form.identifier.data
     version = installer_form.version.data
     file = installer_form.file.data
+    external_url = installer_form.url.data
+    is_aws = installer_form.is_aws.data
     
 
     package = Package(identifier=identifier, name=name, publisher=publisher)
-    if file or current_app.config['USE_S3'] and version:
+    if file or external_url and version:
         debugPrint("File and version found")
         installer = create_installer(publisher, identifier, version, installer_form)
         if installer is None:
@@ -262,9 +262,20 @@ def delete_installer(identifier, version, installer):
     if installer is None:
         return "Installer not found", 404
     
-    installer_path = os.path.join(basedir, 'packages', package.publisher, package.identifier, version.version_code, installer.architecture, installer.file_name)
-    if os.path.exists(installer_path):
-        os.remove(installer_path)    
+    if not installer.external_url and installer.file_name:
+        base_path = ['packages', package.publisher, package.identifier, version.version_code, installer.architecture]
+        if current_app.config['USE_S3']:
+            s3_key = '/'.join(base_path + [installer.file_name])
+            s3_client.delete_object(
+                Bucket=current_app.config['BUCKET_NAME'],
+                Key=s3_key
+            )
+        else:
+            # Construct the file system path
+            installer_path = os.path.join(basedir, *base_path, installer.file_name)
+            if os.path.exists(installer_path):
+                os.remove(installer_path)
+
     
     db.session.delete(installer)
     db.session.commit()
