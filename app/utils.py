@@ -5,8 +5,9 @@ from flask import current_app, request
 from werkzeug.utils import secure_filename
 from app.models import Installer, InstallerSwitch, NestedInstallerFile
 from app.constants import installer_switches
-
-
+import boto3
+s3_client = boto3.client('s3')
+URL_EXPIRATION_SECONDS = 3600
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
@@ -48,11 +49,26 @@ def create_installer(publisher, identifier, version, installer_form):
         hash = save_file(file, file_name, publisher, identifier, version, architecture)
         if hash is None:
             return "Error saving file", 500
+    elif not file and external_url and current_app.config['USE_S3']:
+        file_name = external_url
+        s3_object_key = f'packages/{publisher}/{identifier}/{version}/{architecture}/{file_name}'
+        external_url = None
+
+        # Generate a pre-signed URL for S3 uploads
+        presigned_url = s3_client.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': current_app.config['BUCKET_NAME'], 'Key': s3_object_key},
+            ExpiresIn=URL_EXPIRATION_SECONDS
+        )
+        
+        hash = get_file_hash_from_url(presigned_url)
     # If no file is provided, but an external_url is available, use that
     elif external_url:
         print("Found external url")
         hash = get_file_hash_from_url(external_url)
         file_name = None
+
+        
     else:
         print("Either a file or an external URL must be provided.")
         raise ValueError("Either a file or an external URL must be provided.")
@@ -105,16 +121,16 @@ def save_file(file, file_name, publisher, identifier, version, architecture):
     version = secure_filename(version)
     architecture = secure_filename(architecture)
 
+
     # Create directory if it doesn't exist
     save_directory = os.path.join(basedir, 'packages', publisher, identifier, version, architecture)
-        # Create directory if it doesn't exist
     if not os.path.exists(save_directory):
         os.makedirs(save_directory)
 
-
-    # Save file
+    # Save file locally
     file_path = os.path.join(save_directory, file_name)
     file.save(file_path)
+
     # Get file hash
     hash = calculate_sha256(file_path)
     return hash
