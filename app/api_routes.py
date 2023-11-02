@@ -64,13 +64,11 @@ def add_package():
     installer_form = form.installer
 
 
-    if current_app.config['USE_S3']:
-        if not form.validate_on_submit():
-            validation_errors = form.errors
-            return str("Form validation error"), 500
-        
     
-    
+    if not form.validate_on_submit():
+        validation_errors = form.errors
+        return str("Form validation error"), 500
+            
     name = form.name.data
     publisher = secure_filename(form.publisher.data)
     identifier = form.identifier.data
@@ -361,8 +359,7 @@ def download(identifier, version, architecture, scope):
         debugPrint("Installer not found")
         return "Installer not found", 404
     
-    if current_app.config['USE_S3']:
-        print("Using S3")
+    if current_app.config['USE_S3'] and installer.external_url is None:
         # Generate a pre-signed URL for the S3 object
         presigned_url = s3_client.generate_presigned_url(
             'get_object',
