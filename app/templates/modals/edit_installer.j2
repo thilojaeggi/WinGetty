@@ -31,7 +31,7 @@
                 </button>
             </div>
             <!-- Modal body -->
-            <div class="px-4 space-y-6">
+            <div class="px-4 pb-4 space-y-6">
                 <form x-ref="editInstallerForm" id="editInstallerForm" class="mt-5"
                     action="{{ url_for('api.edit_installer', identifier=package.identifier) }}" method="POST"
                     enctype="multipart/form-data">

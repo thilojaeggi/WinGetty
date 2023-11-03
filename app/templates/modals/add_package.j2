@@ -38,13 +38,13 @@
                 </button>
             </div>
             <!-- Modal body -->
-            <div class="px-4 space-y-6">
+            <div class="px-4 pb-4 space-y-6">
                 <form id="addPackageForm" x-ref="addPackageForm" @submit.prevent="submitForm" class="mt-5"
                     x-data="{ fileChosen: false, name: '', publisher: '', identifier: '', identifierEditedManually : false}"
                     action="{{ url_for('api.add_package') }}" method="POST" enctype="multipart/form-data">
 
 
-                 
+
 
                     <div class="mt-2">
                         <label for="publisher" class="block text-gray-700 dark:text-gray-300 ">Publisher<span
@@ -53,7 +53,7 @@
                             class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                     </div>
 
-                       <div class="mt-2">
+                    <div class="mt-2">
                         <label for="name" class="block  text-gray-700 dark:text-gray-300 ">Name<span
                                 class="text-red-500">*</span></label>
                         <input required name="name" placeholder="" type="text" x-model="name"
@@ -72,7 +72,7 @@
                     {{ macros.file_upload() }}
 
                     <div x-show="!showUploadButton"
-                        class="min-w-[5%] h-auto p-2 mt-2 rounded-md w-min bg-blue-600 flex flex-row justify-end text-white text-lg font-semibold "
+                        class="min-w-[5%] h-auto p-2 mt-2  rounded-md w-min bg-blue-600 flex flex-row justify-end text-white text-lg font-semibold "
                         x-bind:style="'width: ' + progress + '%; transition: width 0.5s ease-in-out;'">
                         <p x-text="progress"></p>
                     </div>
@@ -89,7 +89,139 @@
     </div>
 </div>
 
+{% if config['USE_S3'] %}
+<script>
+    function addPackageFormData() {
+        return {
+            progress: 0,
+            showUploadButton: true,
 
+            submitForm() {
+                const formData = new FormData(this.$refs.addPackageForm);
+                const file = formData.get('installer-file');
+                const fileName = file ? file.name : null;
+
+                formData.delete('installer-file');
+                if (fileName) {
+                    formData.append('file_name', fileName);
+                    formData.append('content_type', file.type);
+                }
+
+                if (file && file.size > 0) {
+                    this.generate_presigned_url(formData, file);
+                } else {
+                    this.addToPackages(null);
+                }
+                
+            },
+
+            generate_presigned_url(formData, file) {
+                formData.delete('installer-file');
+                const config = {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        },
+                        onUploadProgress: progressEvent => {
+                            this.progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                        }
+                    }
+
+                axios.post('{{ url_for('api.generate_presigned_url')}}', formData, config)
+                    .then(response => {
+                        if (response.status === 200) {
+                            const parts = file.name.split('.');
+                            const extension = parts.length > 1 ? parts.pop() : null;
+                            let newFormData = new FormData();
+                            newFormData.append('file', file, `${formData.get('installer-installer_scope')}.${extension}`);
+                            this.uploadFile(response.data, newFormData.get('file'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        window.dispatchEvent(new CustomEvent('notice', {
+                            detail: {
+                                text: error.response.data.error,
+                                type: 'error'
+                            }
+                        }));
+                    });
+            },
+
+            uploadFile(data, file) {
+                this.progress = 0;
+                this.showUploadButton = false;
+
+                const config = {
+                    headers: {
+                        'Content-Type': data.content_type
+                    },
+                    onUploadProgress: progressEvent => {
+                        this.progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                    }
+                }
+
+                axios.put(data.presigned_url, file, config)
+                    .then(response => {
+                        if (response.status === 200) {
+                            this.addToPackages(file);
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        window.dispatchEvent(new CustomEvent('notice', {
+                            detail: {
+                                text: 'Error uploading the file.',
+                                type: 'error'
+                            }
+                        }));
+                    });
+            },
+
+            addToPackages(file) {
+                const formData = new FormData(this.$refs.addPackageForm);
+                if (file) {
+                    formData.append('installer-is_aws', true);
+                    formData.append('installer-url', file.name);
+                } else {
+                    formData.append('installer-is_aws', false);
+                }
+                formData.delete('installer-file');
+
+                axios.post('{{ url_for('api.add_package')}}', formData)
+                    .then(response => {
+                        if (response.status === 200) {
+                            this.showAddPackageModal = false;
+                            this.$refs.addPackageForm.reset();
+                            location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        window.dispatchEvent(new CustomEvent('notice', {
+                            detail: {
+                                text: 'Error adding the package.',
+                                type: 'error'
+                            }
+                        }));
+                    })
+                    .finally(() => {
+                        this.showUploadButton = true;
+                        
+                    });
+            },
+
+            hideUploadButton() {
+                this.showUploadButton = false;
+            },
+
+            hideModal() {
+                this.showAddPackageModal = false;
+                document.getElementById("addPackageForm").reset();
+            }
+        };
+    }
+</script>
+{% else %}
 <script>
     function addPackageFormData() {
         return {
@@ -98,7 +230,6 @@
             showUploadButton: true,
             submitForm() {
                 this.showUploadButton = false;
-                var hasFile = this.$refs.fileInput.files.length > 0;
                 let formData = new FormData(this.$refs.addPackageForm);
 
                 const config = {
@@ -149,3 +280,4 @@
         };
     }
 </script>
+{% endif %}

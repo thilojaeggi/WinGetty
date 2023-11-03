@@ -2,30 +2,26 @@ from app.models import Permission, Role, User
 from app import db
 from sqlalchemy.exc import IntegrityError
 
-def create_all():
-    create_default_roles()
-    create_permissions()
+def get_or_create(model, **kwargs):
+    """Get an instance if it exists, otherwise create and return an instance."""
+    instance = model.query.filter_by(**kwargs).first()
+    if instance:
+        return instance
+    else:
+        instance = model(**kwargs)
+        db.session.add(instance)
+        return instance
 
 def create_default_roles():
-    # Create the default roles if they don't exist
-    admin_role = Role.query.filter_by(name='admin').first()
-    if not admin_role:
-        admin_role = Role(name='admin')
-        db.session.add(admin_role)
-
-    user_role = Role.query.filter_by(name='user').first()
-    if not user_role:
-        user_role = Role(name='user')
-        db.session.add(user_role)
-
-    viewer_role = Role.query.filter_by(name='viewer').first()
-    if not viewer_role:
-        viewer_role = Role(name='viewer')
-        db.session.add(viewer_role)
-    
-    db.session.commit()
+    """Create default roles."""
+    role_names = ['admin', 'user', 'viewer']
+    roles = {}
+    for role_name in role_names:
+        roles[role_name] = get_or_create(Role, name=role_name)
+    return roles
 
 def create_permissions():
+    """Create permissions and assign them to roles."""
     package_permissions = [
         'view:package',
         'add:package',
@@ -81,7 +77,7 @@ def create_permissions():
     ]
 
     # Combine all permissions to one big list
-    all_permissions = (
+    permissions = (
         package_permissions +
         version_permissions +
         installer_permissions +
@@ -91,66 +87,42 @@ def create_permissions():
         user_permissions +
         own_user_permissions
     )
+    roles = create_default_roles()
 
-    # Create all permissions
-    for permission in all_permissions:
-        existing_permission = Permission.query.filter_by(name=permission).first()
-        if not existing_permission:
-            print(f'Creating permission: {permission}')
-            new_permission = Permission(name=permission)
-            try:
-                db.session.add(new_permission)
-                db.session.commit()
-            except IntegrityError:
-                db.session.rollback()
-                print(f"Permission {permission} already exists.")
+    for permission_name in permissions:
+        permission = get_or_create(Permission, name=permission_name)
+        
+        # Assign permissions to roles using your filtering logic:
+        if permission not in roles['admin'].permissions:
+            roles['admin'].permissions.append(permission)
+        
+        if permission_name not in ['view:role', 'add:role', 'edit:role', 'delete:role',
+                                   'view:permission', 'add:permission', 'edit:permission', 'delete:permission',
+                                   'view:user', 'add:user', 'edit:user', 'delete:user'] and \
+           permission not in roles['user'].permissions:
+            roles['user'].permissions.append(permission)
+        
+        if permission_name.startswith('view:') and \
+           permission_name not in ['view:role', 'view:permission', 'view:user'] and \
+           permission not in roles['viewer'].permissions:
+            roles['viewer'].permissions.append(permission)
 
-    admin_role = Role.query.filter_by(name='admin').first()
-    user_role = Role.query.filter_by(name='user').first()
-    viewer_role = Role.query.filter_by(name='viewer').first()
-
-    # Assign the permissions to the roles if they are not already assigned to the role
-    admin_role_permissions = [
-    permission for permission in Permission.query.filter(
-        Permission.name.in_(all_permissions)
-    ) if permission not in admin_role.permissions
-    ]
-    for permission in admin_role_permissions:
-        if permission not in admin_role.permissions:
-            admin_role.permissions.append(permission)
-
-    user_role_permissions = [
-        permission for permission in Permission.query.filter(
-        Permission.name.in_(all_permissions),
-        ~Permission.name.in_(role_permissions + permission_permissions + user_permissions)
-        ) if permission not in user_role.permissions
-    ]
-
-    for permission in user_role_permissions:
-        if permission not in user_role.permissions:
-            user_role.permissions.append(permission)
-
-
-    # Assign the permissions to the viewer role if they are not already assigned
-    viewer_role_permissions = [
-        permission for permission in Permission.query.filter(
-            Permission.name.like('view:%'),
-            ~Permission.name.in_(role_permissions + permission_permissions + user_permissions)
-        ) if permission not in viewer_role.permissions
-    ]
-    for permission in viewer_role_permissions:
-        if permission not in viewer_role.permissions:
-            viewer_role.permissions.append(permission)
-
-    # if no user with the admin role exists, assign the admin role to the first user
-    if not User.query.filter_by(role=admin_role).first():
+    # Assign roles to users:
+    if not User.query.filter_by(role=roles['admin']).first():
         first_user = User.query.first()
         if first_user:
-            first_user.role = admin_role
-    # all other users get the viewer role
+            first_user.role = roles['admin']
+    
     for user in User.query.filter_by(role=None):
-        user.role = viewer_role
+        user.role = roles['viewer']
 
-    db.session.commit()
-
+def create_all():
+    """Entry function to create roles and permissions."""
+    try:
+        create_default_roles()
+        create_permissions()
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        print("Error occurred. Rolled back the session.")
 

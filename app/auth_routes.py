@@ -11,7 +11,7 @@ auth = Blueprint('auth', __name__)
 @auth.route('/login')
 def login():
     # Get if at least one user exists, if no and registration is allowed, redirecto signup and flash message
-    if not User.query.first() and current_app.config['ENABLE_REGISTRATION']:
+    if not User.query.first():
         flash('No user exists yet, please create one.', 'warning')
         return redirect(url_for('auth.signup'))
     
@@ -42,9 +42,15 @@ def login_post():
 
 @auth.route('/signup')
 def signup():
-    if not current_app.config['ENABLE_REGISTRATION']:
-        flash('Registration is disabled.', 'error')
-        return redirect(url_for('ui.index'))
+    # Check if any user exists in the database.
+    user_exists = User.query.first() is not None
+    
+    # If users already exist and registration is disabled, redirect to login with a flash message.
+    if user_exists and not current_app.config['ENABLE_REGISTRATION']:
+        flash('Registration is not allowed. Please contact your administrator.', 'warning')
+        return redirect(url_for('auth.login'))
+    
+    # If no users exist or registration is enabled, render the signup template.
     return render_template('signup.j2')
 
 @auth.route('/logout')
@@ -55,40 +61,41 @@ def logout():
 
 @auth.route('/signup', methods=['POST'])
 def signup_post():
-    # code to validate and add user to database goes here
+    # Before processing the form, check if registration is enabled and users exist
+    if User.query.first() and not current_app.config['ENABLE_REGISTRATION']:
+        flash('Registration is disabled.', 'error')
+        return redirect(url_for('auth.login'))
+
+    # Proceed with form processing
     email = request.form.get('email').lower()
     username = request.form.get('username').lower()
     password = request.form.get('password')
-    if not current_app.config['ENABLE_REGISTRATION']:
-        flash('Registration is disabled.', 'error')
-        return redirect(url_for('ui.index'))
 
-    user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
-
-    if user: # if a user is found, we want to redirect back to signup page so user can try again
+    # Check if the email is already in use
+    if User.query.filter_by(email=email).first():
         flash('Email address already in use.', 'error')
         return redirect(url_for('auth.signup'))
-    
-    user = User.query.filter_by(username=username).first()
 
-    if user:
+    # Check if the username is already in use
+    if User.query.filter_by(username=username).first():
         flash('Username already in use.', 'error')
         return redirect(url_for('auth.signup'))
-    
-    # iF this is the first user, make them an admin
+
+    # Assign role based on whether it's the first user
     if not User.query.first():
         role = Role.query.filter_by(name='admin').first()
     else:
         role = Role.query.filter_by(name='user').first()
 
+    # Create a new User instance
     new_user = User(email=email, username=username, role=role)
     new_user.set_password(password)
-    
-    # add the new user to the database
+
+    # Add the new user to the database
     db.session.add(new_user)
     db.session.commit()
 
-    # Sign in the new user
+    # Automatically log in the new user
     login_user(new_user)
 
     flash('Account successfully created', 'success')

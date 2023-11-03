@@ -1,11 +1,44 @@
 {% macro file_upload(hasVersion=true, file_required=false) -%}
 
-<div class="mt-2">
+
+
+<div x-data="{ selection: 'file' }" class="mt-2">
     <label for="installer-file" class="block  text-gray-700 dark:text-gray-300">File{% if file_required %}<span
             class="text-red-500">*</span>{% endif %}</label>
-    <input @change="fileChosen = $refs.fileInput.files.length > 0" x-ref="fileInput" name="installer-file" {% if file_required %}
-        required {% endif %} accept=".exe,.msi,.msix,.appx,.zip" type="file"
-        class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+    <div class="sm:block">
+        <label for="tabs" class="sr-only">Installer location</label>
+        <select x-ref="selectionDropdown" @change="selection = $event.target.value" id="tabs"
+            class="hidden bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option value="file">Upload File</option>
+            <option value="url">URL</option>
+        </select>
+    </div>
+    <ul
+        class=" text-sm font-medium text-center text-gray-500 divide-x divide-neutral-200 rounded-md shadow flex dark:divide-neutral-700 dark:text-neutral-400 sm:w-1/2">
+        <li class="w-full">
+            <a @click.prevent="selection = 'file'; $refs.selectionDropdown.value = selection" href="#"
+                :class="{'bg-white  dark:bg-neutral-700 text-gray-900 dark:text-white': selection === 'file', 'bg-gray-200 dark:bg-neutral-800 hover:text-neutral-300 hover:bg-gray-50': selection !== 'file'}"
+                class="inline-block w-full p-1 rounded-l-md focus:ring-blue-300 active focus:outline-none"
+                aria-current="page">Upload File</a>
+        </li>
+        <li class="w-full">
+            <a @click.prevent="selection = 'url'; $refs.selectionDropdown.value = selection" href="#"
+                :class="{'bg-white dark:bg-neutral-700 text-gray-900 dark:text-white': selection === 'url', 'bg-gray-200 dark:bg-neutral-800  hover:text-neutral-300 hover:bg-gray-50': selection !== 'url'}"
+                class="inline-block w-full p-1 rounded-r-md focus:ring-blue-300 active focus:outline-none">URL</a>
+        </li>
+    </ul>
+
+
+    <template x-if="selection === 'file'">
+        <input @change="fileChosen = $refs.fileInput.files.length > 0" x-ref="fileInput" ref="fileInput" name="installer-file" {% if
+            file_required %} required {% endif %} accept=".exe,.msi,.msix,.appx,.zip" type="file"
+            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+    </template>
+    <template x-if="selection === 'url'">
+        <input @keyup="fileChosen = $event.target.value.trim() !== ''" name="installer-url" placeholder="Enter URL"
+            type="text" {% if file_required %} required {% endif %}
+            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+    </template>
 </div>
 
 <div x-data="{ selectedType: ''}" x-show="fileChosen" x-collapse>

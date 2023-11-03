@@ -189,7 +189,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
                             <div class="flex flex-row items-center mb-1">
                                 <h3 class="text-xl font-medium select-none dark:text-gray-200">Installers</h3>
                                 {% if current_user.role.has_permission('add:installer') %}
-                                <a @click="selectedVersion = '{{version.id}}'; selectedInstaller = '';  showAddInstallerModal = true;"
+                                <a @click="selectedVersion = '{{version.version_code}}'; selectedInstaller = '';  showAddInstallerModal = true;"
                                     class="ml-2 w-min h-min group  text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer ">
                                     <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-5 w-5 stroke-2"
                                         fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
@@ -208,8 +208,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                     {% endif %}
                                     {% for installer in version.installers %}
                                     <div id="installer"
-                                        class="flex flex-row p-2 bg-white dark:bg-neutral-950 rounded-md justify-between items-start"
-                                        @click="navigator.clipboard.writeText('{{ url_for('api.download', identifier=package.identifier, version=version.version_code, architecture=installer.architecture, scope=installer.scope, _external=True, _scheme='https') }}');">
+                                        class="flex flex-row p-2 bg-white dark:bg-neutral-950 rounded-md justify-between items-start">                                        
                                         <div class="flex flex-col dark:text-gray-200 text-gray-900 "
                                             x-data="{ showInstallerSwitches: false}">
                                             <p class="font-bold text-lg">{{installer.architecture}}</p>
@@ -248,7 +247,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                             {% endif %}
                                         </div>
                                         <div class="grid grid-cols-2 grid-rows-2 gap-2">
-                                            <a
+                                            <a @click="navigator.clipboard.writeText('{{ installer.external_url if installer.external_url not in [None, ''] else url_for('api.download', identifier=package.identifier, version=version.version_code, architecture=installer.architecture, scope=installer.scope, _external=True, _scheme='https') }}');"
                                                 class="w-min h-min px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
                                                 <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6"
                                                     fill="none" stroke="currentColor" stroke-width="1.5"
