@@ -73,4 +73,6 @@ def users():
 @permission_required('view:package')
 def package(identifier):
     package = Package.query.filter_by(identifier=identifier).first()
+    if not package:
+        return render_template('error/404.j2'), 404
     return render_template('package.j2', package=package)
