@@ -12,7 +12,7 @@ from app import db
 from app.decorators import permission_required
 from app.forms import AddInstallerForm, AddPackageForm, AddVersionForm
 from app.models import InstallerSwitch, Package, PackageVersion, Installer, User
-from app.utils import create_installer, debugPrint, save_file, basedir
+from app.utils import create_installer, debugPrint, save_file, basedir, delete_installer_util
 from app.constants import installer_switches
 api = Blueprint('api', __name__)
 s3_client = boto3.client('s3')
@@ -29,10 +29,15 @@ def generate_presigned_url():
         file_extension = file_name.rsplit('.', 1)[1]
         content_type = request.form.get('content_type')
 
+        
+
         # Specify the S3 object key where the file will be uploaded
         publisher = secure_filename(request.form.get('publisher'))
         identifier = secure_filename(request.form.get('identifier'))
+        # Get version from db either by id or by name from the request
         version = secure_filename(request.form.get('installer-version'))
+
+
         architecture = secure_filename(request.form.get('installer-architecture'))
         scope = request.form.get('installer-installer_scope')  # Add this to the request form
         # Define the S3 object key with the same format as 'scope.file_extension'
@@ -123,7 +128,7 @@ def delete_package(identifier):
 
     for version in package.versions:
         for installer in version.installers:
-            delete_installer(package, installer, version)
+            delete_installer_util(package, installer, version)
         db.session.delete(version)
     db.session.delete(package)
     db.session.commit()
@@ -152,16 +157,17 @@ def add_version(identifier):
     if package is None:
         return "Package not found", 404
     file = installer_form.file.data
-    version_code = PackageVersion(version_code=version, package_locale="en-US", short_description=package.name, identifier=identifier)
-    if file and version:
+    external_url = installer_form.url.data
+    version = PackageVersion(version_code=version, package_locale="en-US", short_description=package.name, identifier=identifier)
+    if file or external_url and version:
         debugPrint("File and version found")
-        installer = create_installer(package.publisher, identifier, version, installer_form)
+        installer = create_installer(package.publisher, identifier, version.version_code, installer_form)
         if installer is None:
             return "Error creating installer", 500
 
-        version_code.installers.append(installer)
+        version.installers.append(installer)
 
-    package.versions.append(version_code)
+    package.versions.append(version)
     db.session.commit()
 
     return redirect(request.referrer)
@@ -187,11 +193,11 @@ def add_installer(identifier):
         return "Package not found", 404
     
     # get version by id
-    version = PackageVersion.query.filter_by(id=installer_form.version.data).first()
+    version = PackageVersion.query.filter_by(version_code=installer_form.version.data).first()
     if version is None:
         return "Package version not found", 404
 
-    if installer_form.file:
+    if installer_form.file or installer_form.url.data and version:
         debugPrint("File found")
         installer = create_installer(package.publisher, identifier, version.version_code, installer_form)
         if installer is None:
@@ -259,7 +265,7 @@ def delete_installer(identifier, version, installer):
     if installer is None:
         return "Installer not found", 404
     
-    delete_installer(package, installer, version)
+    delete_installer_util(package, installer, version)
 
     
     db.session.delete(installer)
@@ -282,7 +288,7 @@ def delete_version(identifier, version):
         return "Version not found", 404
 
     for installer in version.installers:
-        delete_installer(package, installer, version)
+        delete_installer_util(package, installer, version)
     db.session.delete(version)
     db.session.commit()
 
