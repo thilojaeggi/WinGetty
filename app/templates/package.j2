@@ -189,7 +189,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
                             <div class="flex flex-row items-center mb-1">
                                 <h3 class="text-xl font-medium select-none dark:text-gray-200">Installers</h3>
                                 {% if current_user.role.has_permission('add:installer') %}
-                                <a @click="selectedVersion = '{{version.id}}'; selectedInstaller = '';  showAddInstallerModal = true;"
+                                <a @click="selectedVersion = '{{version.version_code}}'; selectedInstaller = '';  showAddInstallerModal = true;"
                                     class="ml-2 w-min h-min group  text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer ">
                                     <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-5 w-5 stroke-2"
                                         fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
