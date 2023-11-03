@@ -114,7 +114,7 @@ def calculate_sha256(filename):
     return sha256_hash.hexdigest()
 
 
-def delete_installer(package, installer, version):
+def delete_installer_util(package, installer, version):
     if not installer.external_url and installer.file_name:
         base_path = ['packages', package.publisher, package.identifier, version.version_code, installer.architecture]
         if current_app.config['USE_S3']:
