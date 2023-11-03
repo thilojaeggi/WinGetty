@@ -72,6 +72,144 @@
 </div>
 
 
+{% if config['USE_S3'] %}
+<script>
+    function addVersionFormData() {
+        return {
+            progress: 0,
+            showUploadButton: true,
+
+            submitForm() {
+                const formData = new FormData(this.$refs.addVersionForm);
+                const file = formData.get('installer-file');
+                const fileName = file ? file.name : null;
+
+                formData.delete('installer-file');
+                if (fileName) {
+                    formData.append('file_name', fileName);
+                    formData.append('content_type', file.type);
+
+                    formData.append('publisher', '{{ package.publisher }}');
+                    formData.append('name', '{{ package.name }}');
+                    formData.append('identifier', '{{ package.identifier }}');
+
+                }
+
+                if (file && file.size > 0) {
+                    this.generate_presigned_url(formData, file);
+                } else {
+                    this.addToPackages(null);
+                }
+                
+            },
+
+            generate_presigned_url(formData, file) {
+                formData.delete('installer-file');
+                const config = {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        },
+                        onUploadProgress: progressEvent => {
+                            this.progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                        }
+                    }
+
+                axios.post('{{ url_for('api.generate_presigned_url')}}', formData, config)
+                    .then(response => {
+                        if (response.status === 200) {
+                            const parts = file.name.split('.');
+                            const extension = parts.length > 1 ? parts.pop() : null;
+                            let newFormData = new FormData();
+                            newFormData.append('file', file, `${formData.get('installer-installer_scope')}.${extension}`);
+                            this.uploadFile(response.data, newFormData.get('file'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        window.dispatchEvent(new CustomEvent('notice', {
+                            detail: {
+                                text: error.response.data.error,
+                                type: 'error'
+                            }
+                        }));
+                    });
+            },
+
+            uploadFile(data, file) {
+                this.progress = 0;
+                this.showUploadButton = false;
+
+                const config = {
+                    headers: {
+                        'Content-Type': data.content_type
+                    },
+                    onUploadProgress: progressEvent => {
+                        this.progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                    }
+                }
+
+                axios.put(data.presigned_url, file, config)
+                    .then(response => {
+                        if (response.status === 200) {
+                            this.addToPackages(file);
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        window.dispatchEvent(new CustomEvent('notice', {
+                            detail: {
+                                text: 'Error uploading the file.',
+                                type: 'error'
+                            }
+                        }));
+                    });
+            },
+
+            addToPackages(file) {
+                const formData = new FormData(this.$refs.addVersionForm);
+                if (file) {
+                    formData.append('installer-is_aws', true);
+                    formData.append('installer-url', file.name);
+                } else {
+                    formData.append('installer-is_aws', false);
+                }
+                formData.delete('installer-file');
+
+                axios.post(this.$refs.addVersionForm.action, formData)
+                    .then(response => {
+                        if (response.status === 200) {
+                            this.showAddVersionModal = false;
+                            this.$refs.addVersionForm.reset();
+                            location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        window.dispatchEvent(new CustomEvent('notice', {
+                            detail: {
+                                text: 'Error adding the package.',
+                                type: 'error'
+                            }
+                        }));
+                    })
+                    .finally(() => {
+                        this.showUploadButton = true;
+                        
+                    });
+            },
+
+            hideUploadButton() {
+                this.showUploadButton = false;
+            },
+
+            hideModal() {
+                this.showAddVersionModal = false;
+                document.getElementById("addVersionForm").reset();
+            }
+        };
+    }
+</script>
+{% else %}
 <script>
     function addVersionFormData() {
         return {
@@ -104,10 +242,15 @@
                     })
                     .catch(error => {
                         console.error(error);
+                        window.dispatchEvent(new CustomEvent('notice', {
+                            detail: {
+                                text: error.response.data,
+                                type: 'error'
+                            }
+                        }));
                     })
                     .finally(() => {
                         this.showUploadButton = true;
-                        this.$refs.addVersionForm.reset();
                     });
             },
             hideUploadButton() {
@@ -122,53 +265,4 @@
         };
     }
 </script>
-<script>
-    function addVersionFormData() {
-        return {
-            progress: 0,
-
-            showUploadButton: true,
-            submitForm() {
-                this.showUploadButton = false;
-                let formData = new FormData(this.$refs.addVersionForm);
-                formData.append('installer-is_aws', false);
-                const config = {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    },
-                    onUploadProgress: progressEvent => {
-                        this.progress = Math.round(progressEvent.progress * 100);
-                        console.log(this.progress);
-
-                    }
-                }
-
-                axios.post(this.$refs.addVersionForm.action, formData, config)
-                    .then(response => {
-                        if (response.status === 200) {
-                            this.progress = 0;
-                            this.showAddVersionModal = false;
-                            this.$refs.addVersionForm.reset();
-                            location.reload();
-                        }
-                    })
-                    .catch(error => {
-                        console.error(error);
-                    })
-                    .finally(() => {
-                        this.showUploadButton = true;
-                        this.$refs.addVersionForm.reset();
-                    });
-            },
-            hideUploadButton() {
-                this.showUploadButton = false;
-            },
-            hideModal() {
-                this.showAddVersionModal = false;
-                // Get the form by its id and reset it
-                fileChosen = false;
-                document.getElementById("addVersionForm").reset();
-            }
-        };
-    }
-</script>
+{% endif %}

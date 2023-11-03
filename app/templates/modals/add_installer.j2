@@ -1,7 +1,7 @@
 {% import 'inputs/macros.j2' as macros %}
 
 <!-- Main modal -->
-<div x-cloak x-show="showAddInstallerModal" id="addVersionModal" tabindex="-1" aria-hidden="true"
+<div x-cloak x-show="showAddInstallerModal" id="addInstallerModal" tabindex="-1" aria-hidden="true"
     x-data="addInstallerFormData();"
     class="fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-full max-h-full dark:bg-neutral-700/40 flex justify-center items-center"
     x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 "
@@ -63,7 +63,144 @@
     </div>
 </div>
 
+{% if config['USE_S3'] %}
+<script>
+    function addInstallerFormData() {
+        return {
+            progress: 0,
+            showUploadButton: true,
 
+            submitForm() {
+                const formData = new FormData(this.$refs.addInstallerForm);
+                const file = formData.get('installer-file');
+                const fileName = file ? file.name : null;
+
+                formData.delete('installer-file');
+                if (fileName) {
+                    formData.append('file_name', fileName);
+                    formData.append('content_type', file.type);
+
+                    formData.append('publisher', '{{ package.publisher }}');
+                    formData.append('name', '{{ package.name }}');
+                    formData.append('identifier', '{{ package.identifier }}');
+
+                }
+
+                if (file && file.size > 0) {
+                    this.generate_presigned_url(formData, file);
+                } else {
+                    this.addToPackages(null);
+                }
+                
+            },
+
+            generate_presigned_url(formData, file) {
+                formData.delete('installer-file');
+                const config = {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        },
+                        onUploadProgress: progressEvent => {
+                            this.progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                        }
+                    }
+
+                axios.post('{{ url_for('api.generate_presigned_url')}}', formData, config)
+                    .then(response => {
+                        if (response.status === 200) {
+                            const parts = file.name.split('.');
+                            const extension = parts.length > 1 ? parts.pop() : null;
+                            let newFormData = new FormData();
+                            newFormData.append('file', file, `${formData.get('installer-installer_scope')}.${extension}`);
+                            this.uploadFile(response.data, newFormData.get('file'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        window.dispatchEvent(new CustomEvent('notice', {
+                            detail: {
+                                text: error.response.data.error,
+                                type: 'error'
+                            }
+                        }));
+                    });
+            },
+
+            uploadFile(data, file) {
+                this.progress = 0;
+                this.showUploadButton = false;
+
+                const config = {
+                    headers: {
+                        'Content-Type': data.content_type
+                    },
+                    onUploadProgress: progressEvent => {
+                        this.progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                    }
+                }
+
+                axios.put(data.presigned_url, file, config)
+                    .then(response => {
+                        if (response.status === 200) {
+                            this.addToPackages(file);
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        window.dispatchEvent(new CustomEvent('notice', {
+                            detail: {
+                                text: 'Error uploading the file.',
+                                type: 'error'
+                            }
+                        }));
+                    });
+            },
+
+            addToPackages(file) {
+                const formData = new FormData(this.$refs.addInstallerForm);
+                if (file) {
+                    formData.append('installer-is_aws', true);
+                    formData.append('installer-url', file.name);
+                } else {
+                    formData.append('installer-is_aws', false);
+                }
+                formData.delete('installer-file');
+
+                axios.post(this.$refs.addInstallerForm.action, formData)
+                    .then(response => {
+                        if (response.status === 200) {
+                            this.showAddInstallerModal = false;
+                            this.$refs.addInstallerForm.reset();
+                           location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        window.dispatchEvent(new CustomEvent('notice', {
+                            detail: {
+                                text: 'Error adding the package.',
+                                type: 'error'
+                            }
+                        }));
+                    })
+                    .finally(() => {
+                        this.showUploadButton = true;
+                        
+                    });
+            },
+
+            hideUploadButton() {
+                this.showUploadButton = false;
+            },
+
+            hideModal() {
+                this.showAddInstallerModal = false;
+                document.getElementById("YA<>>>YA   <>A").reset();
+            }
+        };
+    }
+</script>
+{% else %}
 <script>
     function addInstallerFormData() {
         return {
@@ -115,3 +252,4 @@
         };
     }
 </script>
+{% endif %}
