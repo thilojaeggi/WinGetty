@@ -51,7 +51,7 @@ class Package(db.Model):
                         data = {
                             "Architecture": installer.architecture,
                             "InstallerType": installer.installer_type,
-                            "InstallerUrl": url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, scope=installer.scope, _external=True, _scheme="https"),
+                            "InstallerUrl": installer.external_url if installer.external_url not in [None, ''] else url_for('api.download', identifier=self.identifier, version=version.version_code, architecture=installer.architecture, scope=installer.scope, _external=True, _scheme="https"),
                             "InstallerSha256": installer.installer_sha256,
                             "Scope": scope,
                             "InstallerSwitches": self._get_installer_switches(installer)
@@ -175,11 +175,7 @@ class InstallerSwitch(db.Model):
             'value': self.value
         }
     
-roles_permissions = db.Table(
-    'roles_permissions',
-    db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True),
-    db.Column('permission_id', db.Integer, db.ForeignKey('permission.id'), primary_key=True)
-)
+
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -192,7 +188,13 @@ class User(UserMixin, db.Model):
     def set_password(self, password):
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
         self.password = hashed_password
-        
+
+     
+roles_permissions = db.Table(
+    'roles_permissions',
+    db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True),
+    db.Column('permission_id', db.Integer, db.ForeignKey('permission.id'), primary_key=True)
+)
 
 class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -210,3 +212,4 @@ class Role(db.Model):
 class Permission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True)
+
