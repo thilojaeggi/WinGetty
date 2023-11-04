@@ -96,9 +96,7 @@ def create_permissions():
         if permission not in roles['admin'].permissions:
             roles['admin'].permissions.append(permission)
         
-        if permission_name not in ['view:role', 'add:role', 'edit:role', 'delete:role',
-                                   'view:permission', 'add:permission', 'edit:permission', 'delete:permission',
-                                   'view:user', 'add:user', 'edit:user', 'delete:user'] and \
+        if permission_name not in ['add:role', 'edit:role', 'delete:role', 'add:permission', 'edit:permission', 'delete:permission', 'add:user', 'edit:user', 'delete:user'] and \
            permission not in roles['user'].permissions:
             roles['user'].permissions.append(permission)
         
