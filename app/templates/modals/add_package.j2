@@ -42,10 +42,7 @@
                 <form id="addPackageForm" x-ref="addPackageForm" @submit.prevent="submitForm" class="mt-5"
                     x-data="{ fileChosen: false, name: '', publisher: '', identifier: '', identifierEditedManually : false}"
                     action="{{ url_for('api.add_package') }}" method="POST" enctype="multipart/form-data">
-
-
-
-
+                    
                     <div class="mt-2">
                         <label for="publisher" class="block text-gray-700 dark:text-gray-300 ">Publisher<span
                                 class="text-red-500">*</span></label>
