@@ -11,7 +11,7 @@ import requests
 from app import db
 from app.decorators import permission_required
 from app.forms import AddInstallerForm, AddPackageForm, AddVersionForm
-from app.models import InstallerSwitch, Package, PackageVersion, Installer, User
+from app.models import InstallerSwitch, Package, PackageVersion, Installer, Permission, Role, User
 from app.utils import create_installer, debugPrint, save_file, basedir, delete_installer_util
 from app.constants import installer_switches
 api = Blueprint('api', __name__)
@@ -133,7 +133,10 @@ def delete_package(identifier):
     db.session.delete(package)
     db.session.commit()
 
-    return "", 200
+    response = Response()
+    redirect_url = url_for('ui.packages')
+    response.headers['HX-Redirect'] = redirect_url
+    return response
 
 
 @api.route('/package/<identifier>/add_version', methods=['POST'])
@@ -326,6 +329,98 @@ def update_user():
     flash('User updated successfully.', 'success')
     return redirect(request.referrer)
 
+@api.route('/change_role/<user>', methods=['POST'])
+@login_required
+@permission_required('edit:user')
+def change_role(user):
+    role_id = request.form['role_id']
+
+    user = User.query.filter_by(id=user).first()
+    if user is None:
+        return "User not found", 404
+    
+    role = Role.query.filter_by(id=role_id).first()
+    if role is None:
+        return "Role not found", 404
+
+    user.role = role
+    db.session.commit()
+    flash('User updated successfully.', 'success')
+    response = Response()
+    redirect_url = url_for('ui.users')  # Replace 'index' with the endpoint you want to redirect to
+    response.headers['HX-Redirect'] = redirect_url
+    return response
+
+@api.route('/add_user', methods=['POST'])
+@login_required
+@permission_required('add:user')
+def add_user():
+    username = request.form['username'].lower().replace(" ", "")
+    email = request.form['email'].lower().replace(" ", "")
+    password = request.form['password']
+    role = request.form['role']
+
+    # Check that email or username or both aren't used by another user before updating except for the current user
+    if User.query.filter(User.email == email).first():
+        flash('Email already in use', 'error')
+        return redirect(request.referrer)
+    if User.query.filter(User.username == username).first():
+        flash('Username already in use', 'error')
+        return redirect(request.referrer)
+
+    role = Role.query.filter_by(id=role).first()
+    if role is None:
+        flash('Role not found', 'error')
+        return redirect(request.referrer)
+    
+    user = User(username=username, email=email, role=role)
+    user.set_password(password)
+    db.session.add(user)
+    db.session.commit()
+    flash('User added successfully.', 'success')
+    return redirect(request.referrer)
+
+
+
+@api.route('/add_role', methods=['POST'])
+@login_required
+@permission_required('add:role')
+def add_role():
+    name = request.form['name'].lower().replace(" ", "")
+    permissions = request.form['permissions'].split(',')
+    role = Role(name=name)
+    for permission in permissions:
+        permission = Permission.query.filter_by(name=permission).first()
+        role.permissions.append(permission)
+    db.session.add(role)
+
+    try:
+        db.session.commit()
+    except Exception as error:
+        db.session.rollback()
+        message = str(error.orig)
+        flash(message, 'error')
+        return redirect(request.referrer)
+    db.session.commit()
+    flash('Role added successfully.', 'success')
+    return redirect(request.referrer)
+
+@api.route('/delete_role/<id>', methods=['DELETE'])
+@login_required
+@permission_required('delete:role')
+def delete_role(id):
+    role = Role.query.filter_by(id=id).first()
+    if role is None:
+        return "Role not found", 404
+    # Check if any users have this role
+    users = User.query.filter_by(role_id=id).all()
+    if users:
+        return "Role has users assigned to it, please remove them first", 400
+    db.session.delete(role)
+    db.session.commit()
+    return "", 200
+
+
 
 @api.route('/delete_user/<id>', methods=['DELETE'])
 @login_required
@@ -377,6 +472,15 @@ def download(identifier, version, architecture, scope):
 
         # Redirect the client to the pre-signed URL
         return redirect(presigned_url)
+
+    # Just as a failsafe if the json response somehow didn't have the external_url
+    if installer.external_url:
+        # Increment the download count and commit to the database
+        package.download_count += 1
+        db.session.commit()
+
+        # Redirect the client to the pre-signed URL
+        return redirect(installer.external_url)
 
 
     installer_path = os.path.join(basedir, 'packages', package.publisher, package.identifier, version_code.version_code, installer.architecture)
