@@ -1,7 +1,7 @@
 from flask_login import login_required
 from app import db, htmx
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for
-from app.models import Package, PackageVersion, Installer, Role, User
+from app.models import Package, PackageVersion, Installer, Permission, Role, User
 from app.utils import debugPrint
 from app.decorators import permission_required
 import os
@@ -65,7 +65,8 @@ def setup():
 def users():
     users = User.query.all()
     roles = Role.query.all()
-    return render_template('users.j2', users=users, roles=roles)
+    permissions = Permission.query.all()
+    return render_template('users.j2', users=users, roles=roles, permissions=permissions)
 
 
 @ui.route('/package/<identifier>', methods=['GET'])
