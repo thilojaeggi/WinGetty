@@ -85,9 +85,9 @@ def create_installer(publisher, identifier, version, installer_form):
     )
 
     for field_name in installer_switches:
-        debugPrint(f"Checking for field name {field_name}")
+        current_app.logger.debug(f"Checking for field name {field_name}")
         if field_name in request.form:
-            debugPrint(f"Field name found {field_name}")
+            current_app.logger.debug(f"Field name found {field_name}")
             field_value = request.form.get(field_name)
             installer_switch = InstallerSwitch()
             installer_switch.parameter = field_name
@@ -129,9 +129,6 @@ def delete_installer_util(package, installer, version):
             if os.path.exists(installer_path):
                 os.remove(installer_path)
 
-def debugPrint(message):
-    if current_app.config['DEBUG']:
-        print(message)
 
 def save_file(file, file_name, publisher, identifier, version, architecture):
     publisher = secure_filename(publisher)
