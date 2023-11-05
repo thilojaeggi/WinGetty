@@ -1,8 +1,7 @@
 from flask_login import login_required
 from app import db, htmx
-from flask import Blueprint, jsonify, render_template, request, redirect, url_for
+from flask import Blueprint, current_app, jsonify, render_template, request, redirect, url_for
 from app.models import Package, PackageVersion, Installer, Permission, Role, User
-from app.utils import debugPrint
 from app.decorators import permission_required
 import os
 ui = Blueprint('ui', __name__)
@@ -40,10 +39,9 @@ def packages():
 
     # Get total item count available
     package_count = packages_paginated.total
-    
-    debugPrint(f'Page: {page}')
-    debugPrint(f'Available pages: {available_pages}')
 
+    current_app.logger.debug(f'Page: {page}')
+    current_app.logger.debug(f'Available pages: {available_pages}')
 
     if htmx:
         return render_template('packages_rows.j2', packages=packages)
