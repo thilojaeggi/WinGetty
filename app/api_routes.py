@@ -473,7 +473,7 @@ def download(identifier, version, architecture, scope):
         # Redirect the client to the pre-signed URL
         return redirect(presigned_url)
 
-    # Just as a failsafe if the json response somehow didn't have the external_url
+    # If the installer has an external URL, redirect the client to it
     if installer.external_url:
         # Increment the download count and commit to the database
         package.download_count += 1
