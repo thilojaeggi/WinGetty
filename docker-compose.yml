@@ -16,6 +16,7 @@ services:
       - WINGETTY_SECRET_KEY="secret" # Change this to a random string
       - WINGETTY_ENABLE_REGISTRATION=0 # Enable open registration (0 = disabled, 1 = enabled)
       - WINGETTY_REPO_NAME="WinGetty" # You can change this to whatever you want
+      - LOG_LEVEL=INFO # Change this to DEBUG if you want to see more logs
       - TZ=Europe/Paris # Change this to your timezone
 volumes:
   instance_volume:
