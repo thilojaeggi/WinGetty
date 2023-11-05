@@ -12,7 +12,7 @@ from app import db
 from app.decorators import permission_required
 from app.forms import AddInstallerForm, AddPackageForm, AddVersionForm
 from app.models import InstallerSwitch, Package, PackageVersion, Installer, Permission, Role, User
-from app.utils import create_installer, debugPrint, save_file, basedir, delete_installer_util
+from app.utils import create_installer, save_file, basedir, delete_installer_util
 from app.constants import installer_switches
 api = Blueprint('api', __name__)
 s3_client = boto3.client('s3')
@@ -83,7 +83,7 @@ def add_package():
 
     package = Package(identifier=identifier, name=name, publisher=publisher)
     if file or external_url and version:
-        debugPrint("File and version found")
+        current_app.logger.info("File and version found")
         installer = create_installer(publisher, identifier, version, installer_form)
         if installer is None:
             return "Error creating installer", 500
@@ -163,7 +163,7 @@ def add_version(identifier):
     external_url = installer_form.url.data
     version = PackageVersion(version_code=version, package_locale="en-US", short_description=package.name, identifier=identifier)
     if file or external_url and version:
-        debugPrint("File and version found")
+        current_app.logger.info("File and version found")
         installer = create_installer(package.publisher, identifier, version.version_code, installer_form)
         if installer is None:
             return "Error creating installer", 500
@@ -201,7 +201,7 @@ def add_installer(identifier):
         return "Package version not found", 404
 
     if installer_form.file or installer_form.url.data and version:
-        debugPrint("File found")
+        current_app.logger.info("File and version found")
         installer = create_installer(package.publisher, identifier, version.version_code, installer_form)
         if installer is None:
             return "Error creating installer", 500
@@ -222,11 +222,13 @@ def edit_installer(identifier):
     if installer is None:
         return "Installer not found", 404
     
-    # Go through each installer switch and update it if it exists
+    current_app.logger.info(f"Installer found: {installer}")
+
+    current_app.logger.info("Going through installer switches to update them")
     for field_name in installer_switches:
-        debugPrint(f"Checking for field name {field_name}")
+        current_app.logger.info(f"Field name: {field_name}")
         if field_name in request.form:
-            debugPrint(f"Field name found {field_name}")
+            current_app.logger.info(f"Field name found {field_name}")
             field_value = request.form.get(field_name)
             installer_switch = InstallerSwitch.query.filter_by(installer_id=id, parameter=field_name).first()
             if installer_switch is None:
@@ -256,16 +258,17 @@ def edit_installer(identifier):
 def delete_installer(identifier, version, installer):
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
-        debugPrint("Package not found")
+        current_app.logger.warning("Package not found")
         return "Package not found", 404
     
     version = PackageVersion.query.filter_by(identifier=identifier, version_code=version).first()
     if version is None:
-        debugPrint("Version not found")
+        current_app.logger.warning("Version not found")
         return "Version not found", 404
 
     installer = Installer.query.filter_by(id=installer).first()
     if installer is None:
+        current_app.logger.warning("Installer not found")
         return "Installer not found", 404
     
     delete_installer_util(package, installer, version)
@@ -282,12 +285,12 @@ def delete_installer(identifier, version, installer):
 def delete_version(identifier, version):
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
-        debugPrint("Package not found")
+        current_app.logger.warning("Package not found")
         return "Package not found", 404
     
     version = PackageVersion.query.filter_by(identifier=identifier, version_code=version).first()
     if version is None:
-        debugPrint("Version not found")
+        current_app.logger.warning("Version not found")
         return "Version not found", 404
 
     for installer in version.installers:
@@ -439,18 +442,18 @@ def download(identifier, version, architecture, scope):
     # TODO: Improve this function to be more efficient, also when a package's publisher is renamed the file won't be found anymore
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
-        debugPrint("Package not found")
+        current_app.logger.warning("Package not found")
         return "Package not found", 404
     
     # Get version of package and also match package
     version_code = PackageVersion.query.filter_by(version_code=version, identifier=identifier).first()
     if version_code is None:
-        #debugPrint("Package version not found")
+        current_app.logger.warning("Version not found")
         return "Package version not found", 404
     # Get installer of package version and also match architecture and identifier
     installer = Installer.query.filter_by(version_id=version_code.id, architecture=architecture, scope=scope).first()
     if installer is None:
-        debugPrint("Installer not found")
+        current_app.logger.warning("Installer not found")
         return "Installer not found", 404
     
     if current_app.config['USE_S3'] and installer.external_url is None:
@@ -484,15 +487,17 @@ def download(identifier, version, architecture, scope):
 
 
     installer_path = os.path.join(basedir, 'packages', package.publisher, package.identifier, version_code.version_code, installer.architecture)
-    debugPrint("Starting download for package:")
-    debugPrint(f"Package name: {package.name}")
-    debugPrint(f"Package identifier: {package.identifier}")
-    debugPrint(f"Package version: {version_code.version_code}")
-    debugPrint(f"Architecture: {installer.architecture}")
-    debugPrint(f"Installer file name: {installer.file_name}")
-    debugPrint(f"Installer SHA256: {installer.installer_sha256}")
-    debugPrint(f"Download URL: {installer_path}/{installer.file_name}")
 
+    current_app.logger.info("Starting download for package:")
+    current_app.logger.info(f"Package name: {package.name}")
+    current_app.logger.info(f"Package identifier: {package.identifier}")
+    current_app.logger.info(f"Package version: {version_code.version_code}")
+    current_app.logger.info(f"Architecture: {installer.architecture}")
+    current_app.logger.info(f"Installer file name: {installer.file_name}")
+    current_app.logger.info(f"Installer SHA256: {installer.installer_sha256}")
+    current_app.logger.info(f"Installer path: {installer_path + '/' + installer.file_name}")
+    if installer.external_url:
+        current_app.logger.info(f"External URL: {installer.external_url}")
 
     # Check if the Range header is present
     range_header = request.headers.get('Range')
@@ -501,14 +506,12 @@ def download(identifier, version, architecture, scope):
     if is_partial:
         request.range = parse_range_header(range_header)
         if request.range is None:
+            current_app.logger.warning("Invalid range header")
             return "Invalid range header", 400
 
     # Only add to download_count for a whole file download not part of it (winget uses range)
     if (is_partial and range_header and range_header == "bytes=0-1") or not is_partial:
         package.download_count += 1
         db.session.commit()
-
-    debugPrint(f"Installer path: {installer_path + '/' + installer.file_name}")
-
 
     return send_from_directory(installer_path, installer.file_name, as_attachment=True)
