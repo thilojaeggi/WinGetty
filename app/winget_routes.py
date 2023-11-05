@@ -1,11 +1,12 @@
 
+from operator import or_
 import os
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, current_app, send_from_directory, flash
 from flask_login import login_required
 from werkzeug.http import parse_range_header
 from werkzeug.utils import secure_filename
 
-from app.utils import create_installer, debugPrint, save_file, basedir
+from app.utils import create_installer, save_file, basedir
 from app import db
 from app.models import InstallerSwitch, Package, PackageVersion, Installer, User
 
@@ -31,68 +32,80 @@ def get_package_manifest(name):
 
 @winget.route('/manifestSearch', methods=['POST'])
 def manifestSearch():
-    # Output all post request data
     request_data = request.get_json()
-    debugPrint(request_data)
+    current_app.logger.info(f"Received manifestSearch request: {request_data}")
 
-    maximum_results = request_data.get('MaximumResults')
-    fetch_all_manifests = request_data.get('FetchAllManifests')
-        
-    query = request_data.get('Query')
-    if query is not None:
+    maximum_results = request_data.get('MaximumResults', 50)
+    query = request_data.get('Query', {})
+    filters = request_data.get('Filters', [])
+    
+    # Initialize the base query
+    packages_query = Package.query
+
+    # If there is a keyword and match type from Query, apply them first
+    if query:
         keyword = query.get('KeyWord')
         match_type = query.get('MatchType')
-
-    inclusions = request_data.get('Inclusions')
-    if inclusions is not None:
-        package_match_field = inclusions[0].get('PackageMatchField')
-        request_match = inclusions[0].get('RequestMatch')
-        if query is None:
-            keyword = request_match.get('KeyWord')
-            match_type = request_match.get('MatchType')
-
-    filters = request_data.get('Filters')
-    if filters is not None:
-        package_match_field_filter = filters[0].get('PackageMatchField')
-        request_match_filter = filters[0].get('RequestMatch')
-        keyword_filter = request_match_filter.get('KeyWord')
-        match_type_filter = request_match_filter.get('MatchType')
-
-
-    # Get packages by keyword and match type (exact or partial)
-    packages = []
-    if keyword is not None and match_type is not None:
-        if match_type == "Exact":
-            packages_query = Package.query.filter_by(identifier=keyword)
-            # Also search for package name if no package identifier is found
-            if packages_query.first() is None:
-                debugPrint("No package found with identifier, searching for package name")
-                packages_query = Package.query.filter_by(name=keyword)
-        elif match_type == "Partial" or match_type == "Substring":
-            packages_query = Package.query.filter(Package.name.ilike(f'%{keyword}%'))
-            # Also search for package identifier if no package name is found
-            if packages_query.first() is None:
-                debugPrint("No package found with name, searching for package identifier")
-                packages_query = Package.query.filter(Package.identifier.ilike(f'%{keyword}%'))
-        else:
-            return jsonify({}), 204
-
-        if maximum_results is not None:
-            packages_query = packages_query.limit(maximum_results)
+        like_expression = f'%{keyword}%' if match_type != "Exact" else keyword
+        packages_query = packages_query.filter(
+            or_(
+                Package.name.ilike(like_expression),
+                Package.identifier.ilike(like_expression)  # Assuming 'identifier' is a column as well
+            )
+        )
+    
+    # Apply filters to the query
+    for filter_entry in filters:
+        package_match_field = filter_entry.get('PackageMatchField')
+        request_match = filter_entry.get('RequestMatch')
         
-        packages = packages_query.all()
+        if not all([package_match_field, request_match]):
+            continue  # Skip if filter is incomplete
+        
+        # Map 'PackageMatchField' to actual database fields
+        db_field_map = {
+            'PackageName': 'name',  # 'PackageName' from the request maps to 'name' in the database
+            'PackageIdentifier': 'identifier'  # Update this if 'PackageIdentifier' is not the correct field
+        }
+
+        db_field = db_field_map.get(package_match_field)
+        if not db_field:
+            current_app.logger.error(f"Invalid PackageMatchField: {package_match_field}")
+            return jsonify({"error": f"Invalid PackageMatchField: {package_match_field}"}), 400
+
+        keyword_filter = request_match.get('KeyWord')
+        match_type_filter = request_match.get('MatchType')
+        filter_expression = f'%{keyword_filter}%' if match_type_filter != "Exact" else keyword_filter
+
+        if match_type_filter == "Exact":
+            packages_query = packages_query.filter(getattr(Package, db_field) == keyword_filter)
+        elif match_type_filter in ["Partial", "Substring"]:
+            packages_query = packages_query.filter(getattr(Package, db_field).ilike(filter_expression))
+        else:
+            current_app.logger.error("Invalid match type in filters provided.")
+            return jsonify({"error": "Invalid match type in filters"}), 400
+
+    # Apply maximum_results limit
+    packages_query = packages_query.limit(maximum_results)
+    packages = packages_query.all()
 
     if not packages:
+        current_app.logger.info("No packages found.")
         return jsonify({}), 204
 
+    # Generate output data and check if there are any installers available
+    output_data = [
+        package.generate_output_manifest_search()
+        for package in packages
+        if package.versions and any(version.installers for version in package.versions)
+    ]
 
-    output_data = []
-    for package in packages:
-        # If a package is added to the output without any version associated with it WinGet will error out
-        if len(package.versions) > 0:
-            output_data.append(package.generate_output_manifest_search())
-    
-    output = {"Data": output_data}
-    debugPrint(output)
-    return jsonify(output)
+    if not output_data:
+        current_app.logger.info("Found packages, but no installers available.")
+        return jsonify({}), 204
+
+    current_app.logger.info(f"Returning {len(output_data)} packages.")
+
+
+    return jsonify({"Data": output_data})
 
