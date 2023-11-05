@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, current_app
@@ -46,6 +47,15 @@ def favicon():
 def current_year():
     return {'now': datetime.now}
 
+def remove_none_values(value):
+    if isinstance(value, list):
+        return [remove_none_values(v) for v in value if v is not None]
+    elif isinstance(value, dict):
+        return {k: remove_none_values(v) for k, v in value.items() if v is not None}
+    else:
+        return value
+
+
 
 
 def create_app():
@@ -81,6 +91,7 @@ def create_app():
     app.register_blueprint(auth)
 
     app.jinja_env.filters['sort_versions'] = sort_versions
+    app.jinja_env.filters['remove_none_values'] = remove_none_values
 
     @app.context_processor
     def inject_now():

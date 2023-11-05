@@ -260,7 +260,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
 
                                             </a>
                                             {% if current_user.role.has_permission('edit:installer') %}
-                                            <a x-on:click="selectedInstaller = {{ installer.to_json() }}; showEditInstallerModal = true;"
+                                            <a x-on:click="selectedInstaller = {{ installer.to_json()|remove_none_values  }}; showEditInstallerModal = true;"
                                                 class="w-min h-min px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
 
                                                 <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6"
