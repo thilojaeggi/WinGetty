@@ -116,6 +116,7 @@ def create_app():
         app.logger.info(ascii_logo + "Version: " + app.config['VERSION'])
         app.logger.info("Running in Gunicorn")
     else:
+        app.logger.setLevel(logging.INFO)
         app.logger.info(ascii_logo + "Version: " + app.config['VERSION'])
         app.logger.info("Running in Flask")
 
