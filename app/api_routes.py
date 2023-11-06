@@ -95,10 +95,10 @@ def add_package():
     try:
         db.session.add(package)
         db.session.commit()
-        print("Commited to db")
+        current_app.logger.info(f"Package {package.identifier} added successfully")
     except Exception as e:
         db.session.rollback()
-        print("Error committing to the database:", str(e))
+        current_app.logger.error(f"Database error: {e}")
         return "Database error", 500
 
     flash('Package added successfully.', 'success')
@@ -131,7 +131,13 @@ def delete_package(identifier):
             delete_installer_util(package, installer, version)
         db.session.delete(version)
     db.session.delete(package)
-    db.session.commit()
+    try:
+        db.session.commit()
+        current_app.logger.info(f"Package {package.identifier} deleted successfully")
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Database error: {e}")
+        return "Database error", 500
 
     response = Response()
     redirect_url = url_for('ui.packages')
@@ -149,7 +155,7 @@ def add_version(identifier):
 
     if not form.validate_on_submit():
         validation_errors = form.errors
-        print(validation_errors)
+        current_app.logger.warning(f"Validation errors: {validation_errors}")
         return jsonify(validation_errors), 400
     
     version = installer_form.version.data
@@ -171,7 +177,13 @@ def add_version(identifier):
         version.installers.append(installer)
 
     package.versions.append(version)
-    db.session.commit()
+    try:
+        db.session.commit()
+        current_app.logger.info(f"Version {version.version_code} added successfully to package {package.identifier}")
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Database error: {e}")
+        return "Database error", 500
 
     return redirect(request.referrer)
 
@@ -185,10 +197,10 @@ def add_installer(identifier):
 
     if not form.validate_on_submit():
         validation_errors = form.errors
-        print(validation_errors)
+        current_app.logger.warning(f"Validation errors: {validation_errors}")
         return jsonify(validation_errors), 400
     
-    print(installer_form.version.data)
+    
     
     
     package = Package.query.filter_by(identifier=identifier).first()
@@ -296,7 +308,13 @@ def delete_version(identifier, version):
     for installer in version.installers:
         delete_installer_util(package, installer, version)
     db.session.delete(version)
-    db.session.commit()
+    try:
+        db.session.commit()
+        current_app.logger.info(f"Version {version.version_code} successfully removed from package {package.identifier}")
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Database error: {e}")
+        return "Database error", 500
 
     return "", 200
 
@@ -327,8 +345,17 @@ def update_user():
         user.set_password(password)
         db.session.commit()
         flash('Password changed, please login again.', 'success')
+        return redirect(url_for('auth.logout'))
+    
 
-    db.session.commit()
+
+    try:
+        db.session.commit()
+        current_app.logger.info(f"User {user.username} updated successfully")
+    except Exception as error:
+        current_app.logger.error(f"Database error: {error}")
+        db.session.rollback()
+
     flash('User updated successfully.', 'success')
     return redirect(request.referrer)
 
@@ -345,9 +372,14 @@ def change_role(user):
     role = Role.query.filter_by(id=role_id).first()
     if role is None:
         return "Role not found", 404
-
+    old_role = user.role
     user.role = role
-    db.session.commit()
+    try:
+        db.session.commit()
+        current_app.logger.info(f"Changed role from user {user.username} to {role.name} from {old_role.name}")
+    except Exception as error:
+        current_app.logger.error(f"Database error: {error}")
+        db.session.rollback()
     flash('User updated successfully.', 'success')
     response = Response()
     redirect_url = url_for('ui.users')  # Replace 'index' with the endpoint you want to redirect to
@@ -379,7 +411,15 @@ def add_user():
     user = User(username=username, email=email, role=role)
     user.set_password(password)
     db.session.add(user)
-    db.session.commit()
+    try:
+        db.session.commit()
+        current_app.logger.info(f"User {user.username} added successfully")
+    except Exception as error:
+        current_app.logger.error(f"Database error: {error}")
+        db.session.rollback()
+        flash('Database error', 'error')
+        return redirect(request.referrer)
+    
     flash('User added successfully.', 'success')
     return redirect(request.referrer)
 
@@ -404,7 +444,7 @@ def add_role():
         message = str(error.orig)
         flash(message, 'error')
         return redirect(request.referrer)
-    db.session.commit()
+    
     flash('Role added successfully.', 'success')
     return redirect(request.referrer)
 
@@ -420,7 +460,13 @@ def delete_role(id):
     if users:
         return "Role has users assigned to it, please remove them first", 400
     db.session.delete(role)
-    db.session.commit()
+    try:
+        db.session.commit()
+        current_app.logger.info(f"Role {role.name} deleted successfully")
+    except Exception as error:
+        current_app.logger.error(f"Database error: {error}")
+        db.session.rollback()
+
     return "", 200
 
 
@@ -430,11 +476,18 @@ def delete_role(id):
 @permission_required('delete:user')
 def delete_user(id):
     user = User.query.filter_by(id=id).first()
-    print(user)
+    
     if user is None:
         return "User not found", 404
     db.session.delete(user)
-    db.session.commit()
+    try:
+        db.session.commit()
+        current_app.logger.info(f"User {user.username} deleted")
+    except Exception as error:
+        current_app.logger.error(f"Database error: {error}")
+        db.session.rollback()
+
+
     return "", 200
 
 @api.route('/download/<identifier>/<version>/<architecture>/<scope>')
@@ -457,6 +510,7 @@ def download(identifier, version, architecture, scope):
         return "Installer not found", 404
     
     if current_app.config['USE_S3'] and installer.external_url is None:
+        current_app.logger.info("Downloading from S3")
         # Generate a pre-signed URL for the S3 object
         presigned_url = s3_client.generate_presigned_url(
             'get_object',
@@ -478,6 +532,7 @@ def download(identifier, version, architecture, scope):
 
     # If the installer has an external URL, redirect the client to it
     if installer.external_url:
+        current_app.logger.info("Downloading from external URL")
         # Increment the download count and commit to the database
         package.download_count += 1
         db.session.commit()
@@ -513,5 +568,7 @@ def download(identifier, version, architecture, scope):
     if (is_partial and range_header and range_header == "bytes=0-1") or not is_partial:
         package.download_count += 1
         db.session.commit()
+
+        
 
     return send_from_directory(installer_path, installer.file_name, as_attachment=True)
