@@ -1,3 +1,4 @@
+from flask import current_app
 from app.models import Permission, Role, User
 from app import db
 from sqlalchemy.exc import IntegrityError
@@ -116,11 +117,12 @@ def create_permissions():
 
 def create_all():
     """Entry function to create roles and permissions."""
+    current_app.logger.info('Creating roles and permissions...')
     try:
         create_default_roles()
         create_permissions()
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
-        print("Error occurred. Rolled back the session.")
+        current_app.logger.info('Roles and permissions already exist.')
 
