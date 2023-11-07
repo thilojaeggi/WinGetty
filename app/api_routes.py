@@ -382,7 +382,7 @@ def change_role(user):
         db.session.rollback()
     flash('Role changed successfully.', 'success')
     response = Response()
-    redirect_url = url_for('ui.users')  # Replace 'index' with the endpoint you want to redirect to
+    redirect_url = url_for('ui.users') 
     response.headers['HX-Redirect'] = redirect_url
     return response
 
