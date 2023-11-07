@@ -2,8 +2,13 @@
     class="flex items-center justify-between flex-wrap sm:flex-row bg-white dark:bg-zinc-900 text-neutral-700 dark:text-neutral-100	 p-4 drop-shadow-md sticky top-0 z-10">
     <a href="{{ url_for('ui.index') }}">
         <div class="flex flex-row items-center flex-shrink-0 text-neutral-900 dark:text-neutral-200 mr-6">
-            <img width="61" height="40"  src="{{ url_for('static', filename='img/wingetty_small.png')}}" alt="Logo" class="h-10 w-auto mr-2">
-            <span class="font-semibold text-2xl tracking-tight mb-0.5">WinGetty</span>
+
+            <img width="61" height="40" src="{{ url_for('static', filename='img/wingetty_small.png')}}" alt="Logo"
+                class="h-10 w-auto mr-2">
+
+            <span class="font-semibold text-2xl tracking-tight mb-0.5">WinGetty {% if config.IS_CLOUD %}
+                <span class="text-transparent bg-clip-text bg-gradient-to-br from-[#31ffee] to-[#2660ff]">Cloud</span>
+                {%endif%}</span>
         </div>
     </a>
     <div class="block md:hidden">
@@ -67,22 +72,22 @@
         {% endif %}
         {% endif %}
         <div class="w-full md:w-auto flex flex-row justify-end">
-        <button id="theme-toggle" class="theme-toggle mt-2 sm:mt-0 " type="button" title="Toggle theme"
-            aria-label="Toggle theme">
-            <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="1.2em" height="1.2em" fill="currentColor"
-                class="theme-toggle__expand" viewBox="0 0 32 32">
-                <clipPath id="theme-toggle__expand__cutout">
-                    <path d="M0-11h25a1 1 0 0017 13v30H0Z" />
-                </clipPath>
-                <g clip-path="url(#theme-toggle__expand__cutout)">
-                    <circle cx="16" cy="16" r="8.4" />
-                    <path
-                        d="M18.3 3.2c0 1.3-1 2.3-2.3 2.3s-2.3-1-2.3-2.3S14.7.9 16 .9s2.3 1 2.3 2.3zm-4.6 25.6c0-1.3 1-2.3 2.3-2.3s2.3 1 2.3 2.3-1 2.3-2.3 2.3-2.3-1-2.3-2.3zm15.1-10.5c-1.3 0-2.3-1-2.3-2.3s1-2.3 2.3-2.3 2.3 1 2.3 2.3-1 2.3-2.3 2.3zM3.2 13.7c1.3 0 2.3 1 2.3 2.3s-1 2.3-2.3 2.3S.9 17.3.9 16s1-2.3 2.3-2.3zm5.8-7C9 7.9 7.9 9 6.7 9S4.4 8 4.4 6.7s1-2.3 2.3-2.3S9 5.4 9 6.7zm16.3 21c-1.3 0-2.3-1-2.3-2.3s1-2.3 2.3-2.3 2.3 1 2.3 2.3-1 2.3-2.3 2.3zm2.4-21c0 1.3-1 2.3-2.3 2.3S23 7.9 23 6.7s1-2.3 2.3-2.3 2.4 1 2.4 2.3zM6.7 23C8 23 9 24 9 25.3s-1 2.3-2.3 2.3-2.3-1-2.3-2.3 1-2.3 2.3-2.3z" />
-                </g>
-            </svg>
-        </button>
+            <button id="theme-toggle" class="theme-toggle mt-2 sm:mt-0 " type="button" title="Toggle theme"
+                aria-label="Toggle theme">
+                <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="1.2em" height="1.2em"
+                    fill="currentColor" class="theme-toggle__expand" viewBox="0 0 32 32">
+                    <clipPath id="theme-toggle__expand__cutout">
+                        <path d="M0-11h25a1 1 0 0017 13v30H0Z" />
+                    </clipPath>
+                    <g clip-path="url(#theme-toggle__expand__cutout)">
+                        <circle cx="16" cy="16" r="8.4" />
+                        <path
+                            d="M18.3 3.2c0 1.3-1 2.3-2.3 2.3s-2.3-1-2.3-2.3S14.7.9 16 .9s2.3 1 2.3 2.3zm-4.6 25.6c0-1.3 1-2.3 2.3-2.3s2.3 1 2.3 2.3-1 2.3-2.3 2.3-2.3-1-2.3-2.3zm15.1-10.5c-1.3 0-2.3-1-2.3-2.3s1-2.3 2.3-2.3 2.3 1 2.3 2.3-1 2.3-2.3 2.3zM3.2 13.7c1.3 0 2.3 1 2.3 2.3s-1 2.3-2.3 2.3S.9 17.3.9 16s1-2.3 2.3-2.3zm5.8-7C9 7.9 7.9 9 6.7 9S4.4 8 4.4 6.7s1-2.3 2.3-2.3S9 5.4 9 6.7zm16.3 21c-1.3 0-2.3-1-2.3-2.3s1-2.3 2.3-2.3 2.3 1 2.3 2.3-1 2.3-2.3 2.3zm2.4-21c0 1.3-1 2.3-2.3 2.3S23 7.9 23 6.7s1-2.3 2.3-2.3 2.4 1 2.4 2.3zM6.7 23C8 23 9 24 9 25.3s-1 2.3-2.3 2.3-2.3-1-2.3-2.3 1-2.3 2.3-2.3z" />
+                    </g>
+                </svg>
+            </button>
         </div>
-        
+
     </div>
 
 </nav>
