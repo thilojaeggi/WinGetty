@@ -93,7 +93,8 @@
                         {% if current_user.role.has_permission('edit:user') %}
 
                         <a hx-delete="{{ url_for('api.delete_user', id=user.id) }}" hx-target="closest div#user"
-                           hx-swap="outerHTML swap:0.5s" hx-confirm='Are you sure you want to delete the user "{{ user.username }}"?'
+                            hx-swap="outerHTML swap:0.5s"
+                            hx-confirm='Are you sure you want to delete the user "{{ user.username }}"?'
                             class="px-1 group py-1 text-gray-500 transition-colors hover:bg-red-100 dark:bg-neutral-900 duration-300 rounded-md cursor-pointer {% if user == current_user %}opacity-0 pointer-events-none{% endif %}">
                             <svg class="group-hover:stroke-red-500 transition-color duration-300 h-6 w-6" fill="none"
                                 stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
@@ -115,7 +116,10 @@
     {% if current_user.role.has_permission('view:role') %}
     <div class="md:col-span-2 md:row-span-3 md:row-start-4">
         <div class="flex flex-row justify-start items-center ">
-            <h3 class="text-2xl ml-2 select-none font-medium dark:text-gray-200">Roles</h3>
+            <div class="ml-2 ">
+                <h3 class="text-2xl select-none font-medium dark:text-gray-200">Roles</h3>
+                <p class="dark:text-gray-400">Admin, User and Viewer are default roles and will be recreated</p>
+            </div>
             {% if current_user.role.has_permission('add:role') %}
             <a @click="showAddRoleModal = true;"
                 class="ml-2 w-min h-min p-0.25 group  text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer ">
@@ -138,9 +142,10 @@
                     <div class="flex flex-row justify-between items-center cursor-pointer p-2"
                         @click="expanded = !expanded">
                         <p class="font-semibold text-xl select-none dark:text-gray-200">{{role.name|capitalize}}</p>
-
+                        {% if current_user.role.has_permission('delete:role') %}
                         <a hx-delete="{{ url_for('api.delete_role', id=role.id) }}" hx-target="closest div#role"
-                            x-show="expanded" x-transition.opacity x-transition:enter.scale.75 x-transition:leave.scale.75 hx-swap="outerHTML swap:0.5s"
+                            x-show="expanded" x-transition.opacity x-transition:enter.scale.75
+                            x-transition:leave.scale.75 hx-swap="outerHTML swap:0.5s"
                             hx-confirm='Are you sure you want to delete the role "{{ role.name|capitalize }}"?'
                             class="px-1 group py-1 text-gray-500 transition-colors hover:bg-red-100 dark:bg-neutral-900 duration-300 rounded-md cursor-pointer ml-auto mr-2">
                             <svg class="group-hover:stroke-red-500 transition-color duration-300 h-5 w-5" fill="none"
@@ -151,6 +156,7 @@
                                 </path>
                             </svg>
                         </a>
+                        {% endif %}
                         <svg class="h-6 w-6 dark:text-gray-200 mr-1 transition-transform duration-300"
                             x-bind:class="expanded ? 'rotate-180' : 'rotate-0'" fill="none" stroke="currentColor"
                             stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
@@ -172,8 +178,7 @@
                                                             '{{ permission.name }}'.toLowerCase().startsWith('edit') || 
                                                             '{{ permission.name }}'.toLowerCase().startsWith('add') || 
                                                             '{{ permission.name }}'.toLowerCase().startsWith('delete'))
-                                                    }"
-                            >{{ permission.name }}</p>
+                                                    }">{{ permission.name }}</p>
                             {% endfor %}
 
                         </div>
