@@ -380,7 +380,7 @@ def change_role(user):
     except Exception as error:
         current_app.logger.error(f"Database error: {error}")
         db.session.rollback()
-    flash('User updated successfully.', 'success')
+    flash('Role changed successfully.', 'success')
     response = Response()
     redirect_url = url_for('ui.users')  # Replace 'index' with the endpoint you want to redirect to
     response.headers['HX-Redirect'] = redirect_url
