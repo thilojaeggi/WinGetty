@@ -1,0 +1,106 @@
+<!-- Main modal -->
+<div x-cloak x-show="showAddUserModal" id="addUserModal" tabindex="-1" aria-hidden="true"
+    class="fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-full max-h-full dark:bg-neutral-700/40 flex justify-center items-center"
+    x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 "
+    x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-300"
+    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+    <div class="relative w-full max-w-2xl max-h-full " @click.away="showAddUserModal = false;" x-show="showAddUserModal"
+        x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-90"
+        x-transition:enter-end="opacity-100 scale-100" x-transition:leave="ease-in duration-300"
+        x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-90">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-2xl shadow dark:bg-neutral-900" x-data="{password: '',password_confirm: ''}">
+            <!-- Modal header -->
+            <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
+                <div class="flex flex-col">
+                    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white">
+                        Add User
+                    </h3>
+                </div>
+                <button type="button" @click="showAddUserModal = false;"
+                    class="text-gray-400 transition-colors duration-300 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                    data-modal-hide="defaultModal">
+                    <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd"
+                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div class="px-4 pb-4 space-y-6">
+                <form id="addUserForm" x-ref="addUserForm" class="mt-5" action="{{ url_for('api.add_user') }}"
+                     method="POST" enctype="multipart/form-data">
+
+
+
+                    <div class="mt-2">
+                        <label for="username" class="block text-gray-700 dark:text-gray-300 ">Username<span
+                                class="text-red-500">*</span></label>
+                        <input required name="username" placeholder="" type="text"
+                            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                    </div>
+
+                    <div class="mt-2">
+                        <label for="email" class="block  text-gray-700 dark:text-gray-300 ">E-Mail<span
+                                class="text-red-500">*</span></label>
+                        <input required name="email" placeholder="" type="email"
+                            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                    </div>
+                    <div class="mt-2">
+                        <label for="password" class="block  text-gray-700 dark:text-gray-300 ">Password<span
+                                class="text-red-500">*</span></label>
+                        <input required name="password" placeholder="" type="password" x-model="password"
+                            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                    </div>
+                    <div class="mt-2">
+                        <label for="password" class="block  text-gray-700 dark:text-gray-300 ">Repeat Password<span
+                                class="text-red-500">*</span></label>
+                        <input required name="password" placeholder="" type="password" x-model="password_confirm"
+                            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                    </div>
+                    <div class="flex items-center py-1 mt-2">
+                        <div :class="{'bg-green-200 text-green-700': password == password_confirm && password.length > 0, 'bg-red-200 text-red-700':password != password_confirm || password.length == 0}"
+                            class=" rounded-full p-1 fill-current ">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path x-show="password == password_confirm && password.length > 0"
+                                    stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7" />
+                                <path x-show="password != password_confirm || password.length == 0"
+                                    stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+
+                            </svg>
+                        </div>
+                        <span
+                            :class="{'bg-green-200 dark:bg-green-600/60 text-green-600 dark:text-green-300': password == password_confirm && password.length > 0, 'bg-red-200 dark:bg-red-600/60 text-red-600 dark:text-red-300':password != password_confirm || password.length == 0}"
+                            class="font-medium text-sm ml-3 p-2 rounded-full "
+                            x-text="password == password_confirm && password.length > 0 ? 'Passwords match' : 'Passwords do not match' "></span>
+                    </div>
+                    <div class="mt-2">
+                        <label for="role" class="block  text-gray-700 dark:text-gray-300 ">Role<span
+                                class="text-red-500">*</span></label>
+                        <select name="role" id="role"
+                            class="block w-1/2 px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+
+                            {% for role in roles %}
+                            <option value="{{ role.id }}">{{
+                                role.name|capitalize }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                </form>
+            </div>
+            <!-- Modal footer -->
+            <div class="flex items-center justify-end p-4 space-x-2 dark:border-gray-600">
+                <button type="submit" type="button" form="addUserForm" x-bind:disabled="password != password_confirm || password.length == 0" :class="{'bg-blue-700 hover:bg-blue-800': password == password_confirm && password.length > 0, 'bg-gray-400 cursor-not-allowed':password != password_confirm || password.length == 0}"
+                    class="px-3 py-2 tracking-wide text-white   transition-colors duration-300 transform bg-blue-700 hover:bg-blue-800 rounded-md focus:outline-none focus:bg-blue-800 focus:ring focus:ring-blue-300 focus:ring-opacity-50">Add
+                    User</button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>

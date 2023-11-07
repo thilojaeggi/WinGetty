@@ -1,3 +1,5 @@
+import json
+import logging
 import os
 import sys
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, current_app
@@ -13,6 +15,14 @@ from dynaconf import FlaskDynaconf
 from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
 
+ascii_logo = """
+ _       ___       ______     __  __       
+| |     / (_)___  / ____/__  / /_/ /___  __
+| | /| / / / __ \/ / __/ _ \/ __/ __/ / / /
+| |/ |/ / / / / / /_/ /  __/ /_/ /_/ /_/ / 
+|__/|__/_/_/ /_/\____/\___/\__/\__/\__, /  
+                                  /____/   
+"""
 
 convention = {
     "ix": 'ix_%(column_0_label)s',
@@ -46,7 +56,19 @@ def favicon():
 def current_year():
     return {'now': datetime.now}
 
+def remove_none_values(value):
+    if isinstance(value, list):
+        return [remove_none_values(v) for v in value if v is not None]
+    elif isinstance(value, dict):
+        return {k: remove_none_values(v) for k, v in value.items() if v is not None}
+    else:
+        return value
 
+
+class PrefixLoggerAdapter(logging.LoggerAdapter):
+    """ A logger adapter that adds a prefix to every message """
+    def process(self, msg: str, kwargs: dict) -> (str, dict):
+        return (f'[{self.extra["prefix"]}] ' + msg, kwargs)
 
 def create_app():
     app = Flask(__name__)
@@ -81,6 +103,28 @@ def create_app():
     app.register_blueprint(auth)
 
     app.jinja_env.filters['sort_versions'] = sort_versions
+    app.jinja_env.filters['remove_none_values'] = remove_none_values
+
+    logFormatter = logging.Formatter('%(asctime)s - %(message)s')
+
+
+    is_gunicorn = "gunicorn" in os.environ.get("SERVER_SOFTWARE", "")
+    if is_gunicorn:
+        gunicorn_logger = logging.getLogger('gunicorn.error')
+        app.logger.handlers = gunicorn_logger.handlers
+        app.logger.setLevel(gunicorn_logger.level)
+        app.logger.info(ascii_logo + "Version: " + app.config['VERSION'])
+        app.logger.info("Running in Gunicorn")
+    else:
+        app.logger.setLevel(logging.INFO)
+        app.logger.info(ascii_logo + "Version: " + app.config['VERSION'])
+        app.logger.info("Running in Flask")
+
+    app.logger = PrefixLoggerAdapter(app.logger, {"prefix": "WinGetty"})
+
+    app.logger.info("Logger initialized")
+        
+
 
     @app.context_processor
     def inject_now():
@@ -90,7 +134,7 @@ def create_app():
     def favicon():
         return url_for('static', filename='img/favicon.ico')
     
-
+    # Hacky way to not trigger permissions creation on flask db upgrade as db is not yet initialized
     if not 'flask' in sys.argv and not 'db' in sys.argv:
         with app.app_context():
             from app.permissions import create_all

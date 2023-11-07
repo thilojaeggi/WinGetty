@@ -4,7 +4,7 @@ from dynaconf import Dynaconf
 settings = Dynaconf(
     envvar_prefix="WINGETTY",
     settings_files=['settings.toml', '.secrets.toml'],
-    VERSION = "0.0.6",
+    VERSION = "0.0.7",
     PREFERRED_URL_SCHEME = "https"
 )
 

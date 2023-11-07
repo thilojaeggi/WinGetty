@@ -1,10 +1,14 @@
 {% extends "base.j2" %}
 {% set title = "Users" %}
+{% set alpine_data = "{ showAddRoleModal: false, showAddUserModal: false}"%}
+
+
+
 {% block content %}
 <h1 class="text-3xl font-medium text-gray-800 dark:text-gray-200">{{ title }}</h1>
 <div class="grid grid-cols-1 md:grid-cols-7 gap-y-12 gap-x-3 mt-4">
     {% if current_user.role.has_permission('view:own_user') %}
-    <div class="md:col-span-3 md:row-span-3">
+    <div class="md:col-span-2 md:row-span-3">
         <h3 class="text-2xl mb-1 select-none font-medium dark:text-gray-200 ml-2">You</h3>
         <div class="bg-white/70 dark:bg-neutral-900 rounded-xl h-full md:h-auto  p-2 flex flex-col space-y-2">
             <form
@@ -45,17 +49,22 @@
         </div>
     </div>
     {% endif %}
+
     {% if current_user.role.has_permission('view:user') %}
-    <div class="md:col-span-4 md:row-span-3 md:col-start-4 ">
-        <div class="flex flex-row">
-            <h3 class="text-2xl mb-1 select-none font-medium dark:text-gray-200 ml-2">Users</h3>
-            <button type="button" @click="showAddVersionModal = true"
-                class="hidden bg-blue-600 hover:bg-blue-500 transition-colors duration-300 p-0.25 rounded-md text-white h-min self-end ml-2 mb-1.5">
-                <svg class="h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+    <div class="md:col-span-4 md:row-span-3 md:col-start-3 ">
+        <div class="flex flex-row justify-start items-center ">
+            <h3 class="text-2xl ml-2 select-none font-medium dark:text-gray-200">Users</h3>
+            {% if current_user.role.has_permission('add:user') %}
+            <a @click="showAddUserModal = true;"
+                class="ml-2 w-min h-min p-0.25 group  text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer ">
+                <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6 stroke-2" fill="none"
+                    stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
                 </svg>
-            </button>
+
+            </a>
+            {% endif %}
         </div>
         <div class="bg-white/70 dark:bg-neutral-900 rounded-xl h-full p-2 flex flex-col space-y-2">
             <div class="drop-shadow-md flex flex-col divide-y dark:divide-gray-200/25">
@@ -65,11 +74,26 @@
                     x-data="{ expanded: false }" @click.away="expanded = false">
                     <div class="flex  flex-row justify-between items-center  p-2" @click="expanded = !expanded">
                         <p class="font-semibold text-xl  dark:text-gray-200 flex-1">{{ user.username }}</p>
-                        <p class="text-gray-700 dark:text-gray-300/70 mr-4">{{ user.role.name|capitalize }}</p>
+                        {% if current_user.role.has_permission('edit:user') %}
+                        {% if not user == current_user%}
+                        <select
+                            class="block px-2 py-1 text-gray-700 dark:text-gray-200 mr-4   placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40"
+                            name="role_id" hx-post="{{ url_for('api.change_role', user=user.id)}}" hx-trigger="change"
+                            hx-target="this" hx-swap="none">
+                            {% for role in roles %}
+                            <option {% if user.role==role %}selected{% endif %} value="{{ role.id }}">{{
+                                role.name|capitalize }}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+                        {% endif %}
+
 
                         <p class="text-gray-700 dark:text-gray-300/70 mr-4">{{ user.email }}</p>
+                        {% if current_user.role.has_permission('edit:user') %}
+
                         <a hx-delete="{{ url_for('api.delete_user', id=user.id) }}" hx-target="closest div#user"
-                            hx-swap="outerHTML swap:0s"
+                           hx-swap="outerHTML swap:0.5s" hx-confirm='Are you sure you want to delete the user "{{ user.username }}"?'
                             class="px-1 group py-1 text-gray-500 transition-colors hover:bg-red-100 dark:bg-neutral-900 duration-300 rounded-md cursor-pointer {% if user == current_user %}opacity-0 pointer-events-none{% endif %}">
                             <svg class="group-hover:stroke-red-500 transition-color duration-300 h-6 w-6" fill="none"
                                 stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
@@ -79,6 +103,7 @@
                                 </path>
                             </svg>
                         </a>
+                        {% endif %}
 
                     </div>
                 </div>
@@ -89,16 +114,43 @@
     {% endif %}
     {% if current_user.role.has_permission('view:role') %}
     <div class="md:col-span-2 md:row-span-3 md:row-start-4">
-        <h3 class="text-2xl mb-1 select-none font-medium dark:text-gray-200 ml-2">Roles</h3>
+        <div class="flex flex-row justify-start items-center ">
+            <h3 class="text-2xl ml-2 select-none font-medium dark:text-gray-200">Roles</h3>
+            {% if current_user.role.has_permission('add:role') %}
+            <a @click="showAddRoleModal = true;"
+                class="ml-2 w-min h-min p-0.25 group  text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer ">
+                <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6 stroke-2" fill="none"
+                    stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
+                </svg>
+
+            </a>
+            {% endif %}
+        </div>
         <div
             class="bg-white/70 dark:bg-neutral-900 rounded-xl max-h-96 overflow-y-auto scrollbar-none p-2 flex flex-col space-y-2">
             <div class="drop-shadow-md flex flex-col divide-y dark:divide-gray-200/25">
                 {% for role in roles %}
-                <div class="bg-white dark:bg-neutral-950 {% if loop.first %}rounded-t-md{% elif loop.last %}rounded-b-md{% endif %} {% if roles|length == 1 %} rounded-md {% endif %} flex flex-col"
+                <div id="role"
+                    class="bg-white dark:bg-neutral-950 {% if loop.first %}rounded-t-md{% elif loop.last %}rounded-b-md{% endif %} {% if roles|length == 1 %} rounded-md {% endif %} flex flex-col"
                     x-data="{ expanded: false }" @click.away="expanded = false">
                     <div class="flex flex-row justify-between items-center cursor-pointer p-2"
                         @click="expanded = !expanded">
                         <p class="font-semibold text-xl select-none dark:text-gray-200">{{role.name|capitalize}}</p>
+
+                        <a hx-delete="{{ url_for('api.delete_role', id=role.id) }}" hx-target="closest div#role"
+                            x-show="expanded" x-transition.opacity x-transition:enter.scale.75 x-transition:leave.scale.75 hx-swap="outerHTML swap:0.5s"
+                            hx-confirm='Are you sure you want to delete the role "{{ role.name|capitalize }}"?'
+                            class="px-1 group py-1 text-gray-500 transition-colors hover:bg-red-100 dark:bg-neutral-900 duration-300 rounded-md cursor-pointer ml-auto mr-2">
+                            <svg class="group-hover:stroke-red-500 transition-color duration-300 h-5 w-5" fill="none"
+                                stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0">
+                                </path>
+                            </svg>
+                        </a>
                         <svg class="h-6 w-6 dark:text-gray-200 mr-1 transition-transform duration-300"
                             x-bind:class="expanded ? 'rotate-180' : 'rotate-0'" fill="none" stroke="currentColor"
                             stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
@@ -111,7 +163,17 @@
                             class="flex flex-col space-y-1 justify-between items-start p-2 max-h-48 overflow-y-auto scrollbar scrollbar-track-transparent dark:scrollbar-thumb-gray-300 scrollbar-thumb-neutral-600 scrollbar-w-2 scrollbar-corner-rounded-full scrollbar-thumb-rounded-full    ">
                             {% for permission in role.permissions %}
 
-                            <p class="text-gray-700 dark:text-gray-300/70">{{ permission.name }}</p>
+                            <p :class="{
+                                                        ' text-blue-600 dark:text-blue-300': '{{ permission.name }}'.toLowerCase().startsWith('view'),
+                                                        ' text-yellow-600 dark:text-yellow-300': '{{ permission.name }}'.toLowerCase().startsWith('edit'),
+                                                        ' text-green-600 dark:text-green-300': '{{ permission.name }}'.toLowerCase().startsWith('add'),
+                                                        ' text-red-600 dark:text-red-300': '{{ permission.name }}'.toLowerCase().startsWith('delete'),
+                                                        ' text-gray-600 dark:text-gray-300': !('{{ permission.name }}'.toLowerCase().startsWith('view') || 
+                                                            '{{ permission.name }}'.toLowerCase().startsWith('edit') || 
+                                                            '{{ permission.name }}'.toLowerCase().startsWith('add') || 
+                                                            '{{ permission.name }}'.toLowerCase().startsWith('delete'))
+                                                    }"
+                            >{{ permission.name }}</p>
                             {% endfor %}
 
                         </div>
@@ -123,4 +185,7 @@
     </div>
     {% endif %}
 </div>
+{% include 'modals/add_role.j2' %}
+{% include 'modals/add_user.j2' %}
+
 {% endblock %}

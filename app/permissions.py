@@ -1,3 +1,4 @@
+from flask import current_app
 from app.models import Permission, Role, User
 from app import db
 from sqlalchemy.exc import IntegrityError
@@ -96,9 +97,7 @@ def create_permissions():
         if permission not in roles['admin'].permissions:
             roles['admin'].permissions.append(permission)
         
-        if permission_name not in ['view:role', 'add:role', 'edit:role', 'delete:role',
-                                   'view:permission', 'add:permission', 'edit:permission', 'delete:permission',
-                                   'view:user', 'add:user', 'edit:user', 'delete:user'] and \
+        if permission_name not in ['add:role', 'edit:role', 'delete:role', 'add:permission', 'edit:permission', 'delete:permission', 'add:user', 'edit:user', 'delete:user'] and \
            permission not in roles['user'].permissions:
             roles['user'].permissions.append(permission)
         
@@ -118,11 +117,12 @@ def create_permissions():
 
 def create_all():
     """Entry function to create roles and permissions."""
+    current_app.logger.info('Creating roles and permissions...')
     try:
         create_default_roles()
         create_permissions()
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
-        print("Error occurred. Rolled back the session.")
+        current_app.logger.info('Roles and permissions already exist.')
 

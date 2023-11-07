@@ -52,6 +52,7 @@ def create_installer(publisher, identifier, version, installer_form):
         if hash is None:
             return "Error saving file", 500
     elif not file and external_url and is_aws:
+        current_app.logger.info("Installer is on AWS")
         file_name = external_url
         s3_object_key = f'packages/{publisher}/{identifier}/{version}/{architecture}/{file_name}'
         external_url = None
@@ -62,17 +63,17 @@ def create_installer(publisher, identifier, version, installer_form):
             Params={'Bucket': current_app.config['BUCKET_NAME'], 'Key': s3_object_key},
             ExpiresIn=URL_EXPIRATION_SECONDS
         )
-        
+        current_app.logger.info(f"Getting file hash from presigned URL: {presigned_url}")
         hash = get_file_hash_from_url(presigned_url)
     # If no file is provided, but an external_url is available, use that
     elif external_url:
-        print("Found external url")
+        current_app.logger.info("Getting file hash from external URL")
         hash = get_file_hash_from_url(external_url)
         file_name = None
 
         
     else:
-        print("Either a file or an external URL must be provided.")
+        current_app.logger.error("No file or external URL provided")
         raise ValueError("Either a file or an external URL must be provided.")
     
     installer = Installer(
@@ -85,9 +86,9 @@ def create_installer(publisher, identifier, version, installer_form):
     )
 
     for field_name in installer_switches:
-        debugPrint(f"Checking for field name {field_name}")
+        current_app.logger.debug(f"Checking for field name {field_name}")
         if field_name in request.form:
-            debugPrint(f"Field name found {field_name}")
+            current_app.logger.debug(f"Field name found {field_name}")
             field_value = request.form.get(field_name)
             installer_switch = InstallerSwitch()
             installer_switch.parameter = field_name
@@ -119,6 +120,7 @@ def delete_installer_util(package, installer, version):
         base_path = ['packages', package.publisher, package.identifier, version.version_code, installer.architecture]
         if current_app.config['USE_S3']:
             s3_key = '/'.join(base_path + [installer.file_name])
+            current_app.logger.info(f"Deleting file from S3: {s3_key}")
             s3_client.delete_object(
                 Bucket=current_app.config['BUCKET_NAME'],
                 Key=s3_key
@@ -127,11 +129,9 @@ def delete_installer_util(package, installer, version):
             # Construct the file system path
             installer_path = os.path.join(basedir, *base_path, installer.file_name)
             if os.path.exists(installer_path):
+                current_app.logger.info(f"Deleting file from local file system: {installer_path}")
                 os.remove(installer_path)
 
-def debugPrint(message):
-    if current_app.config['DEBUG']:
-        print(message)
 
 def save_file(file, file_name, publisher, identifier, version, architecture):
     publisher = secure_filename(publisher)

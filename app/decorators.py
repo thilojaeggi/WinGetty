@@ -15,7 +15,7 @@ def permission_required(permission):
             # Check if the user's role has the required permission
             if not user_role.has_permission(permission):
                 # flash error message
-                flash("You\\'re missing permissions to access this resource.", 'error')
+                flash("You\'re missing permissions to access this resource.", 'error')
                 return redirect(request.referrer)
             return func(*args, **kwargs)
         return wrapper

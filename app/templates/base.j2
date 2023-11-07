@@ -14,6 +14,17 @@
     <script defer src="{{ url_for('static', filename='js/alpine.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/htmx.js') }}"></script>
     <script src="{{ url_for('static', filename='js/axios.min.js') }}"></script>
+    <script>
+    window.addEventListener('htmx:responseError', function(event) {
+        var message = event.detail.xhr.response;
+        window.dispatchEvent(new CustomEvent('notice', {
+            detail: {
+                text: message,
+                type: 'error'
+            }
+        }))
+    });
+    </script>
 
     <!-- This is to load fonts asap -->
     {% include 'fonts.j2' %}
@@ -26,8 +37,8 @@
         window.addEventListener('load', function () {
             window.dispatchEvent(new CustomEvent('notice', {
                 detail: {
-                    text: '{{ message }}',
-                    type: '{{ category }}'
+                    text: {{ message|tojson }},
+                    type: {{ category|tojson }}
                 }
             }))
         });
