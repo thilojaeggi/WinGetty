@@ -33,6 +33,7 @@ MarkupSafe==2.1.2
 packaging==23.2
 pip-check-reqs==2.5.3
 prompt-toolkit==3.0.39
+psycopg2-binary==2.9.9
 pycparser==2.21
 Pygments==2.16.1
 PyMySQL==1.1.0
