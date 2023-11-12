@@ -22,6 +22,8 @@ def index():
 URL_EXPIRATION_SECONDS = 3600
 
 @api.route('/generate_presigned_url', methods=['POST'])
+@login_required
+@permission_required('add:installer')
 def generate_presigned_url():
     try:
         # Extract file information from the request
