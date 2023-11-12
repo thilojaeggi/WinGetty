@@ -145,7 +145,7 @@ def delete_package(identifier):
         db.session.rollback()
         current_app.logger.error(f"Database error: {e}")
         return "Database error", 500
-
+    flash('Package deleted successfully.', 'success')
     response = Response()
     redirect_url = url_for('ui.packages')
     response.headers['HX-Redirect'] = redirect_url
