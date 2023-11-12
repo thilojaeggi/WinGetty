@@ -183,7 +183,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(100), unique=True)
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     password = db.Column(db.String(100))
-    role = db.relationship('Role')
+    role = db.relationship('Role', back_populates='users')
 
     def set_password(self, password):
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
@@ -202,10 +202,14 @@ class Role(db.Model):
 
     # Relationship with Permission model
     permissions = db.relationship('Permission', secondary=roles_permissions)
+    users = db.relationship('User', back_populates='role')
 
     def has_permission(self, name):
         # Check if the permission name is in there
         return name in [permission.name for permission in self.permissions]
+    
+    def user_count(self):
+        return len(self.users)
         
 
 
