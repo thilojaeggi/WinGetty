@@ -118,7 +118,6 @@
         <div class="flex flex-row justify-start items-center ">
             <div class="ml-2 ">
                 <h3 class="text-2xl select-none font-medium dark:text-gray-200">Roles</h3>
-                <p class="dark:text-gray-400">Admin, User and Viewer are default roles and will be recreated</p>
             </div>
             {% if current_user.role.has_permission('add:role') %}
             <a @click="showAddRoleModal = true;"
@@ -142,7 +141,17 @@
                     <div class="flex flex-row justify-between items-center cursor-pointer p-2"
                         @click="expanded = !expanded">
                         <p class="font-semibold text-xl select-none dark:text-gray-200">{{role.name|capitalize}}</p>
-                        {% if current_user.role.has_permission('delete:role') %}
+                        <div class="grow"></div>
+
+                        {% if role.users|count > 0 %}
+                        <p class="text-gray-700 dark:text-gray-300/70 mr-4">{{ role.users|count }} {{ 'User' if role.users|count == 1 else 'Users' }}</p>
+                        {% endif %}
+                        {% if role.name in ['admin', 'user', 'viewer'] %}
+                        <p class="text-gray-700 dark:text-gray-300/70 mr-4">Default</p>
+                        {% endif %}
+
+                        {% if current_user.role.has_permission('delete:role') and role.name not in ['admin', 'user',
+                        'viewer'] %}
                         <a hx-delete="{{ url_for('api.delete_role', id=role.id) }}" hx-target="closest div#role"
                             x-show="expanded" x-transition.opacity x-transition:enter.scale.75
                             x-transition:leave.scale.75 hx-swap="outerHTML swap:0.5s"
