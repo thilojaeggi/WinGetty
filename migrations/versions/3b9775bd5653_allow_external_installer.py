@@ -21,7 +21,7 @@ def upgrade():
     with op.batch_alter_table('installer', schema=None) as batch_op:
         batch_op.add_column(sa.Column('external_url', sa.String(length=255), nullable=True))
         # Make column file_name nullable
-        batch_op.alter_column('file_name', nullable=True)
+        batch_op.alter_column('file_name', existing_type=sa.String(100), nullable=True)
 
     # ### end Alembic commands ###
 
@@ -31,6 +31,6 @@ def downgrade():
     with op.batch_alter_table('installer', schema=None) as batch_op:
         batch_op.drop_column('external_url')
         # Make column file_name non-nullable
-        batch_op.alter_column('file_name', nullable=False)
+        batch_op.alter_column('file_name', existing_type=sa.String(100), nullable=False)
 
     # ### end Alembic commands ###
