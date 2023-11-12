@@ -4,7 +4,7 @@ from flask import (
     Blueprint, Response, jsonify, render_template, request,
     redirect, stream_with_context, url_for, current_app, send_from_directory, flash
 )
-from flask_login import login_required
+from flask_login import current_user, login_required
 from werkzeug.http import parse_range_header
 from werkzeug.utils import secure_filename
 import requests
@@ -84,8 +84,13 @@ def add_package():
     
 
     package = Package(identifier=identifier, name=name, publisher=publisher)
+
     if file or external_url and version:
         current_app.logger.info("File and version found")
+        if not current_user.role.has_permission('add:installer'):
+            current_app.logger.warning("User doesn't have permission to add installer")
+            return "User doesn't have permission to add installer", 403
+
         installer = create_installer(publisher, identifier, version, installer_form)
         if installer is None:
             return "Error creating installer", 500
@@ -172,6 +177,9 @@ def add_version(identifier):
     version = PackageVersion(version_code=version, package_locale="en-US", short_description=package.name, identifier=identifier)
     if file or external_url and version:
         current_app.logger.info("File and version found")
+        if not current_user.role.has_permission('add:installer'):
+            current_app.logger.warning("User doesn't have permission to add installer")
+            return "User doesn't have permission to add installer", 403        
         installer = create_installer(package.publisher, identifier, version.version_code, installer_form)
         if installer is None:
             return "Error creating installer", 500
