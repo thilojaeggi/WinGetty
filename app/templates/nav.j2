@@ -38,10 +38,18 @@
             </a>
 
         </div>
+    <div class="flex-grow"></div>
         <a href="{{ url_for('ui.users') }}"
-            class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ml-auto">
+            class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ">
             Users
         </a>
+
+        {% if config.IS_CLOUD and current_user.role.id == 1 %}
+        <a href="https://subscription.wingetty.dev/p/login/4gw2aXeXacdgcPm8ww?prefilled_email={{ current_user.email }}"
+            class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500">
+            Manage subscription
+        </a>
+        {% endif %}
 
 
 
