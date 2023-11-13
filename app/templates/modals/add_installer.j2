@@ -42,10 +42,11 @@
 
 
                     <input type="hidden" name="installer-version" x-model="selectedVersion">
+                    {% if current_user.role.has_permission('add:installer') %}
 
                     {{ macros.file_upload(hasVersion=false, file_required=true) }}
 
-
+                    {% endif %}
                     <div x-show="!showUploadButton"
                         class="min-w-[5%] h-auto p-2 mt-4 rounded-md w-min bg-blue-600 flex flex-row justify-end text-white text-lg font-semibold "
                         x-bind:style="'width: ' + progress + '%; transition: width 0.5s ease-in-out;'">
@@ -91,19 +92,19 @@
                 } else {
                     this.addToPackages(null);
                 }
-                
+
             },
 
             generate_presigned_url(formData, file) {
                 formData.delete('installer-file');
                 const config = {
-                        headers: {
-                            'Content-Type': 'multipart/form-data'
-                        },
-                        onUploadProgress: progressEvent => {
-                            this.progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-                        }
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    },
+                    onUploadProgress: progressEvent => {
+                        this.progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
                     }
+                }
 
                 axios.post('{{ url_for('api.generate_presigned_url')}}', formData, config)
                     .then(response => {
@@ -171,7 +172,7 @@
                         if (response.status === 200) {
                             this.showAddInstallerModal = false;
                             this.$refs.addInstallerForm.reset();
-                           location.reload();
+                            location.reload();
                         }
                     })
                     .catch(error => {
@@ -185,7 +186,7 @@
                     })
                     .finally(() => {
                         this.showUploadButton = true;
-                        
+
                     });
             },
 
