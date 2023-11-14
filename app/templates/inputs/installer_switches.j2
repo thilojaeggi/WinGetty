@@ -1,15 +1,15 @@
 <div class="mt-2 "
-    x-data="{ switches: [], availableSwitches: ['Silent', 'SilentWithProgress', 'Interactive', 'InstallLocation', 'Log', 'Upgrade', 'Custom' ] }"
+    x-data="{ switches: [], availableSwitches: {{ installer_switches }} }"
     x-init="
     $watch('selectedInstaller', (value) => {
         if (value) {
 
             switches = value.switches.map(switchObj => ({ key: switchObj.parameter, value: switchObj.value }));
             // Recreate availableSwitches but remove all switches that are already in use
-            availableSwitches = ['Silent', 'SilentWithProgress', 'Interactive', 'InstallLocation', 'Log', 'Upgrade', 'Custom' ].filter(switchOption => !switches.find(switchObj => switchObj.key === switchOption));
+            availableSwitches = {{ installer_switches }}.filter(switchOption => !switches.find(switchObj => switchObj.key === switchOption));
         } else {
             switches = [];
-            availableSwitches = ['Silent', 'SilentWithProgress', 'Interactive', 'InstallLocation', 'Log', 'Upgrade', 'Custom' ];
+            availableSwitches = {{ installer_switches }};
         }
     });
 ">
