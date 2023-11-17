@@ -115,4 +115,3 @@ def manifestSearch():
     current_app.logger.info(f"Returning {len(output_data)} packages.")
 
     return jsonify({"Data": output_data})
-
