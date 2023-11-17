@@ -56,26 +56,25 @@ def manifestSearch():
             )
         )
 
+    # Mapping of PackageMatchField to database field
+    db_field_map = {
+        'PackageName': 'name',
+        'PackageIdentifier': 'identifier',
+        'PackageFamilyName': 'identifier',  
+        'ProductCode': 'name',     
+        'Moniker': 'name'                
+    }
+
+    # Combine Filters and Inclusions and process them
     combined_filters = filters + inclusions
+    filter_conditions = []
 
-
-    # Apply inclusions to the query
-    inclusion_filters = []
-    for inclusion in combined_filters:
-        package_match_field = inclusion.get('PackageMatchField')
-        request_match = inclusion.get('RequestMatch')
+    for filter_entry in combined_filters:
+        package_match_field = filter_entry.get('PackageMatchField')
+        request_match = filter_entry.get('RequestMatch')
         
         if not all([package_match_field, request_match]):
             continue  # Skip if filter is incomplete
-
-        # Map the PackageMatchField to the database field
-        db_field_map = {
-            'PackageName': 'name',
-            'PackageIdentifier': 'identifier',
-            'PackageFamilyName': 'identifier',
-            'ProductCode': 'identifier',  # Not implemented in the database yet
-            'Moniker': 'name'            # Not implemented in the database yet
-        }
 
         db_field = db_field_map.get(package_match_field)
         if not db_field:
@@ -87,15 +86,15 @@ def manifestSearch():
         filter_expression = f'%{keyword_filter}%' if match_type_filter != "Exact" else keyword_filter
 
         if match_type_filter == "Exact":
-            inclusion_filters.append(getattr(Package, db_field) == keyword_filter)
+            filter_conditions.append(getattr(Package, db_field) == keyword_filter)
         elif match_type_filter in ["Partial", "Substring", "CaseInsensitive"]:
-            inclusion_filters.append(getattr(Package, db_field).ilike(filter_expression))
+            filter_conditions.append(getattr(Package, db_field).ilike(filter_expression))
         else:
             current_app.logger.error("Invalid match type in filters provided.")
             return jsonify({"error": "Invalid match type in filters"}), 400
 
-    if inclusion_filters:
-        packages_query = packages_query.filter(and_(*inclusion_filters))
+    if filter_conditions:
+        packages_query = packages_query.filter(and_(*filter_conditions))
 
     # Apply maximum_results limit
     packages_query = packages_query.limit(maximum_results)
