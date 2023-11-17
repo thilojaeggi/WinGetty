@@ -38,6 +38,7 @@ def manifestSearch():
 
     maximum_results = request_data.get('MaximumResults', 50)
     query = request_data.get('Query', {})
+    filters = request_data.get('Filters', [])
     inclusions = request_data.get('Inclusions', [])
 
     # Initialize the base query
@@ -55,9 +56,12 @@ def manifestSearch():
             )
         )
 
+    combined_filters = filters + inclusions
+
+
     # Apply inclusions to the query
     inclusion_filters = []
-    for inclusion in inclusions:
+    for inclusion in combined_filters:
         package_match_field = inclusion.get('PackageMatchField')
         request_match = inclusion.get('RequestMatch')
         
