@@ -6,7 +6,7 @@ from wtforms.validators import InputRequired, Length, Optional
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 import wtforms
 from wtforms import Form, StringField, SelectField, validators, ValidationError
-
+from . import constants
 class RequiredIf(object):
 
     def __init__(self, **kwargs):
@@ -93,13 +93,13 @@ class AddInstallerFormFields(FlaskForm):
     version = StringField('Version',validators=[RequiredIfFileOrURL('file', 'url')])
     
 
-    architecture = SelectField('Architecture', choices=[('x86', 'x86'), ('x64', 'x64'), ('arm', 'arm'), ('arm64', 'arm64')],validators=[RequiredIfFileOrURL('file', 'url')])
+    architecture = SelectField('Architecture', choices=constants.architectures,validators=[RequiredIfFileOrURL('file', 'url')])
     
-    installer_type = SelectField('Type', choices=[('exe', 'exe'), ('msi', 'msi'), ('msix', 'msix'), ('appx', 'appx'), ('zip', 'zip'), ('inno', 'inno'), ('nullsoft', 'nullsoft'), ('wix', 'wix'), ('burn', 'burn'), ('pwa', 'pwa'), ('msstore', 'msstore')],validators=[RequiredIfFileOrURL('file', 'url')])
+    installer_type = SelectField('Type', choices=constants.installer_types,validators=[RequiredIfFileOrURL('file', 'url')])
     
-    installer_scope = SelectField('Scope', choices=[('user', 'user'), ('machine', 'machine'), ('both', 'both')],validators=[RequiredIfFileOrURL('file', 'url')])
+    installer_scope = SelectField('Scope', choices=constants.installer_scopes,validators=[RequiredIfFileOrURL('file', 'url')])
     
-    nestedinstallertype = SelectField('Nested Installer Type', choices=[('msi', 'msi'), ('msix', 'msix'), ('appx', 'appx'), ('exe', 'exe'), ('inno', 'inno'),('nullsoft', 'nullsoft'), ('wix', 'wix'), ('burn', 'burn'), ('portable','portable')], validators=[
+    nestedinstallertype = SelectField('Nested Installer Type', choices=constants.nested_installer_types, validators=[
         RequiredIf(installer_type='zip')
         ])
     

@@ -30,8 +30,9 @@
 
 
     <template x-if="selection === 'file'">
-        <input @change="fileChosen = $refs.fileInput.files.length > 0" x-ref="fileInput" ref="fileInput" name="installer-file" {% if
-            file_required %} required {% endif %} accept=".exe,.msi,.msix,.appx,.zip" type="file"
+        <input @change="fileChosen = $refs.fileInput.files.length > 0" x-ref="fileInput" ref="fileInput"
+            name="installer-file" {% if file_required %} required {% endif %} accept=".exe,.msi,.msix,.appx,.zip"
+            type="file"
             class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
     </template>
     <template x-if="selection === 'url'">
@@ -47,10 +48,9 @@
                 class="text-red-500">*</span></label>
         <select name="installer-architecture" x-bind:required="fileChosen"
             class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-            <option value="x86">x86</option>
-            <option value="x64">x64</option>
-            <option value="arm">arm</option>
-            <option value="arm64">arm64</option>
+            {% for architecture in architectures %}
+                <option value="{{architecture}}">{{architecture}}</option>
+            {% endfor %}
         </select>
     </div>
     <div class="mt-2">
@@ -58,17 +58,9 @@
                 class="text-red-500">*</span></label>
         <select name="installer-installer_type" x-bind:required="fileChosen" x-model="selectedType"
             class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-            <option value="msix">msix</option>
-            <option value="msi">msi</option>
-            <option value="appx">appx</option>
-            <option value="exe">exe</option>
-            <option value="zip">zip (nested installer)</option>
-            <option value="inno">inno</option>
-            <option value="nullsoft">nullsoft</option>
-            <option value="wix">wix</option>
-            <option value="burn">burn</option>
-            <option value="pwa">pwa</option>
-            <option value="msstore">msstore</option>
+            {% for installer_type in installer_types %}
+                <option value="{{installer_type[0]}}">{{installer_type[1]}}</option>
+            {% endfor %}
         </select>
     </div>
     {% include 'inputs/nested_installer.j2' %}
@@ -78,9 +70,9 @@
                 class="text-red-500">*</span></label>
         <select name="installer-installer_scope" x-bind:required="fileChosen"
             class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-            <option value="user">user</option>
-            <option value="machine">machine</option>
-            <option value="both">both</option>
+            {% for installer_scope in installer_scopes %}
+                <option value="{{installer_scope[0]}}">{{installer_scope[1]}}</option>
+            {% endfor %}
         </select>
     </div>
     {%if hasVersion %}

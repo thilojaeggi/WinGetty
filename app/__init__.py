@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import sys
+from . import constants
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -123,8 +124,12 @@ def create_app():
     app.logger = PrefixLoggerAdapter(app.logger, {"prefix": "WinGetty"})
 
     app.logger.info("Logger initialized")
+    app.add_template_global(constants.installer_switches, name='installer_switches')
+    app.add_template_global(constants.simplified_architectures, name='architectures')
+    app.add_template_global(constants.installer_types, name='installer_types')
+    app.add_template_global(constants.installer_scopes, name='installer_scopes')
+    app.add_template_global(constants.simplified_nested_installer_types, name='nested_installer_types')
         
-
 
     @app.context_processor
     def inject_now():
