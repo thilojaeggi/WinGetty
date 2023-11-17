@@ -3,6 +3,7 @@ from operator import or_
 import os
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, current_app, send_from_directory, flash
 from flask_login import login_required
+from sqlalchemy import and_
 from werkzeug.http import parse_range_header
 from werkzeug.utils import secure_filename
 
@@ -37,8 +38,8 @@ def manifestSearch():
 
     maximum_results = request_data.get('MaximumResults', 50)
     query = request_data.get('Query', {})
-    filters = request_data.get('Filters', [])
-    
+    inclusions = request_data.get('Inclusions', [])
+
     # Initialize the base query
     packages_query = Package.query
 
@@ -50,40 +51,47 @@ def manifestSearch():
         packages_query = packages_query.filter(
             or_(
                 Package.name.ilike(like_expression),
-                Package.identifier.ilike(like_expression)  # Assuming 'identifier' is a column as well
+                Package.identifier.ilike(like_expression)
             )
         )
-    
-    # Apply filters to the query
-    for filter_entry in filters:
-        package_match_field = filter_entry.get('PackageMatchField')
-        request_match = filter_entry.get('RequestMatch')
+
+    # Apply inclusions to the query
+    inclusion_filters = []
+    for inclusion in inclusions:
+        package_match_field = inclusion.get('PackageMatchField')
+        request_match = inclusion.get('RequestMatch')
         
         if not all([package_match_field, request_match]):
             continue  # Skip if filter is incomplete
-        
-        # Map 'PackageMatchField' to actual database fields
+
+        # Map the PackageMatchField to the database field
         db_field_map = {
-            'PackageName': 'name',  # 'PackageName' from the request maps to 'name' in the database
-            'PackageIdentifier': 'identifier'  # Update this if 'PackageIdentifier' is not the correct field
+            'PackageName': 'name',
+            'PackageIdentifier': 'identifier',
+            'PackageFamilyName': 'identifier',
+            'ProductCode': 'identifier',  # Not implemented in the database yet
+            'Moniker': 'name'            # Not implemented in the database yet
         }
 
         db_field = db_field_map.get(package_match_field)
         if not db_field:
-            current_app.logger.error(f"Invalid PackageMatchField: {package_match_field}")
-            return jsonify({"error": f"Invalid PackageMatchField: {package_match_field}"}), 400
+            current_app.logger.error(f"Unsupported PackageMatchField: {package_match_field}, skipping.")
+            continue
 
         keyword_filter = request_match.get('KeyWord')
         match_type_filter = request_match.get('MatchType')
         filter_expression = f'%{keyword_filter}%' if match_type_filter != "Exact" else keyword_filter
 
         if match_type_filter == "Exact":
-            packages_query = packages_query.filter(getattr(Package, db_field) == keyword_filter)
-        elif match_type_filter in ["Partial", "Substring"]:
-            packages_query = packages_query.filter(getattr(Package, db_field).ilike(filter_expression))
+            inclusion_filters.append(getattr(Package, db_field) == keyword_filter)
+        elif match_type_filter in ["Partial", "Substring", "CaseInsensitive"]:
+            inclusion_filters.append(getattr(Package, db_field).ilike(filter_expression))
         else:
             current_app.logger.error("Invalid match type in filters provided.")
             return jsonify({"error": "Invalid match type in filters"}), 400
+
+    if inclusion_filters:
+        packages_query = packages_query.filter(and_(*inclusion_filters))
 
     # Apply maximum_results limit
     packages_query = packages_query.limit(maximum_results)
@@ -105,7 +113,6 @@ def manifestSearch():
         return jsonify({}), 204
 
     current_app.logger.info(f"Returning {len(output_data)} packages.")
-
 
     return jsonify({"Data": output_data})
 
