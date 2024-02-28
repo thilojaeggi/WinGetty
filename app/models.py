@@ -1,4 +1,6 @@
+import dataclasses
 from datetime import datetime
+import json
 from app import db, bcrypt
 from flask import url_for, current_app
 import os
@@ -217,3 +219,53 @@ class Permission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True)
 
+class Setting(db.Model):
+    key = db.Column(db.String(50), unique=True, primary_key=True)
+    name = db.Column(db.String(50), unique=True)
+    description = db.Column(db.String(255))
+    type = db.Column(db.Enum('string', 'integer', 'boolean', 'float', 'json'))
+    value = db.Column(db.String(255))
+    depends_on = db.Column(db.String(50), db.ForeignKey('setting.key'))
+    dependent_setting = db.relationship('Setting', remote_side=[key], backref='dependent_on')
+
+    def __repr__(self):
+        return f"{self.name} : {self.value}"
+    
+    def set_value(self, value):
+        # Check that the value is of the correct type
+        if self.type == 'integer':
+            self.value = int(value)
+        elif self.type == 'boolean':
+            self.value = "true" if value else "false"
+        elif self.type == 'float':
+            self.value = float(value)
+        elif self.type == 'json':
+            self.value = json.dumps(value)
+        else:
+            self.value = value
+
+    def get_value(self):
+        # Return the value as the correct type
+        if self.type == 'integer':
+            return int(self.value)
+        elif self.type == 'boolean':
+            return self.value.lower() == "true"
+        elif self.type == 'float':
+            return float(self.value)
+        elif self.type == 'json':
+            return json.loads(self.value)
+        else:
+            return self.value
+        
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "description": self.description,
+            "key": self.key,
+            "type": self.type,
+            "value": self.get_value(),
+            "depends_on": self.depends_on
+        }
+
+
+        

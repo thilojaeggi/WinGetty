@@ -1,0 +1,129 @@
+{% extends "base.j2" %}
+{% set title = "Settings" %}
+{% block content %}
+<h1 class="text-3xl font-medium text-gray-800 dark:text-gray-300">{{title}}</h1>
+<div class="mt-4 dark:text-gray-200">
+    <div class="flex flex-col space-y-4 max-w-xl w-full">
+        <div class="flex flex-col">
+            <label for="username" class="text-lg">Username</label>
+            <input type="text" name="username" id="username"
+                class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+        </div>
+        {% set ns = namespace(enable_uplink=false) %}
+        {{ ns.enable_uplink }}
+        {% for setting in settings %}
+        {% if setting.key == "enable_uplink" %}
+        "enable_uplink" found!
+        {% set ns.enable_uplink = True %}
+        {% endif %}
+        {% if setting.type == "boolean" %}
+        <div class="flex flex-row items-center space-x-4 justify-between">
+            <label for="{{ setting.key }}" class="text-lg">
+                <div class="flex flex-col">
+                    <p>{{ setting.name }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ setting.description }}</p>
+                </div>
+            </label>
+
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="{{ setting.key }}" name="{{ setting.key }}" class="sr-only peer" {{ 'checked'
+                    if setting.value=="true" else '' }} hx-post="{{ url_for('api.update_setting', key=setting.key) }}"
+                    hx-vals='js:{"value": document.getElementById("{{ setting.key }}").checked}'>
+                <div
+                    class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
+                </div>
+            </label>
+        </div>
+        {% endif %}
+
+        {% if setting.type == "string" %}
+        <div class="flex flex-col">
+            <label for="{{ setting.key }}" class="text-lg">{{ setting.name }}</label>
+            <input type="text" name="value" id="{{ setting.key }}"
+                class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40"
+                value="{{ setting.value }}" hx-post="{{ url_for('api.update_setting', key=setting.key) }}" {{ 'disabled'
+                if enable_uplink=='false' else '' }}>
+        </div>
+        {% endif %}
+
+
+
+        {% endfor %}
+
+
+
+    </div>
+<div x-data="settingsForm()" x-init="fetchSettings()">
+    <template x-for="setting in settings" :key="setting.key">
+        <div>
+            <label x-text="setting.name"></label>
+            <div x-show="setting.type === 'boolean'">
+                <input type="checkbox" :id="setting.key" :name="setting.key" :checked="setting.value" 
+                       :disabled="isDisabled(setting.depends_on)" @change="updateSetting(setting)">
+            </div>
+            <div x-show="setting.type === 'string'">
+                <input type="text" :id="setting.key" :name="setting.key" :value="setting.value"
+                       :disabled="isDisabled(setting.depends_on)" @change="updateSetting(setting)">
+            </div>
+        </div>
+    </template>
+</div>
+
+</div>
+
+
+
+
+<script>
+function settingsForm() {
+    return {
+        settings: [],
+
+        fetchSettings() {
+            fetch('/api/settings')
+                .then(response => response.json())
+                .then(data => {
+                    this.settings = data;
+                })
+                .catch(error => console.error('Error fetching settings:', error));
+        },
+
+        isDisabled(dependsOnKey) {
+            if (!dependsOnKey) return false;
+            const parentSetting = this.settings.find(s => s.key === dependsOnKey);
+            return !parentSetting || !parentSetting.value;
+        },
+
+        updateSetting(setting) {
+            const value = setting.type === 'boolean' ? event.target.checked : event.target.value;
+
+            fetch(`/api/update_setting`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Add any necessary headers like authorization tokens
+                },
+                body: JSON.stringify({
+                    key: setting.key,
+                    value: setting.type === 'boolean' ? event.target.checked : event.target.value
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(updatedSetting => {
+                // Update the setting in local state
+                const index = this.settings.findIndex(s => s.key === updatedSetting.key);
+                if (index !== -1) {
+                    this.settings[index] = updatedSetting;
+                }
+            })
+            .catch(error => console.error('Error updating setting:', error));
+        }
+    };
+}
+</script>
+{% endblock %}

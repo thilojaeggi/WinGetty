@@ -79,7 +79,7 @@ def create_app():
     app.register_error_handler(500, internal_server_error)
 
     db.init_app(app)
-    from app.models import User, Package, PackageVersion, Installer, InstallerSwitch
+    from app.models import User, Package, PackageVersion, Installer, InstallerSwitch, Permission, Role, Setting
     migrate.init_app(app, db)
     htmx.init_app(app)
     dynaconf.init_app(app)
@@ -143,6 +143,8 @@ def create_app():
     if not 'flask' in sys.argv and not 'db' in sys.argv:
         with app.app_context():
             from app.permissions import create_all
+            create_all()
+            from app.settings import create_all
             create_all()
 
         
