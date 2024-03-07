@@ -1,4 +1,4 @@
-installer_switches = ['Silent', 'SilentWithProgress', 'Interactive', 'InstallLocation', 'Log', 'Upgrade', 'Custom' ]
+installer_switches = ['Silent', 'SilentWithProgress', 'Interactive', 'InstallLocation', 'Log', 'Upgrade', 'Custom', 'UpgradeBehavior','Dependencies', 'RequireExplicitUpgrade']
 architectures = [('x86', 'x86'), ('x64', 'x64'), ('arm', 'arm'), ('arm64', 'arm64')]
 simplified_architectures = [arch[1] for arch in architectures]
 installer_types = [('exe', 'exe'), ('msi', 'msi'), ('msix', 'msix'), ('appx', 'appx'), ('zip', 'zip (nested installer)'), ('inno', 'inno'), ('nullsoft', 'nullsoft'), ('wix', 'wix'), ('burn', 'burn'), ('pwa', 'pwa'), ('msstore', 'msstore')]
