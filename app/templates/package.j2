@@ -208,7 +208,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                     {% endif %}
                                     {% for installer in version.installers %}
                                     <div id="installer"
-                                        class="flex flex-row p-2 bg-white dark:bg-neutral-950 rounded-md justify-between items-start">                                        
+                                        class="flex flex-row p-2 bg-white dark:bg-neutral-950 rounded-md justify-between items-start">
                                         <div class="flex flex-col dark:text-gray-200 text-gray-900 "
                                             x-data="{ showInstallerSwitches: false}">
                                             <p class="font-bold text-lg">{{installer.architecture}}</p>
@@ -309,9 +309,10 @@ selectedInstaller: '', selectedVersion: '' }" %}
 <script>
     document.addEventListener("htmx:afterDelete", function (event) {
         if (event.detail.success) {
-            var redirectUrl = "{{url_for('ui.index')}}"; // Replace with your desired redirect URL
+            var redirectUrl = "{{url_for('ui.index')}}"; 
             document.location.href = redirectUrl;
         }
     });
 </script>
+
 {% endblock %}
