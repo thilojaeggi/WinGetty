@@ -139,16 +139,9 @@ def get_version_by_id(version_id):
     return jsonify(version.to_dict())
 
 
-@api.delete("/package/<id>")
-@login_required
-@permission_required("delete:package")
-def delete_package_by_id(id):
-    package = Package.query.get(id)
-    if package is None:
-        return "Package not found", 404
-    db.session.delete(package)
-    db.session.commit()
-    return "", 204
+
+
+
 
 
 @api.route("/generate_presigned_url", methods=["POST"])
@@ -267,31 +260,17 @@ def update_package(identifier):
     return redirect(request.referrer)
 
 
-@api.route("/package/<identifier>", methods=["DELETE"])
+@api.delete("/package/<identifier>")
 @login_required
 @permission_required("delete:package")
 def delete_package(identifier):
+    print("wtfff")
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
         return "Package not found", 404
-
-    for version in package.versions:
-        for installer in version.installers:
-            delete_installer_util(package, installer, version)
-        db.session.delete(version)
     db.session.delete(package)
-    try:
-        db.session.commit()
-        current_app.logger.info(f"Package {package.identifier} deleted successfully")
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"Database error: {e}")
-        return "Database error", 500
-    flash("Package deleted successfully.", "success")
-    response = Response()
-    redirect_url = url_for("ui.packages")
-    response.headers["HX-Redirect"] = redirect_url
-    return response
+    db.session.commit()
+    return "", 204
 
 
 @api.route("/package/<identifier>/add_version", methods=["POST"])
@@ -619,6 +598,7 @@ def update_setting():
 def settings():
     # Return settings as json
     settings = Setting.query.all()
+    settings = sorted(settings, key=lambda x: x.position)
     return jsonify([setting.to_dict() for setting in settings])
     
 
