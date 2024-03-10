@@ -17,6 +17,8 @@ def get_or_create(model, **kwargs):
             instance.description = kwargs["description"]
         if "depends_on" in kwargs and instance.depends_on != kwargs["depends_on"]:
             instance.depends_on = kwargs["depends_on"]
+        if "position" in kwargs and instance.position != kwargs["position"]:
+            instance.position = kwargs["position"]
         return instance
     else:
         instance = model(**kwargs)
@@ -31,7 +33,8 @@ def create_settings():
             "description": "The name of your repository.",
             "key": "repo_name",
             "type": "string",
-            "value": "",
+            "value": "WinGetty",
+            "position": 0,
         },
         {
             "name": "Use S3 for storage",
@@ -39,6 +42,7 @@ def create_settings():
             "key": "use_s3",
             "type": "boolean",
             "value": "False",
+            "position": 1,
         },
         {
             "name": "S3 bucket",
@@ -47,6 +51,7 @@ def create_settings():
             "type": "string",
             "value": "",
             "depends_on": "use_s3",
+            "position": 2,
         },
         {
             "name": "Enable uplink",
@@ -54,6 +59,7 @@ def create_settings():
             "key": "enable_uplink",
             "type": "boolean",
             "value": "False",
+            "position": 3,
         },
         {
             "name": "Uplink URL",
@@ -62,6 +68,7 @@ def create_settings():
             "type": "string",
             "value": "",
             "depends_on": "enable_uplink",
+            "position": 4,
         },
     ]
 
