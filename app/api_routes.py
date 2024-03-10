@@ -44,6 +44,112 @@ def index():
 
 URL_EXPIRATION_SECONDS = 3600
 
+@api.get("/packages")
+@login_required
+def packages():
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('limit', 10, type=int)
+    search_query = request.args.get('search', '', type=str)
+
+    query = Package.query
+
+    if search_query:
+        search = "%{}%".format(search_query)
+        query = query.filter(
+            db.or_(
+                Package.name.ilike(search),
+                Package.identifier.ilike(search),
+                Package.publisher.ilike(search)
+            )
+        )
+
+    paginated_packages = query.paginate(page=page,per_page=per_page,error_out=False)
+    packages = paginated_packages.items
+
+    return jsonify({
+        'packages': [package.to_dict() for package in packages],
+        'total': paginated_packages.total,
+        'pages': paginated_packages.pages,
+        'current_page': paginated_packages.page
+    })
+
+@api.get("/package/<identifier>")
+@login_required
+def package(identifier):
+    # Use identifier and check if its the id or the package identifier
+    if identifier.isdigit():
+        package = Package.query.get(identifier)
+    else:
+        package = Package.query.filter_by(identifier=identifier).first()
+    if package is None:
+        return "Package not found", 404
+    return jsonify(package.to_dict())
+    
+
+@api.get("/package/<identifier>/versions")
+@login_required
+def package_versions(identifier):
+    package = Package.query.filter_by(identifier=identifier).first()
+    if package is None:
+        return "Package not found", 404
+    return jsonify([version.to_dict() for version in package.versions])
+
+@api.get("/package/<identifier>/version/<version>")
+@login_required
+def package_version(identifier, version):
+    version = PackageVersion.query.filter_by(
+        identifier=identifier, version_code=version
+    ).first()
+    if version is None:
+        return "Version not found", 404
+    return jsonify(version.to_dict())
+
+@api.get("/package/<identifier>/version/<version>/installers")
+@login_required
+def package_installers(identifier, version):
+    version = PackageVersion.query.filter_by(
+        identifier=identifier, version_code=version
+    ).first()
+    if version is None:
+        return "Version not found", 404
+    return jsonify([installer.to_dict() for installer in version.installers])
+
+@api.get("/package/<identifier>/version/<version>/installer/<installer>")
+@login_required
+def package_installer(identifier, version, installer):
+    installer = Installer.query.filter_by(id=installer).first()
+    if installer is None:
+        return "Installer not found", 404
+    return jsonify(installer.to_dict())
+
+@api.get("/installer/<installer_id>")
+@login_required
+def get_installer_by_id(installer_id):
+    installer = Installer.query.get(installer_id)
+    if installer is None:
+        return "Installer not found", 404
+    return jsonify(installer.to_dict())
+
+@api.get("/version/<version_id>")
+@login_required
+def get_version_by_id(version_id):
+    version = PackageVersion.query.get(version_id)
+    if version is None:
+        return "Version not found", 404
+    return jsonify(version.to_dict())
+
+
+@api.delete("/package/<id>")
+@login_required
+@permission_required("delete:package")
+def delete_package_by_id(id):
+    package = Package.query.get(id)
+    if package is None:
+        return "Package not found", 404
+    db.session.delete(package)
+    db.session.commit()
+    return "", 204
+
 
 @api.route("/generate_presigned_url", methods=["POST"])
 @login_required
@@ -72,7 +178,7 @@ def generate_presigned_url():
         presigned_url = s3_client.generate_presigned_url(
             "put_object",
             Params={
-                "Bucket": current_app.config["BUCKET_NAME"],
+                "Bucket": Setting.get("bucket_name").get_value(),
                 "Key": s3_object_key,
                 "ContentType": content_type,
             },
@@ -515,7 +621,11 @@ def settings():
     settings = Setting.query.all()
     return jsonify([setting.to_dict() for setting in settings])
     
-    
+
+@api.get("/whoami")
+@login_required
+def whoami():
+    return jsonify(current_user.to_dict())
 
 
 @api.post("/toggle_uplink")
