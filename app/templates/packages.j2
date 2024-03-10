@@ -233,7 +233,7 @@
                     return;
                 }
                 this.loading = true;
-                let resp = await fetch(`{{ url_for('api.delete_package_by_id', id='') }}` + package.id, {
+                let resp = await fetch(`{{ url_for('api.delete_package', identifier='placeholder') }}`.replace('placeholder', package.identifier), {
                     method: 'DELETE'
                 });
                 // if success then remove the package from the list
