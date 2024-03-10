@@ -1,5 +1,6 @@
 import dataclasses
 from datetime import datetime
+from distutils.version import LooseVersion
 import json
 from app import db, bcrypt
 from flask import url_for, current_app
@@ -24,7 +25,12 @@ class Package(db.Model):
             "identifier": self.identifier,
             "name": self.name,
             "publisher": self.publisher,
-            "versions": [version.to_dict() for version in self.versions],
+            "download_count": self.download_count,
+            "versions": sorted(
+                [version.to_dict() for version in self.versions],
+                key=lambda x: LooseVersion(x["version_code"]),
+                reverse=True,
+            ),
         }
 
     def generate_output(self):
@@ -313,6 +319,7 @@ class Setting(db.Model):
     description = db.Column(db.String(255))
     type = db.Column(db.Enum("string", "integer", "boolean", "float", "json"))
     value = db.Column(db.String(255))
+    position = db.Column(db.Integer)
     depends_on = db.Column(db.String(50), db.ForeignKey("setting.key"))
     dependent_setting = db.relationship(
         "Setting", remote_side=[key], backref="dependent_on"
