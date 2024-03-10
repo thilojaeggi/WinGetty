@@ -220,7 +220,6 @@
                 await this.fetchPackages();
             },
             async fetchPackages() {
-                this.loading = true;
                 let resp = await fetch(`{{ url_for('api.packages') }}?page=${this.currentPage}&limit=${this.packagesPerPage}&search=${this.search}`);
                 let data = await resp.json();
                 this.packages = data.packages;
