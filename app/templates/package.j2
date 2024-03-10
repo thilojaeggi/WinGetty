@@ -3,279 +3,179 @@
 {% set alpine_data = "{ showAddVersionModal : false, showAddInstallerModal: false, showEditInstallerModal: false,
 selectedInstaller: '', selectedVersion: '' }" %}
 {% block content %}
-
-<div class="sm:flex sm:items-center sm:justify-between">
-    <div class="flex flex-row w-full justify-between  gap-x-3">
-        <div class="flex flex-col">
-            <h2 class="text-3xl font-medium text-gray-800 dark:text-gray-200">{{ package.name }}</h2>
-            <h4 class="text-gray-500 dark:text-neutral-400 text-base font-medium">{{package.identifier}}</h4>
-            <div class="flex flex-row gap-x-2">
-                <span
-                    class="px-3 py-1 mt-1 text-base text-center {{ 'bg-emerald-100/60 dark:bg-emerald-700/60 text-emerald-600 dark:text-emerald-300' if package.versions|length > 0 else 'bg-red-100/60 dark:bg-red-700/60 text-red-500 dark:text-red-300' }} rounded-full ">
-                    {{ 'Version ' + (package.versions|sort_versions)[0].version_code if
-                    package.versions|length > 0 else 'No versions' }}
-                </span>
-                <span
-                    class="{{ 'hidden' if package.versions|length < 1}} px-3 py-1 mt-1 text-base text-center text-blue-600 dark:text-blue-300 bg-blue-200/60 dark:bg-blue-600/60 rounded-full ">
-                    {{ package.download_count }} {{ 'Downloads' if not
-                    package.download_count == 1 else 'Download' }}
-                </span>
+<div x-data="packageData">
+    <div class="sm:flex sm:items-center sm:justify-between">
+        <div class="flex flex-row w-full justify-between  gap-x-3">
+            <div class="flex flex-col">
+                <h2 class="text-3xl font-medium text-gray-800 dark:text-gray-200" x-text="package.name"></h2>
+                <h4 class="text-gray-500 dark:text-neutral-400 text-base font-medium" x-text="package.identifier"></h4>
+                <div class="flex flex-row gap-x-2">
+                    <span
+                        :class="package.versions && package.versions.length > 0 ? 'bg-emerald-100/60 dark:bg-emerald-700/60 text-emerald-600 dark:text-emerald-300' : 'bg-red-100/60 dark:bg-red-700/60 text-red-500 dark:text-red-300'"
+                        class="px-3 py-1 mt-1 text-base text-center rounded-full"
+                        x-text="package.versions && package.versions.length > 0 ? 'Version ' + package.versions[0].version_code : 'No versions'">
+                    </span>
+                    <span x-show="package.versions && package.versions.length > 0"
+                        class="px-3 py-1 mt-1 text-base text-center text-blue-600 dark:text-blue-300 bg-blue-200/60 dark:bg-blue-600/60 rounded-full"
+                        x-text="`${package.download_count} ${package.download_count === 1 ? 'Download' : 'Downloads'}`">
+                    </span>
+                </div>
             </div>
+            <div class="flex flex-row self-end">
+                {% if current_user.role.has_permission('delete:package') %}
+
+                <a @click="deletePackage(package)"
+                    class="px-1 group py-1 text-gray-500 transition-colors hover:bg-red-100 dark:bg-neutral-900 dark:hover:bg-neutral-950/60 duration-300 rounded-lg cursor-pointer">
+
+                    <svg class="group-hover:stroke-red-500 transition-color duration-300 h-6 w-6" fill="none"
+                        stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0">
+                        </path>
+                    </svg>
+                </a>
+                {% endif %}
+            </div>
+
+
+
         </div>
-        <div class="flex flex-row self-end">
-            {% if current_user.role.has_permission('delete:package') %}
-
-            <a hx-delete="{{ url_for('api.delete_package', identifier=package.identifier)}}"
-                hx-after-delete="window.location.href = '{{ url_for('ui.index') }}'"
-                hx-confirm="Are you sure you want to delete {{ package.identifier }} and all of its versions and installers?"
-                class="px-1 group py-1 text-gray-500 transition-colors hover:bg-red-100 dark:bg-neutral-900 dark:hover:bg-neutral-950/60 duration-300 rounded-lg cursor-pointer">
-
-                <svg class="group-hover:stroke-red-500 transition-color duration-300 h-6 w-6" fill="none"
-                    stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0">
-                    </path>
-                </svg>
-            </a>
-            {% endif %}
-        </div>
-
 
 
     </div>
 
-
-</div>
-
-<div class="grid grid-cols-1 md:grid-cols-2 gap-y-12 gap-x-3 mt-4">
-    <div class="md:row-span-1">
-        <h3 class="text-2xl ml-2 select-none font-medium dark:text-gray-200">Info</h3>
-        <div
-            class="bg-white/70 dark:bg-neutral-900 rounded-xl h-min max-h-full overflow-y-auto p-2 w-full flex flex-col space-y-0">
-            <h4 class="font-base text-2xl self-start hidden mr-2"></h4>
-            <form
-                class="mt-5 flex flex-col h-full {% if not current_user.role.has_permission('edit:package') %} pointer-events-none {% endif %}"
-                x-data="{'fileChosen': false}"
-                action="{{ url_for('api.update_package', identifier=package.identifier) }}" method="POST"
-                enctype="multipart/form-data">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-y-12 gap-x-3 mt-4">
+        <div class="md:row-span-1">
+            <h3 class="text-2xl ml-2 select-none font-medium dark:text-gray-200">Info</h3>
+            <div
+                class="bg-white/70 dark:bg-neutral-900 rounded-xl h-min max-h-full overflow-y-auto p-2 w-full flex flex-col space-y-0">
+                <h4 class="font-base text-2xl self-start hidden mr-2"></h4>
+                <form
+                    class="mt-5 flex flex-col h-full {% if not current_user.role.has_permission('edit:package') %} pointer-events-none {% endif %}"
+                    x-data="{'fileChosen': false}"
+                    action="{{ url_for('api.update_package', identifier=package.identifier) }}" method="POST"
+                    enctype="multipart/form-data">
 
 
 
 
-                <div class="mt-2">
-                    <label for="publisher" class="block text-gray-700 dark:text-gray-300 ">Publisher</label>
-                    <input required name="publisher" placeholder="" type="text" value="{{package.publisher}}"
-                        class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 dark:bg-neutral-950 placeholder-gray-400 bg-white border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-                </div>
-
-                <div class="mt-2">
-                    <label for="name" class="block  text-gray-700 dark:text-gray-300 ">Name</label>
-                    <input required name="name" placeholder="" type="text" value="{{package.name}}"
-                        class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 dark:bg-neutral-950 placeholder-gray-400 bg-white border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-                </div>
-
-                <div class="mt-2">
-                    <label for="identifier" class="block  text-gray-700 dark:text-gray-300 ">Identifier</label>
-                    <input required name="identifier" placeholder="" type="text" value="{{package.identifier}}"
-                        class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 dark:bg-neutral-950  placeholder-gray-400 bg-white border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-                </div>
-
-
-
-                <div class=" grow flex flex-row justify-end mt-4">
-                    {% if current_user.role.has_permission('edit:package') %}
-                    <button type="submit"
-                        class="self-end px-3 py-2 text-white transition-colors duration-300 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
-                        Update
-                    </button>
-                    {% endif %}
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div class="md:row-span-2 h-96">
-        <div class="flex flex-row justify-start items-center ">
-            <h3 class="text-2xl ml-2 select-none font-medium dark:text-gray-200">Versions</h3>
-            {% if current_user.role.has_permission('add:version') %}
-            <a @click="selectedInstaller = ''; showAddVersionModal = true;"
-                class="ml-2 w-min h-min p-0.25 group  text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer ">
-                <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6 stroke-2" fill="none"
-                    stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
-                </svg>
-
-            </a>
-            {% endif %}
-        </div>
-        <!-- Adding flex-col here hides the scrollbar -->
-        <div
-            class="bg-white/70 dark:bg-neutral-900 rounded-xl h-full p-2 flex flex-col overflow-y-auto space-y-2 scrollbar-none">
-
-            {% if package.versions|length == 0%}
-            <div class="h-full w-full flex flex-col justify-center items-Icenter">
-                <p class="text-gray-500 text-center">No versions added yet</p>
-            </div>
-            {% endif %}
-
-            <div class="drop-shadow-md flex flex-col divide-y dark:divide-gray-200/25">
-                {% for version in package.versions|sort_versions %}
-                <div id="version"
-                    class="bg-white dark:bg-neutral-950 {% if loop.first %}rounded-t-md{% elif loop.last %}rounded-b-md{% endif %} {% if package.versions|length == 1 %} rounded-md {% endif %} flex flex-col"
-                    x-data="{ expanded: false }" @click.away="expanded = false">
-                    <div class="flex  flex-row justify-between items-center cursor-pointer p-2"
-                        @click="expanded = !expanded">
-                        <p class="font-semibold text-xl select-none dark:text-gray-200">{{version.version_code}}</p>
-
-                        <p class="text-gray-700 dark:text-gray-300/70 select-none ml-auto mx-1">
-                            {{version.date_added.strftime('%d.%m.%Y %H:%M') or ""}} </p>
-                        <svg class="h-6 w-6 dark:text-gray-200 mx-1 transition-transform duration-300"
-                            x-bind:class="expanded ? 'rotate-180' : 'rotate-0'" fill="none" stroke="currentColor"
-                            stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-                            aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
-                        </svg>
+                    <div class="mt-2">
+                        <label for="publisher" class="block text-gray-700 dark:text-gray-300 ">Publisher</label>
+                        <input required name="publisher" placeholder="" type="text" :value="package.publisher"
+                            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 dark:bg-neutral-950 placeholder-gray-400 bg-white border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                     </div>
-                    <div x-show="expanded" x-collapse>
-                        <div class="flex flex-col  p-2">
-                            <div class="flex flex-row justify-between">
-                                <div class="flex flex-col">
-                                    <h3 class="text-xl font-medium select-none dark:text-gray-200">Info</h3>
-                                    <div class="flex flex-row dark:text-gray-300">
-                                        <div class="flex flex-col">
-                                            <p>Default locale</p>
-                                            <p>Package locale</p>
-                                            <p>Short description</p>
-                                        </div>
-                                        <div class="flex flex-col ml-2">
-                                            <p>{{version.default_locale}}</p>
-                                            <p>{{version.package_locale}}</p>
-                                            <p>{{version.short_description}}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-1 grid-rows-2 gap-2 h-min ">
 
-                                    {% if current_user.role.has_permission('edit:version') %}
-                                    <a
-                                        class="w-min h-min px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
-                                        <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6"
-                                            fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                            class="w-6 h-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                                        </svg>
-                                    </a>
-                                    {% endif %}
-                                    {% if current_user.role.has_permission('delete:version') %}
-                                    <a hx-delete="{{ url_for('api.delete_version', identifier=package.identifier, version=version.version_code) }}"
-                                        hx-target="closest div#version" hx-swap="outerHTML"
-                                        hx-confirm="Are you sure you want to delete this version?"
-                                        class="w-min h-min px-1 group py-1 text-gray-500 transition-colors hover:bg-red-100 dark:bg-neutral-900 duration-300 rounded-md cursor-pointer">
-                                        <svg class="group-hover:stroke-red-500 transition-color duration-300 h-6 w-6"
-                                            fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
-                                            xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0">
-                                            </path>
-                                        </svg>
-                                    </a>
-                                    {% endif %}
-                                </div>
-                            </div>
+                    <div class="mt-2">
+                        <label for="name" class="block  text-gray-700 dark:text-gray-300 ">Name</label>
+                        <input required name="name" placeholder="" type="text" :value="package.name"
+                            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 dark:bg-neutral-950 placeholder-gray-400 bg-white border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                    </div>
 
-                            <div class="flex flex-row items-center mb-1">
-                                <h3 class="text-xl font-medium select-none dark:text-gray-200">Installers</h3>
-                                {% if current_user.role.has_permission('add:installer') %}
-                                <a @click="selectedVersion = '{{version.version_code}}'; selectedInstaller = '';  showAddInstallerModal = true;"
-                                    class="ml-2 w-min h-min group  text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer ">
-                                    <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-5 w-5 stroke-2"
-                                        fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
+                    <div class="mt-2">
+                        <label for="identifier" class="block  text-gray-700 dark:text-gray-300 ">Identifier</label>
+                        <input required name="identifier" placeholder="" type="text" :value="package.identifier"
+                            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 dark:bg-neutral-950  placeholder-gray-400 bg-white border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+                    </div>
+
+
+
+                    <div class=" grow flex flex-row justify-end mt-4">
+                        {% if current_user.role.has_permission('edit:package') %}
+                        <button type="submit"
+                            class="self-end px-3 py-2 text-white transition-colors duration-300 transform bg-blue-600 hover:bg-blue-500 rounded-md focus:outline-none focus:bg-blue-500 focus:ring focus:ring-blue-300 focus:ring-opacity-50">
+                            Update
+                        </button>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="md:row-span-2 h-96">
+            <div class="flex flex-row justify-start items-center ">
+                <h3 class="text-2xl ml-2 select-none font-medium dark:text-gray-200">Versions</h3>
+                {% if current_user.role.has_permission('add:version') %}
+                <a @click="selectedInstaller = ''; showAddVersionModal = true;"
+                    class="ml-2 w-min h-min p-0.25 group  text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer ">
+                    <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6 stroke-2" fill="none"
+                        stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
+                    </svg>
+
+                </a>
+                {% endif %}
+            </div>
+            <!-- Adding flex-col here hides the scrollbar -->
+            <div
+                class="bg-white/70 dark:bg-neutral-900 rounded-xl h-full px-2 pb-2 flex flex-col overflow-y-auto space-y-2 scrollbar-none">
+
+
+                <div class="h-full w-full flex flex-col justify-center items-Icenter"
+                    x-show="package.versions.length == 0">
+                    <p class="text-gray-500 text-center">No versions added yet</p>
+                </div>
+
+                <div class="drop-shadow-md flex flex-col ">
+                    <template x-for="(version, index) in package.versions" :key="version.id">
+                        <div id="version" class="bg-white dark:bg-neutral-950 flex flex-col border-b dark:border-gray-200/25" :class="{
+                                'rounded-t-md border-top-none': index === 0, 
+                                'rounded-b-md  border-none': index === package.versions.length - 1, 
+                                'rounded-md': package.versions.length === 1
+                            }" x-data="{ expanded: false }" @click.away="expanded = false">
+                            <div class="flex  flex-row justify-between items-center cursor-pointer p-2"
+                                @click="expanded = !expanded">
+                                <p class="font-semibold text-xl select-none dark:text-gray-200"
+                                    x-text="version.version_code"></p>
+<div x-data="dateFormatter()" class="flex flex-row items-center">
+
+                                <p class="text-gray-700 dark:text-gray-300/70 select-none ml-auto mx-1"
+                                   x-text="formatDate(version.date_added)">                                </p>
+
+                                    <svg class="h-6 w-6 dark:text-gray-200 mx-1 transition-transform duration-300"
+                                        x-bind:class="expanded ? 'rotate-180' : 'rotate-0'" fill="none"
+                                        stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
                                         xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
                                     </svg>
-
-                                </a>
-                                {% endif %}
+</div>
                             </div>
-                            <div class="flex flex-row">
-                                <div class="bg-gray-100  dark:text-gray-300 dark:bg-neutral-800 p-1 flex flex-col gap-y-1 rounded-lg sm:w-4/5"
-                                    hx-target="closest div#installer" hx-swap="outerHTML swap:0s">
-                                    {% if version.installers|length == 0%}
-                                    <p class="dark:text-gray-300">No installers added yet</p>
-                                    {% endif %}
-                                    {% for installer in version.installers %}
-                                    <div id="installer"
-                                        class="flex flex-row p-2 bg-white dark:bg-neutral-950 rounded-md justify-between items-start">
-                                        <div class="flex flex-col dark:text-gray-200 text-gray-900 "
-                                            x-data="{ showInstallerSwitches: false}">
-                                            <p class="font-bold text-lg">{{installer.architecture}}</p>
-                                            <p><span class="font-medium">Type:</span> {{installer.installer_type}}{% if
-                                                installer.installer_type == 'zip' %} (Nested installer) {%endif%}</p>
-                                            {% if installer.installer_type == 'zip' %}
-                                            <p><span class="font-medium">Nested:</span>
-                                            <p class="text-sm">Installer Type: {{installer.nested_installer_type}}</p>
-                                            <p class="text-sm">Relative Path:
-                                                {{installer.nested_installer_files[0].relative_file_path}}</p>
-                                            {% endif %}
-                                            <p><span class="font-medium">Scope:</span> {{installer.scope}}</p>
-
-                                            {% if installer.switches|length > 0 and
-                                            current_user.role.has_permission('view:installer_switch') %}
-                                            <div class="flex flex-row items-center cursor-pointer"
-                                                @click="showInstallerSwitches = !showInstallerSwitches">
-                                                <h2 class="text-lg font-semibold">Installer Switches</h2>
-                                                <svg class="h-6 w-6 dark:text-gray-200 ml-2 transition-transform duration-300"
-                                                    x-bind:class="showInstallerSwitches ? 'rotate-180' : 'rotate-0'"
-                                                    fill="none" stroke="currentColor" stroke-width="1.5"
-                                                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-                                                    aria-hidden="true">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
-                                                </svg>
+                            <div x-show="expanded" x-collapse>
+                                <div class="flex flex-col  p-2">
+                                    <div class="flex flex-row justify-between">
+                                        <div class="flex flex-col">
+                                            <h3 class="text-xl font-medium select-none dark:text-gray-200">Info</h3>
+                                            <div class="flex flex-row dark:text-gray-300">
+                                                <div class="flex flex-col">
+                                                    <p>Default locale</p>
+                                                    <p>Package locale</p>
+                                                    <p>Short description</p>
+                                                </div>
+                                                <div class="flex flex-col ml-2">
+                                                    <p x-text="version.default_locale"></p>
+                                                    <p x-text="version.package_locale"></p>
+                                                    <p x-text="version.short_description"></p>
+                                                </div>
                                             </div>
-                                            <div x-show="showInstallerSwitches" x-collapse
-                                                @click.away="showInstallerSwitches = false">
-                                                {% for switch in installer.switches%}
-                                                <p><span class="font-medium">{{switch.parameter}}:</span> <span
-                                                        class="font-mono">{{switch.value}}</span>
-                                                </p>
-                                                {% endfor %}
-                                            </div>
-                                            {% endif %}
                                         </div>
-                                        <div class="grid grid-cols-2 grid-rows-2 gap-2">
-                                            <a @click="navigator.clipboard.writeText('{{ url_for('api.download', identifier=package.identifier, version=version.version_code, architecture=installer.architecture, scope=installer.scope, _external=True, _scheme='https') }}');"
-                                                class="w-min h-min px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
-                                                <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6"
-                                                    fill="none" stroke="currentColor" stroke-width="1.5"
-                                                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-                                                    aria-hidden="true">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244">
-                                                    </path>
-                                                </svg>
+                                        <div class="grid grid-cols-1 grid-rows-2 gap-2 h-min ">
 
-                                            </a>
-                                            {% if current_user.role.has_permission('edit:installer') %}
-                                            <a x-on:click="selectedInstaller = {{ installer.to_json()|remove_none_values  }}; showEditInstallerModal = true;"
+                                            {% if current_user.role.has_permission('edit:version') %}
+                                            <a
                                                 class="w-min h-min px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
-
                                                 <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6"
                                                     fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                                     stroke="currentColor" class="w-6 h-6">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                                                 </svg>
-
                                             </a>
                                             {% endif %}
-                                            {% if current_user.role.has_permission('delete:installer') %}
-                                            <a hx-delete="{{ url_for('api.delete_installer', identifier=package.identifier, version=version.version_code, installer=installer.id) }}"
-                                                hx-confirm="Are you sure you want to delete this installer?"
-                                                class="w-min h-min col-start-2 px-1 group py-1 text-gray-500 transition-colors hover:bg-red-100 dark:bg-neutral-900 duration-300 rounded-md cursor-pointer">
+                                            {% if current_user.role.has_permission('delete:version') %}
+                                            <a
+                                                class="w-min h-min px-1 group py-1 text-gray-500 transition-colors hover:bg-red-100 dark:bg-neutral-900 duration-300 rounded-md cursor-pointer">
                                                 <svg class="group-hover:stroke-red-500 transition-color duration-300 h-6 w-6"
                                                     fill="none" stroke="currentColor" stroke-width="1.5"
                                                     viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
@@ -287,21 +187,139 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                             </a>
                                             {% endif %}
                                         </div>
+                                    </div>
+
+                                    <div class="flex flex-row items-center mb-1">
+                                        <h3 class="text-xl font-medium select-none dark:text-gray-200">Installers</h3>
+                                        {% if current_user.role.has_permission('add:installer') %}
+                                        <a @click="selectedVersion = version.version_code; selectedInstaller = '';  showAddInstallerModal = true;"
+                                            class="ml-2 w-min h-min group  text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer ">
+                                            <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-5 w-5 stroke-2"
+                                                fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
+                                                xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6">
+                                                </path>
+                                            </svg>
+
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex flex-row">
+                                        <div class="bg-gray-100  dark:text-gray-300 dark:bg-neutral-800 p-1 flex flex-col gap-y-1 rounded-lg sm:w-4/5"
+                                            hx-target="closest div#installer" hx-swap="outerHTML swap:0s">
+                                            <p class="dark:text-gray-300" x-show="version.installers.length == 0">No
+                                                installers added
+                                                yet</p>
+                                            <template x-for="installer in version.installers" :key="installer.id">
+                                                <div id="installer"
+                                                    class="flex flex-row p-2 bg-white dark:bg-neutral-950 rounded-md justify-between items-start">
+                                                    <div class="flex flex-col dark:text-gray-200 text-gray-900 "
+                                                        x-data="{ showInstallerSwitches: false}">
+                                                        <p class="font-bold text-lg" x-text="installer.architecture">
+                                                        </p>
+                                                        <p><span class="font-medium">Type: </span>
+                                                            <span
+                                                                x-text="installer.installer_type == 'zip' ? installer.installer_type + ' (Nested installer)' : installer.installer_type"></span>
+                                                        </p>
+                                                        <div x-show="installer.installer_type == 'zip' && installer.nested_installer_type"
+                                                            x-cloak>
+                                                            <p><span class="font-medium">Nested:</span>
+                                                            <p class="text-sm">Installer Type: <span
+                                                                    x-text="installer.nested_installer_type"></span>
+                                                            <p class="text-sm">Relative Path: <span
+                                                                    x-text="installer.nested_installer_files[0].relative_file_path"></span>
+                                                        </div>
+                                                        <p><span class="font-medium">Scope: </span> <span
+                                                                x-text="installer.scope">
+                                                        </p>
+
+                                                        {% if
+                                                        current_user.role.has_permission('view:installer_switch') %}
+                                                        <div x-show="installer.switches.length > 0">
+                                                            <div class="flex flex-row items-center cursor-pointer"
+                                                                @click="showInstallerSwitches = !showInstallerSwitches">
+                                                                <h2 class="text-lg font-semibold">Installer Switches
+                                                                </h2>
+                                                                <svg class="h-6 w-6 dark:text-gray-200 ml-2 transition-transform duration-300"
+                                                                    x-bind:class="showInstallerSwitches ? 'rotate-180' : 'rotate-0'"
+                                                                    fill="none" stroke="currentColor" stroke-width="1.5"
+                                                                    viewBox="0 0 24 24"
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    aria-hidden="true">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
+                                                                </svg>
+                                                            </div>
+                                                            <div x-show="showInstallerSwitches" x-collapse
+                                                                @click.away="showInstallerSwitches = false">
+                                                                <template x-for="switch in installer.switches"
+                                                                    :key="switch.id">
+                                                                    <p><span class="font-medium"
+                                                                            x-text="switch.parameter"></span>:
+                                                                        <span class="font-mono"
+                                                                            x-text="switch.value"></span>
+                                                                    </p>
+                                                                </template>
+                                                            </div>
+                                                        </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="grid grid-cols-2 grid-rows-2 gap-2">
+                                                        <a
+                                                            class="w-min h-min px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
+                                                            <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6"
+                                                                fill="none" stroke="currentColor" stroke-width="1.5"
+                                                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                                                                aria-hidden="true">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244">
+                                                                </path>
+                                                            </svg>
+
+                                                        </a>
+                                                        {% if current_user.role.has_permission('edit:installer') %}
+                                                        <a x-on:click="selectedInstaller = installer; showEditInstallerModal = true;"
+                                                            class="w-min h-min px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
+
+                                                            <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6"
+                                                                fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                                                stroke="currentColor" class="w-6 h-6">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                                            </svg>
+
+                                                        </a>
+                                                        {% endif %}
+                                                        {% if current_user.role.has_permission('delete:installer') %}
+                                                        <a
+                                                            class="w-min h-min col-start-2 px-1 group py-1 text-gray-500 transition-colors hover:bg-red-100 dark:bg-neutral-900 duration-300 rounded-md cursor-pointer">
+                                                            <svg class="group-hover:stroke-red-500 transition-color duration-300 h-6 w-6"
+                                                                fill="none" stroke="currentColor" stroke-width="1.5"
+                                                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                                                                aria-hidden="true">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0">
+                                                                </path>
+                                                            </svg>
+                                                        </a>
+                                                        {% endif %}
+                                                    </div>
+
+                                                </div>
+                                            </template>
+                                        </div>
 
                                     </div>
-                                    {% endfor %}
                                 </div>
-
                             </div>
                         </div>
-                    </div>
+                    </template>
                 </div>
-                {%endfor%}
             </div>
         </div>
+
+
     </div>
-
-
 </div>
 {% include 'modals/add_version.j2' %}
 {% include 'modals/add_installer.j2' %}
@@ -309,10 +327,95 @@ selectedInstaller: '', selectedVersion: '' }" %}
 <script>
     document.addEventListener("htmx:afterDelete", function (event) {
         if (event.detail.success) {
-            var redirectUrl = "{{url_for('ui.index')}}"; 
+            var redirectUrl = "{{url_for('ui.index')}}";
             document.location.href = redirectUrl;
         }
     });
+</script>
+<script>
+    document.addEventListener("alpine:init", () => {
+        Alpine.data('packageData', () => ({
+            package: null,
+            loading: true,
+
+            async init() {
+                const identifier = this.getIdentifierFromURL();
+                await this.fetchPackage(identifier);
+            },
+
+            async fetchPackage(identifier) {
+                // Update the fetch URL to include the identifier
+                let resp = await fetch(`{{ url_for('api.package', identifier='placeholder') }}`.replace('placeholder', identifier));
+                let data = await resp.json();
+                this.package = data;
+                console.log(data);
+                this.loading = false;
+            },
+            // delete package endpoint after return to other site
+            async deletePackage(package) {
+                if (!confirm(`Are you sure you want to delete ${package.identifier} and all of its versions and installers?`)) {
+                    return;
+                }
+                let resp = await fetch(`{{ url_for('api.delete_package', identifier='placeholder') }}`.replace('placeholder', package.identifier), {
+                    method: 'DELETE'
+                });
+                if (resp.ok) {
+                    window.dispatchEvent(new CustomEvent('notice', {
+                        detail: {
+                            type: 'success',
+                            text: 'Package deleted successfully'
+                        }
+                    }));
+                    window.location.href = '{{ url_for('ui.packages') }}';
+                } else {
+                    console.error('Failed to delete package');
+                    window.dispatchEvent(new CustomEvent('notice', {
+                        detail: {
+                            type: 'error',
+                            text: resp.text()
+                        }
+                    }));
+                }
+            },
+
+
+
+            getIdentifierFromURL() {
+                const path = window.location.pathname; // Get the pathname part of the URL
+                const pattern = /\/package\/(.+)/; // Regular expression to match the pattern '/package/<identifier>'
+                const match = path.match(pattern); // Use match method to extract the identifier
+
+                if (match && match.length > 1) {
+                    return match[1]; // Return the identifier if found
+                } else {
+                    return null; // Return null if the pattern does not match
+                }
+            },
+
+
+            generatePackageUrl(identifier) {
+                let urlTemplate = '{{ url_for('ui.package', identifier='placeholder') }}';
+            return urlTemplate.replace('placeholder', identifier);
+        },
+}));
+
+    });
+</script>
+<script>
+function dateFormatter() {
+    return {
+        formatDate(dateString) {
+            const date = new Date(dateString);
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+            const day = String(date.getDate()).padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+
+            return `${month}.${day}.${year} ${hours}:${minutes}`;
+        }
+    }
+}
 </script>
 
 {% endblock %}
