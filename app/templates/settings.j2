@@ -19,8 +19,8 @@
                             <p x-text="setting.name"></p>
                             <p class="text-xs text-gray-500 dark:text-gray-400" x-text="setting.description"></p>
                             <p x-show="setting.is_env" class="text-sm text-red-500 dark:text-red-400">This setting is
-                        currently set
-                        via an environment variable and cannot be changed here.</p>
+                                currently set
+                                via an environment variable and cannot be changed here.</p>
                         </div>
                     </label>
 
@@ -90,7 +90,7 @@
                     return;
                 }
 
-                fetch(`/api/update_setting`, {
+                fetch(`{{ url_for("api.update_setting")}}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -102,10 +102,23 @@
                     })
                 })
                     .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
+                        if (response.ok) {
+                            window.dispatchEvent(new CustomEvent('notice', {
+                                detail: {
+                                    type: 'success',
+                                    text: 'Setting updated successfully'
+                                }
+                            }));
+                            this.fetchPackage(package.identifier);
+                        } else {
+                            console.error('Error updating setting:', response);
+                            window.dispatchEvent(new CustomEvent('notice', {
+                                detail: {
+                                    type: 'error',
+                                    text: resp.text()
+                                }
+                            }));
                         }
-                        return response.json();
                     })
                     .then(updatedSetting => {
                         const index = this.settings.findIndex(s => s.key === updatedSetting.key);
