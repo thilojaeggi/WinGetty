@@ -726,13 +726,13 @@ def download(identifier, version, architecture, scope):
         current_app.logger.warning("Installer not found")
         return "Installer not found", 404
 
-    if current_app.config["USE_S3"] and installer.external_url is None:
+    if Setting.get("USE_S3").get_value() and installer.external_url is None:
         current_app.logger.info("Downloading from S3")
         # Generate a pre-signed URL for the S3 object
         presigned_url = s3_client.generate_presigned_url(
             "get_object",
             Params={
-                "Bucket": current_app.config["BUCKET_NAME"],
+                "Bucket": Setting.get("BUCKET_NAME").get_value(),
                 "Key": "packages/"
                 + package.publisher
                 + "/"
