@@ -129,11 +129,18 @@ def create_app():
     app.add_template_global(constants.installer_types, name='installer_types')
     app.add_template_global(constants.installer_scopes, name='installer_scopes')
     app.add_template_global(constants.simplified_nested_installer_types, name='nested_installer_types')
-        
+
+    def get_settings():
+        return {setting.key.upper(): setting.get_value() for setting in Setting.query.all()}
+    
+    @app.context_processor
+    def inject_settings():
+        return dict(global_settings=get_settings())
 
     @app.context_processor
     def inject_now():
         return {'now': datetime.utcnow()}
+    
     
     @app.route('/favicon.ico')
     def favicon():
