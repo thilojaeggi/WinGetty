@@ -37,12 +37,20 @@ def create_settings():
             "position": 0,
         },
         {
+            "name": "Enable registration",
+            "description": "Enable this to allow users to register themselves.",
+            "key": "enable_registration",
+            "type": "boolean",
+            "value": "False",
+            "position": 1,
+        },
+        {
             "name": "Use S3 for storage",
             "description": "This will allow you to use Amazon S3 for storage.",
             "key": "use_s3",
             "type": "boolean",
             "value": "False",
-            "position": 1,
+            "position": 2,
         },
         {
             "name": "S3 bucket",
@@ -51,15 +59,15 @@ def create_settings():
             "type": "string",
             "value": "",
             "depends_on": "use_s3",
-            "position": 2,
+            "position": 3,
         },
         {
-            "name": "Enable uplink",
+            "name": "Enable uplink (W.I.P.)",
             "description": "Enable this to use a public WinGet repository as an uplink.",
             "key": "enable_uplink",
             "type": "boolean",
             "value": "False",
-            "position": 3,
+            "position": 4,
         },
         {
             "name": "Uplink URL",
@@ -68,7 +76,7 @@ def create_settings():
             "type": "string",
             "value": "",
             "depends_on": "enable_uplink",
-            "position": 4,
+            "position": 5,
         },
     ]
 
