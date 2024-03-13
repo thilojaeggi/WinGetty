@@ -194,11 +194,14 @@ class Installer(db.Model):
             "version_id": self.version_id,
             "architecture": self.architecture,
             "installer_type": self.installer_type,
+            "nested_installer_type": self.nested_installer_type,
+            "nested_installer_files": [ nested_installer_file.to_dict() for nested_installer_file in self.nested_installer_files],
             "file_name": self.file_name,
             "external_url": self.external_url,
             "installer_sha256": self.installer_sha256,
             "scope": self.scope,
             "switches": [switch.to_dict() for switch in self.switches],
+            "installer_url": url_for('api.download', identifier=self.package_version.package.identifier, version=self.package_version.version_code, architecture=self.architecture, scope=self.scope, _external=True, _scheme='https')
         }
 
     def to_json(self):
