@@ -3,8 +3,7 @@ from flask_login import login_required, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_bcrypt import Bcrypt
 
-
-from app.models import Role, User
+from app.models import Role, Setting, User
 from app import db, bcrypt, permissions
 auth = Blueprint('auth', __name__)
 
@@ -46,7 +45,7 @@ def signup():
     user_exists = User.query.first() is not None
     
     # If users already exist and registration is disabled, redirect to login with a flash message.
-    if user_exists and not current_app.config['ENABLE_REGISTRATION']:
+    if user_exists and not Setting.get("ENABLE_REGISTRATION").get_value():
         flash('Registration is not allowed. Please contact your administrator.', 'warning')
         return redirect(url_for('auth.login'))
     
@@ -62,7 +61,7 @@ def logout():
 @auth.route('/signup', methods=['POST'])
 def signup_post():
     # Before processing the form, check if registration is enabled and users exist
-    if User.query.first() and not current_app.config['ENABLE_REGISTRATION']:
+    if User.query.first() and not Setting.get("ENABLE_REGISTRATION").get_value():
         flash('Registration is disabled.', 'error')
         return redirect(url_for('auth.login'))
 
