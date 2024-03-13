@@ -119,7 +119,8 @@ selectedInstaller: '', selectedVersion: '' }" %}
 
                 <div class="drop-shadow-md flex flex-col ">
                     <template x-for="(version, index) in package.versions" :key="version.id">
-                        <div id="version" class="bg-white dark:bg-neutral-950 flex flex-col border-b dark:border-gray-200/25" :class="{
+                        <div id="version"
+                            class="bg-white dark:bg-neutral-950 flex flex-col border-b dark:border-gray-200/25" :class="{
                                 'rounded-t-md border-top-none': index === 0, 
                                 'rounded-b-md  border-none': index === package.versions.length - 1, 
                                 'rounded-md': package.versions.length === 1
@@ -128,10 +129,10 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                 @click="expanded = !expanded">
                                 <p class="font-semibold text-xl select-none dark:text-gray-200"
                                     x-text="version.version_code"></p>
-<div x-data="dateFormatter()" class="flex flex-row items-center">
+                                <div x-data="dateFormatter()" class="flex flex-row items-center">
 
-                                <p class="text-gray-700 dark:text-gray-300/70 select-none ml-auto mx-1"
-                                   x-text="formatDate(version.date_added)">                                </p>
+                                    <p class="text-gray-700 dark:text-gray-300/70 select-none ml-auto mx-1"
+                                        x-text="formatDate(version.date_added)"> </p>
 
                                     <svg class="h-6 w-6 dark:text-gray-200 mx-1 transition-transform duration-300"
                                         x-bind:class="expanded ? 'rotate-180' : 'rotate-0'" fill="none"
@@ -140,7 +141,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                         <path stroke-linecap="round" stroke-linejoin="round"
                                             d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
                                     </svg>
-</div>
+                                </div>
                             </div>
                             <div x-show="expanded" x-collapse>
                                 <div class="flex flex-col  p-2">
@@ -163,7 +164,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                         <div class="grid grid-cols-1 grid-rows-2 gap-2 h-min ">
 
                                             {% if current_user.role.has_permission('edit:version') %}
-                                            <a
+                                            <a 
                                                 class="w-min h-min px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
                                                 <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6"
                                                     fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -174,7 +175,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                             </a>
                                             {% endif %}
                                             {% if current_user.role.has_permission('delete:version') %}
-                                            <a
+                                            <a @click="deleteVersion(package, version)"
                                                 class="w-min h-min px-1 group py-1 text-gray-500 transition-colors hover:bg-red-100 dark:bg-neutral-900 duration-300 rounded-md cursor-pointer">
                                                 <svg class="group-hover:stroke-red-500 transition-color duration-300 h-6 w-6"
                                                     fill="none" stroke="currentColor" stroke-width="1.5"
@@ -252,12 +253,13 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                                             </div>
                                                             <div x-show="showInstallerSwitches" x-collapse
                                                                 @click.away="showInstallerSwitches = false">
-                                                                <template x-for="switch in installer.switches"
-                                                                    :key="switch.id">
+
+                                                                <template x-for="installerSwitch in installer.switches"
+                                                                    :key="installerSwitch.id">
                                                                     <p><span class="font-medium"
-                                                                            x-text="switch.parameter"></span>:
+                                                                            x-text="installerSwitch.parameter"></span>:
                                                                         <span class="font-mono"
-                                                                            x-text="switch.value"></span>
+                                                                            x-text="installerSwitch.value"></span>
                                                                     </p>
                                                                 </template>
                                                             </div>
@@ -265,7 +267,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                                         {% endif %}
                                                     </div>
                                                     <div class="grid grid-cols-2 grid-rows-2 gap-2">
-                                                        <a
+                                                        <a @click="navigator.clipboard.writeText(installer.installer_url)"
                                                             class="w-min h-min px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
                                                             <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6"
                                                                 fill="none" stroke="currentColor" stroke-width="1.5"
@@ -291,7 +293,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                                         </a>
                                                         {% endif %}
                                                         {% if current_user.role.has_permission('delete:installer') %}
-                                                        <a
+                                                        <a @click="deleteInstaller(package, version, installer)"
                                                             class="w-min h-min col-start-2 px-1 group py-1 text-gray-500 transition-colors hover:bg-red-100 dark:bg-neutral-900 duration-300 rounded-md cursor-pointer">
                                                             <svg class="group-hover:stroke-red-500 transition-color duration-300 h-6 w-6"
                                                                 fill="none" stroke="currentColor" stroke-width="1.5"
@@ -377,9 +379,56 @@ selectedInstaller: '', selectedVersion: '' }" %}
                     }));
                 }
             },
-
-
-
+            async deleteVersion(package,version) {
+                if (!confirm(`Are you sure you want to delete version ${version.version_code} and all of its installers?`)) {
+                    return;
+                }
+                let resp = await fetch(`{{ url_for('api.delete_version', identifier='identifier_placeholder', version='version_placeholder') }}`.replace('identifier_placeholder', package.identifier).replace('version_placeholder', version.version_code), {
+                    method: 'DELETE'
+                });
+                if (resp.ok) {
+                    window.dispatchEvent(new CustomEvent('notice', {
+                        detail: {
+                            type: 'success',
+                            text: 'Version deleted successfully'
+                        }
+                    }));
+                    this.fetchPackage(package.identifier);
+                } else {
+                    console.error('Failed to delete version');
+                    window.dispatchEvent(new CustomEvent('notice', {
+                        detail: {
+                            type: 'error',
+                            text: resp.text()
+                        }
+                    }));
+                }
+            },
+            async deleteInstaller(package, version, installer) {
+                if (!confirm(`Are you sure you want to delete installer ${installer.architecture} for version ${version.version_code}?`)) {
+                    return;
+                }
+                let resp = await fetch(`{{ url_for('api.delete_installer', identifier='identifier_placeholder', version='version_placeholder', installer='installer_placeholder') }}`.replace('identifier_placeholder', package.identifier).replace('version_placeholder', version.version_code).replace('installer_placeholder', installer.id), {
+                    method: 'DELETE'
+                });
+                if (resp.ok) {
+                    window.dispatchEvent(new CustomEvent('notice', {
+                        detail: {
+                            type: 'success',
+                            text: 'Installer deleted successfully'
+                        }
+                    }));
+                    this.fetchPackage(package.identifier);
+                } else {
+                    console.error('Failed to delete installer');
+                    window.dispatchEvent(new CustomEvent('notice', {
+                        detail: {
+                            type: 'error',
+                            text: resp.text()
+                        }
+                    }));
+                }
+            },
             getIdentifierFromURL() {
                 const path = window.location.pathname; // Get the pathname part of the URL
                 const pattern = /\/package\/(.+)/; // Regular expression to match the pattern '/package/<identifier>'
@@ -402,20 +451,20 @@ selectedInstaller: '', selectedVersion: '' }" %}
     });
 </script>
 <script>
-function dateFormatter() {
-    return {
-        formatDate(dateString) {
-            const date = new Date(dateString);
-            const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-            const day = String(date.getDate()).padStart(2, '0');
-            const year = date.getFullYear();
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
+    function dateFormatter() {
+        return {
+            formatDate(dateString) {
+                const date = new Date(dateString);
+                const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+                const day = String(date.getDate()).padStart(2, '0');
+                const year = date.getFullYear();
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
 
-            return `${month}.${day}.${year} ${hours}:${minutes}`;
+                return `${month}.${day}.${year} ${hours}:${minutes}`;
+            }
         }
     }
-}
 </script>
 
 {% endblock %}
