@@ -62,17 +62,16 @@
 <body class="min-h-screen h-full font-poppins flex flex-col bg-slate-200 dark:bg-zinc-800">
     {% include "nav.j2" %}
 
-    <main class="h-full w-full p-4 flex flex-col max-w-screen-xl mx-auto" x-data="{{ alpine_data }}">
-        {% if current_user.is_authenticated and current_user.role.id == 1 and not error %}
-        <div class="text-lg text-white pb-4  {{ 'hidden' if not config['ENABLE_REGISTRATION'] }}">
-            <p class="p-2 bg-red-500/90 rounded-md">Registration is enabled, this is a potential security risk. Consider
-                disabling it after you've created your users.</p>
-        </div>
-        {% endif %}
-        {% block content %}{% endblock %}
+<main class="h-full w-full p-4 flex flex-col max-w-screen-xl mx-auto" x-data="{{ alpine_data }}">
+    {% if current_user.is_authenticated and current_user.role.id == 1 and not error %}
+    <div class="text-lg text-white pb-4  {{ 'hidden' if not global_settings['ENABLE_REGISTRATION'] }}">
+        <p class="p-2 bg-red-500/90 rounded-md">Registration is enabled, this is a potential security risk. Consider
+            disabling it after you've created your users.</p>
+    </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+</main>
 
-
-    </main>
     <div class="grow"></div>
     <!-- Footer -->
     {% include "footer.j2" %}

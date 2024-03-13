@@ -76,7 +76,7 @@
             class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ml-auto">
             Log in
         </a>
-        {% if config['ENABLE_REGISTRATION'] %}
+        {% if global_settings['ENABLE_REGISTRATION'] %}
         <a href="{{ url_for('auth.signup') }}"
             class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ">
             Sign up
