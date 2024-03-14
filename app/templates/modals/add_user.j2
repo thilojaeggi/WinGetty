@@ -61,7 +61,7 @@
                         <input required name="password" placeholder="" type="password" x-model="password_confirm"
                             class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                     </div>
-                    <div class="flex items-center py-1 mt-2">
+                    <div class="flex items-center py-1 mt-2" x-show="password.length > 0 || password_confirm.length > 0" x-cloak x-transition:enter="transition ease-out duration-300">
                         <div :class="{'bg-green-200 text-green-700': password == password_confirm && password.length > 0, 'bg-red-200 text-red-700':password != password_confirm || password.length == 0}"
                             class=" rounded-full p-1 fill-current ">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
