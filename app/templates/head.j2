@@ -1,0 +1,57 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WinGetty - {{ title }}</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/expand.min.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css')}}">
+
+    <script defer src="{{ url_for('static', filename='js/collapse.min.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/alpine.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/htmx.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/axios.min.js') }}"></script>
+    <script>
+    window.addEventListener('htmx:responseError', function(event) {
+        var message = event.detail.xhr.response;
+        window.dispatchEvent(new CustomEvent('notice', {
+            detail: {
+                text: message,
+                type: 'error'
+            }
+        }))
+    });
+    </script>
+
+    <!-- This is to load fonts asap -->
+    {% include 'fonts.j2' %}
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <script>
+        window.addEventListener('load', function () {
+            window.dispatchEvent(new CustomEvent('notice', {
+                detail: {
+                    text: {{ message|tojson }},
+                    type: {{ category|tojson }}
+                }
+            }))
+        });
+    </script>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <script>
+        // On page load or when changing themes, best to add inline in `head` to avoid FOUC
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    </script>
+
+
+</head>

@@ -1,67 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WinGetty - {{ title }}</title>
-    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/expand.min.css')}}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css')}}">
-
-    <script defer src="{{ url_for('static', filename='js/collapse.min.js') }}"></script>
-    <script defer src="{{ url_for('static', filename='js/alpine.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/htmx.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/axios.min.js') }}"></script>
-    <script>
-    window.addEventListener('htmx:responseError', function(event) {
-        var message = event.detail.xhr.response;
-        window.dispatchEvent(new CustomEvent('notice', {
-            detail: {
-                text: message,
-                type: 'error'
-            }
-        }))
-    });
-    </script>
-
-    <!-- This is to load fonts asap -->
-    {% include 'fonts.j2' %}
-
-    <!-- Flash messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <script>
-        window.addEventListener('load', function () {
-            window.dispatchEvent(new CustomEvent('notice', {
-                detail: {
-                    text: {{ message|tojson }},
-                    type: {{ category|tojson }}
-                }
-            }))
-        });
-    </script>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
-
-    <script>
-        // On page load or when changing themes, best to add inline in `head` to avoid FOUC
-        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark')
-        }
-    </script>
-
-
-</head>
+{% include "head.j2" %}
 
 <body class="min-h-screen h-full font-poppins flex flex-col bg-slate-200 dark:bg-zinc-800">
+{% if current_user.is_authenticated %}
     {% include "nav.j2" %}
-
+{% endif %}
 <main class="h-full w-full p-4 flex flex-col max-w-screen-xl mx-auto" x-data="{{ alpine_data }}">
     {% if current_user.is_authenticated and current_user.role.id == 1 and not error %}
     <div class="text-lg text-white pb-4  {{ 'hidden' if not global_settings['ENABLE_REGISTRATION'] }}">
@@ -75,92 +20,9 @@
     <div class="grow"></div>
     <!-- Footer -->
     {% include "footer.j2" %}
-
-
-    <div x-data="noticesHandler()" class="fixed inset-0 flex flex-col items-end justify-start h-screen w-screen z-50"
-        @notice.window="add($event.detail)" style="pointer-events:none">
-        <template x-for="notice of notices" :key="notice.id">
-            <div x-show="visible.includes(notice)" x-transition:enter="transition ease-in duration-200"
-                x-transition:enter-start="transform opacity-0 -translate-y-2"
-                x-transition:enter-end="transform opacity-100" x-transition:leave="transition ease-out duration-500"
-                x-transition:leave-start="transform translate-x-0 opacity-100"
-                x-transition:leave-end="transform -translate-y-2 sm:translate-y-0 sm:translate-x-full opacity-0"
-                @click="remove(notice.id)"
-                class="rounded-lg mt-2 sm:m-4 w-auto mx-auto sm:w-auto p-8  h-16 flex items-center border-2 justify-center text-black dark:text-gray-200 bg-gray-100 dark:bg-zinc-900 shadow-lg font-bold text-lg cursor-pointer  z-50 "
-                :class="{
-				'border-green-500': notice.type === 'success',
-				'border-blue-500': notice.type === 'info',
-				'border-orange-500': notice.type === 'warning',
-				'border-red-500': notice.type === 'error',
-			 }" style="pointer-events:all" x-text="notice.text">
-            </div>
-        </template>
-    </div>
-    <script>
-        function noticesHandler() {
-            return {
-                notices: [],
-                visible: [],
-                add(notice) {
-                    notice.id = Date.now()
-                    this.notices.push(notice)
-                    this.fire(notice.id)
-                },
-                fire(id) {
-                    this.visible.push(this.notices.find(notice => notice.id == id))
-                    const timeShown = 2000 * this.visible.length
-                    setTimeout(() => {
-                        this.remove(id)
-                    }, timeShown)
-                },
-                remove(id) {
-                    const notice = this.visible.find(notice => notice.id == id)
-                    const index = this.visible.indexOf(notice)
-                    this.visible.splice(index, 1)
-                },
-            }
-        }
-    </script>
-    <script>
-        var themeToggleBtn = document.getElementById('theme-toggle');
-
-        // Change the icons inside the button based on previous settings
-        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            themeToggleBtn.classList.add('theme-toggle--toggled');
-
-        } else {
-            themeToggleBtn.classList.remove('theme-toggle--toggled');
-        }
-
-
-        themeToggleBtn.addEventListener('click', function () {
-
-            themeToggleBtn.classList.toggle('theme-toggle--toggled');
-
-
-            // if set via local storage previously
-            if (localStorage.getItem('color-theme')) {
-                if (localStorage.getItem('color-theme') === 'light') {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('color-theme', 'dark');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('color-theme', 'light');
-                }
-
-                // if NOT set via local storage previously
-            } else {
-                if (document.documentElement.classList.contains('dark')) {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('color-theme', 'light');
-                } else {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('color-theme', 'dark');
-                }
-            }
-
-        });
-    </script>
+    {% include "flash.j2" %}
+    {% include "theme_switcher.j2" %}
+    
 
 </body>
 
