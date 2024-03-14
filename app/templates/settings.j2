@@ -109,7 +109,7 @@
                                     text: 'Setting updated successfully'
                                 }
                             }));
-                            this.fetchPackage(package.identifier);
+                            this.fetchSettings();
                         } else {
                             console.error('Error updating setting:', response);
                             window.dispatchEvent(new CustomEvent('notice', {
@@ -120,13 +120,6 @@
                             }));
                         }
                     })
-                    .then(updatedSetting => {
-                        const index = this.settings.findIndex(s => s.key === updatedSetting.key);
-                        if (index !== -1) {
-                            this.settings[index] = updatedSetting;
-                        }
-                    })
-                    .catch(error => console.error('Error updating setting:', error));
             }
         };
     }
