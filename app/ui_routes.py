@@ -64,14 +64,14 @@ def settings():
     return render_template('settings.j2', settings=settings)
 
 
-@ui.route('/users')
+@ui.route('/access')
 @login_required
 @permission_required('view:own_user')
 def users():
     users = User.query.all()
     roles = Role.query.all()
     permissions = Permission.query.all()
-    return render_template('users.j2', users=users, roles=roles, permissions=permissions)
+    return render_template('access.j2', users=users, roles=roles, permissions=permissions)
 
 
 @ui.route('/package/<identifier>', methods=['GET'])

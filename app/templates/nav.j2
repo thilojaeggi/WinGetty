@@ -6,8 +6,11 @@
             <img width="61" height="40" src="{{ url_for('static', filename='img/wingetty_small.png')}}" alt="Logo"
                 class="h-10 w-auto mr-2">
 
-            <span class="font-semibold text-2xl {% if config.IS_CLOUD %}text-lg leading-5{% endif %} tracking-tight mb-0.5">WinGetty {% if config.IS_CLOUD %}<br>
-                <span class="text-transparent font-medium bg-clip-text bg-gradient-to-br from-[#31ffee] to-[#2660ff]">Cloud</span>
+            <span
+                class="font-semibold text-2xl {% if config.IS_CLOUD %}text-lg leading-5{% endif %} tracking-tight mb-0.5">WinGetty
+                {% if config.IS_CLOUD %}<br>
+                <span
+                    class="text-transparent font-medium bg-clip-text bg-gradient-to-br from-[#31ffee] to-[#2660ff]">Cloud</span>
                 {%endif%}</span>
         </div>
     </a>
@@ -37,15 +40,16 @@
             </a>
 
         </div>
-    <div class="flex-grow"></div>
-            <a href="{{ url_for('ui.settings') }}"
+        <div class="flex-grow"></div>
+        <a href="{{ url_for('ui.users') }}"
+            class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ">
+            Access 
+        </a>
+        <a href="{{ url_for('ui.settings') }}"
             class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ">
             Settings
         </a>
-        <a href="{{ url_for('ui.users') }}"
-            class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ">
-            Users
-        </a>
+
 
         {% if config.IS_CLOUD and current_user.role.id == 1 %}
         <a href="https://subscription.wingetty.dev/p/login/4gw2aXeXacdgcPm8ww?prefilled_email={{ current_user.email }}"
