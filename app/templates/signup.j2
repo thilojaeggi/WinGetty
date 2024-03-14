@@ -1,35 +1,38 @@
-{% extends "base.j2" %}
-{% set title = "Sign up"%}
+{% set title="Sign up" %}
+{% extends "auth_base.j2" %}
 {% block content %}
-<div class="column is-4 is-offset-4">
-    <h1 class="text-3xl font-medium text-gray-800 dark:text-gray-200">{{title}}</h1>
-    <div class="max-w-screen-sm">
-        <form method="POST" action="{{ url_for('auth.signup') }}">
 
-             <div class="mt-2">
-                <label for="username" class="block  text-gray-700 dark:text-gray-300 ">Username<span
-                        class="text-red-500">*</span></label>
-                <input required name="username" placeholder="" type="text" onkeypress="return event.key != ' '"
-                    class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-            </div>
+<form method="POST" action="{{ url_for('auth.signup') }}">
 
-            <div class="mt-2">
-                <label for="email" class="block  text-gray-700 dark:text-gray-300 ">E-Mail<span
-                        class="text-red-500">*</span></label>
-                <input required name="email" placeholder="" type="text"
-                    class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-            </div>
-
-            <div class="mt-2">
-                <label for="password" class="block text-gray-700 dark:text-gray-300 ">Password<span
-                        class="text-red-500">*</span></label>
-                <input required name="password" placeholder="" type="password"
-                    class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
-            </div>
-            <button type="submit" type="button"
-                class="mt-2 px-3 py-2 tracking-wide text-white   transition-colors duration-300 transform bg-blue-700 hover:bg-blue-800 rounded-md focus:outline-none focus:bg-blue-800 focus:ring focus:ring-blue-300 focus:ring-opacity-50">Sign
-                up</button>
-        </form>
+    <div class="mt-2">
+        <label for="username" class="block  text-gray-700 dark:text-gray-300 ">Username<span
+                class="text-red-500">*</span></label>
+        <input required name="username" placeholder="" type="text" onkeypress="return event.key != ' '"
+            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
     </div>
+
+    <div class="mt-2">
+        <label for="email" class="block  text-gray-700 dark:text-gray-300 ">E-Mail<span
+                class="text-red-500">*</span></label>
+        <input required name="email" placeholder="" type="text"
+            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+    </div>
+
+    <div class="mt-2">
+        <label for="password" class="block text-gray-700 dark:text-gray-300 ">Password<span
+                class="text-red-500">*</span></label>
+        <input required name="password" placeholder="" type="password"
+            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+    </div>
+    <div class="flex justify-end mt-2">
+
+        <button type="submit" type="button"
+            class="px-3 py-2 tracking-wide text-white   transition-colors duration-300 transform bg-blue-700 hover:bg-blue-800 rounded-md focus:outline-none focus:bg-blue-800 focus:ring focus:ring-blue-300 focus:ring-opacity-50">Sign
+            up</button>
+    </div>
+</form>
+<div class="mt-2">
+    <p class="text-sm text-gray-600 dark:text-gray-300">Already have an account? <a href="{{ url_for('auth.login') }}"
+            class="text-blue-600 dark:text-blue-400 hover:underline">Login</a></p>
 </div>
 {% endblock %}
