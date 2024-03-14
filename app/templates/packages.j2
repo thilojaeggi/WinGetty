@@ -51,14 +51,14 @@
 
         <div class="flex flex-col mt-2 " x-show="!loading">
             <div class="w-full align-middle rounded-lg overflow-y-hidden overflow-x-auto ">
-                <table id="packages_table" hx-target="#packages_table tbody" hx-swap="innerHTML" x-show="!loading"
+                <table id="packages_table" 
                     x-transition:enter="transition ease-out duration-300"
                     x-transition:enter-start="opacity-0 transform scale-95"
                     x-transition:enter-end="opacity-100 transform scale-100"
                     x-transition:leave="transition ease-in duration-300"
                     x-transition:leave-start="opacity-100 transform scale-100"
                     x-transition:leave-end="opacity-0 transform scale-90" x-cloak
-                    class="min-w-full divide-y divide-gray-300 dark:divide-neutral-500 rounded ">
+                    class="min-w-full divide-y divide-gray-300 dark:divide-neutral-500  ">
                     <thead class="bg-gray-50 dark:bg-neutral-950  rounded-md ">
                         <tr class="text-gray-500 dark:text-gray-200">
                             <th scope="col" class="pl-3 py-3.5  text-sm font-normal text-left rtl:text-right ">
@@ -82,7 +82,7 @@
                     </thead>
                     <tbody
                         class="bg-white dark:bg-neutral-900 divide-y divide-gray-200 dark:divide-neutral-700 text-gray-700 dark:text-gray-300"
-                        hx-target="closest tr" hx-swap="outerHTML swap:1s">
+                        >
                         <template x-for="(package, id) in packages" :key="id">
                             <tr x-cloak x-show="true" x-transition:enter="transition ease-out duration-1000"
                                 x-transition:enter-start="opacity-0 transform scale-90"
