@@ -1,5 +1,5 @@
 {% extends "base.j2" %}
-{% set title = "Package: " ~ package.name %}
+{% set title = "Package: " %}
 {% set alpine_data = "{ showAddVersionModal : false, showAddInstallerModal: false, showEditInstallerModal: false,
 selectedInstaller: '', selectedVersion: '' }" %}
 {% block content %}
@@ -351,6 +351,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
                 let data = await resp.json();
                 this.package = data;
                 console.log(data);
+                document.title = `WinGetty - Package: ${data.name}`;
                 this.loading = false;
             },
             // delete package endpoint after return to other site
