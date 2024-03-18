@@ -14,6 +14,10 @@ def permission_required(permission):
 
             # Check if the user's role has the required permission
             if not user_role.has_permission(permission):
+                # If not html return error code and message
+                if request.content_type == 'application/json':
+                    print("You\'re missing permissions to access this resource.")
+                    return "You\'re missing permissions to access this resource.", 403
                 # flash error message
                 flash("You\'re missing permissions to access this resource.", 'error')
                 return redirect(request.referrer)

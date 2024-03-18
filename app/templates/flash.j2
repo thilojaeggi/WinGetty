@@ -1,0 +1,44 @@
+    <div x-data="noticesHandler()" class="fixed inset-0 flex flex-col items-end justify-start h-screen w-screen z-50"
+        @notice.window="add($event.detail)" style="pointer-events:none">
+        <template x-for="notice of notices" :key="notice.id">
+            <div x-show="visible.includes(notice)" x-transition:enter="transition ease-in duration-200"
+                x-transition:enter-start="transform opacity-0 -translate-y-2"
+                x-transition:enter-end="transform opacity-100" x-transition:leave="transition ease-out duration-500"
+                x-transition:leave-start="transform translate-x-0 opacity-100"
+                x-transition:leave-end="transform -translate-y-2 sm:translate-y-0 sm:translate-x-full opacity-0"
+                @click="remove(notice.id)"
+                class="rounded-lg mt-2 sm:m-4 w-auto mx-auto sm:w-auto p-8  h-16 flex items-center border-2 justify-center text-black dark:text-gray-200 bg-gray-100 dark:bg-zinc-900 shadow-lg font-bold text-lg cursor-pointer  z-50 "
+                :class="{
+				'border-green-500': notice.type === 'success',
+				'border-blue-500': notice.type === 'info',
+				'border-orange-500': notice.type === 'warning',
+				'border-red-500': notice.type === 'error',
+			 }" style="pointer-events:all" x-text="notice.text">
+            </div>
+        </template>
+    </div>
+    <script>
+        function noticesHandler() {
+            return {
+                notices: [],
+                visible: [],
+                add(notice) {
+                    notice.id = Date.now()
+                    this.notices.push(notice)
+                    this.fire(notice.id)
+                },
+                fire(id) {
+                    this.visible.push(this.notices.find(notice => notice.id == id))
+                    const timeShown = 2000 * this.visible.length
+                    setTimeout(() => {
+                        this.remove(id)
+                    }, timeShown)
+                },
+                remove(id) {
+                    const notice = this.visible.find(notice => notice.id == id)
+                    const index = this.visible.indexOf(notice)
+                    this.visible.splice(index, 1)
+                },
+            }
+        }
+    </script>

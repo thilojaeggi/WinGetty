@@ -79,7 +79,7 @@ def create_app():
     app.register_error_handler(500, internal_server_error)
 
     db.init_app(app)
-    from app.models import User, Package, PackageVersion, Installer, InstallerSwitch
+    from app.models import User, Package, PackageVersion, Installer, InstallerSwitch, Permission, Role, Setting
     migrate.init_app(app, db)
     htmx.init_app(app)
     dynaconf.init_app(app)
@@ -129,11 +129,18 @@ def create_app():
     app.add_template_global(constants.installer_types, name='installer_types')
     app.add_template_global(constants.installer_scopes, name='installer_scopes')
     app.add_template_global(constants.simplified_nested_installer_types, name='nested_installer_types')
-        
+
+    def get_settings():
+        return {setting.key.upper(): setting.get_value() for setting in Setting.query.all()}
+    
+    @app.context_processor
+    def inject_settings():
+        return dict(global_settings=get_settings())
 
     @app.context_processor
     def inject_now():
         return {'now': datetime.utcnow()}
+    
     
     @app.route('/favicon.ico')
     def favicon():
@@ -143,6 +150,8 @@ def create_app():
     if not 'flask' in sys.argv and not 'db' in sys.argv:
         with app.app_context():
             from app.permissions import create_all
+            create_all()
+            from app.settings import create_all
             create_all()
 
         

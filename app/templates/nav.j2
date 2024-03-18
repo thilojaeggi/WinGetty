@@ -6,8 +6,11 @@
             <img width="61" height="40" src="{{ url_for('static', filename='img/wingetty_small.png')}}" alt="Logo"
                 class="h-10 w-auto mr-2">
 
-            <span class="font-semibold text-2xl {% if config.IS_CLOUD %}text-lg leading-5{% endif %} tracking-tight mb-0.5">WinGetty {% if config.IS_CLOUD %}<br>
-                <span class="text-transparent font-medium bg-clip-text bg-gradient-to-br from-[#31ffee] to-[#2660ff]">Cloud</span>
+            <span
+                class="font-semibold text-2xl {% if config.IS_CLOUD %}text-lg leading-5{% endif %} tracking-tight mb-0.5">WinGetty
+                {% if config.IS_CLOUD %}<br>
+                <span
+                    class="text-transparent font-medium bg-clip-text bg-gradient-to-br from-[#31ffee] to-[#2660ff]">Cloud</span>
                 {%endif%}</span>
         </div>
     </a>
@@ -25,7 +28,6 @@
 
     <div class="w-full block flex-grow md:flex md:flex-row justify-between items-center md:w-auto text-lg font-semibold"
         x-collapse x-show="menuVisible">
-        {% if current_user.is_authenticated %}
 
         <div class="text-lg font-semibold">
             <a href="{{ url_for('ui.packages') }}"
@@ -38,11 +40,20 @@
             </a>
 
         </div>
-    <div class="flex-grow"></div>
+        <div class="flex-grow"></div>
+        {% if current_user.role.has_permission('view:own_user') %}
         <a href="{{ url_for('ui.users') }}"
             class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ">
-            Users
+            Access 
         </a>
+        {% endif %}
+        {% if current_user.role.has_permission('view:settings') %}
+        <a href="{{ url_for('ui.settings') }}"
+            class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ">
+            Settings
+        </a>
+        {% endif %}
+
 
         {% if config.IS_CLOUD and current_user.role.id == 1 %}
         <a href="https://subscription.wingetty.dev/p/login/4gw2aXeXacdgcPm8ww?prefilled_email={{ current_user.email }}"
@@ -66,19 +77,7 @@
             </svg>
 
         </a>
-        {% endif %}
-        {% if not current_user.is_authenticated %}
-        <a href="{{ url_for('auth.login') }}"
-            class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ml-auto">
-            Log in
-        </a>
-        {% if config['ENABLE_REGISTRATION'] %}
-        <a href="{{ url_for('auth.signup') }}"
-            class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ">
-            Sign up
-        </a>
-        {% endif %}
-        {% endif %}
+
         <div class="w-full md:w-auto flex flex-row justify-end">
             <button id="theme-toggle" class="theme-toggle mt-2 sm:mt-0 " type="button" title="Toggle theme"
                 aria-label="Toggle theme">

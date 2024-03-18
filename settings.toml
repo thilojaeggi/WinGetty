@@ -1,12 +1,7 @@
 SQLALCHEMY_DATABASE_URI = 'sqlite:///database.db'
 SQLALCHEMY_TRACK_MODIFICATIONS = false
 
-# Repo configuration
-REPO_NAME = "WinGetty"
 
 # Replace with your own secret key or overwrite with environment variable
 SECRET_KEY="ASIOFDIOFSDFIFSIOD2*)"
-USE_S3 = false
 IS_CLOUD = false
-BUCKET_NAME = "WinGetty"
-ENABLE_REGISTRATION = false

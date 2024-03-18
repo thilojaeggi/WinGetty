@@ -6,6 +6,8 @@ from wtforms.validators import InputRequired, Length, Optional
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 import wtforms
 from wtforms import Form, StringField, SelectField, validators, ValidationError
+
+from app.models import Setting
 from . import constants
 class RequiredIf(object):
 
@@ -77,7 +79,7 @@ class AddInstallerFormFields(FlaskForm):
             self.file.validators.append(Optional())
             self.url.validators.append(Optional())  # Both fields are optional when file_required is False
 
-        if current_app.config['USE_S3'] and file_required:
+        if Setting.get("USE_S3").get_value() and file_required:
             self.is_aws.validators.append(InputRequired())
 
 

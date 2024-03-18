@@ -3,7 +3,7 @@ import os
 import requests
 from flask import current_app, request
 from werkzeug.utils import secure_filename
-from app.models import Installer, InstallerSwitch, NestedInstallerFile
+from app.models import Installer, InstallerSwitch, NestedInstallerFile, Setting
 from app.constants import installer_switches
 import boto3
 s3_client = boto3.client('s3')
@@ -60,7 +60,7 @@ def create_installer(publisher, identifier, version, installer_form):
         # Generate a pre-signed URL for S3 uploads
         presigned_url = s3_client.generate_presigned_url(
             'get_object',
-            Params={'Bucket': current_app.config['BUCKET_NAME'], 'Key': s3_object_key},
+            Params={'Bucket': Setting.get("BUCKET_NAME").get_value(), 'Key': s3_object_key},
             ExpiresIn=URL_EXPIRATION_SECONDS
         )
         current_app.logger.info(f"Getting file hash from presigned URL: {presigned_url}")
@@ -118,11 +118,11 @@ def calculate_sha256(filename):
 def delete_installer_util(package, installer, version):
     if not installer.external_url and installer.file_name:
         base_path = ['packages', package.publisher, package.identifier, version.version_code, installer.architecture]
-        if current_app.config['USE_S3']:
+        if Setting.get("USE_S3").get_value():
             s3_key = '/'.join(base_path + [installer.file_name])
             current_app.logger.info(f"Deleting file from S3: {s3_key}")
             s3_client.delete_object(
-                Bucket=current_app.config['BUCKET_NAME'],
+                Bucket=Setting.get("BUCKET_NAME").get_value(),
                 Key=s3_key
             )
         else:

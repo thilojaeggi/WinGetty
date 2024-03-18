@@ -17,13 +17,13 @@
         class=" text-sm font-medium text-center text-gray-500 divide-x divide-neutral-200 rounded-md shadow flex dark:divide-neutral-700 dark:text-neutral-400 sm:w-1/2">
         <li class="w-full">
             <a @click.prevent="selection = 'file'; $refs.selectionDropdown.value = selection" href="#"
-                :class="{'bg-white  dark:bg-neutral-700 text-gray-900 dark:text-white': selection === 'file', 'bg-gray-200 dark:bg-neutral-800 hover:text-neutral-300 hover:bg-gray-50': selection !== 'file'}"
+                :class="{'bg-white  dark:bg-neutral-700 text-gray-900 dark:text-white': selection === 'file', 'bg-gray-200 dark:bg-neutral-800 hover:text-neutral-600 hover:bg-gray-100': selection !== 'file'}"
                 class="inline-block w-full p-1 rounded-l-md focus:ring-blue-300 active focus:outline-none"
                 aria-current="page">Upload File</a>
         </li>
         <li class="w-full">
             <a @click.prevent="selection = 'url'; $refs.selectionDropdown.value = selection" href="#"
-                :class="{'bg-white dark:bg-neutral-700 text-gray-900 dark:text-white': selection === 'url', 'bg-gray-200 dark:bg-neutral-800  hover:text-neutral-300 hover:bg-gray-50': selection !== 'url'}"
+                :class="{'bg-white dark:bg-neutral-700 text-gray-900 dark:text-white': selection === 'url', 'bg-gray-200 dark:bg-neutral-800  hover:text-neutral-600 hover:bg-gray-100': selection !== 'url'}"
                 class="inline-block w-full p-1 rounded-r-md focus:ring-blue-300 active focus:outline-none">URL</a>
         </li>
     </ul>

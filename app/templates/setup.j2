@@ -13,7 +13,7 @@
     class="flex justify-between max-w-3xl items-center pl-2 pr-1 py-1 bg-white dark:bg-neutral-950 dark:text-gray-300 rounded-lg">
     <p id="winget_source_url" @click="navigator.clipboard.writeText($event.target.innerText)">winget source add
         -n
-        {{ config.REPO_NAME }} -t "Microsoft.Rest" -a {{ url_for('winget.index', _external=True,_scheme="https") }}</p>
+        {{ global_settings["REPO_NAME"] }} -t "Microsoft.Rest" -a {{ url_for('winget.index', _external=True,_scheme="https") }}</p>
     <a x-on:click="copyText"
         class="px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
         <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6" fill="none" stroke="currentColor"
@@ -24,4 +24,14 @@
         </svg>
     </a>
 </div>
+<p class="text-sm dark:text-gray-200 mt-6">
+If the above url is localhost or 127.0.0.1 despite being behind a reverse proxy, you should check the headers being sent by the reverse proxy to ensure that the original host is being forwarded.<br>If you are using nginx, you can add the following to your configuration file:
+<code class="text-xs dark:text-gray-300">
+<br>
+    proxy_set_header Host $host;<br>
+    proxy_set_header X-Real-IP $remote_addr;<br>
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;<br>
+    proxy_set_header X-Forwarded-Proto $scheme;<br>
+</code>
+</p>
 {% endblock %}
