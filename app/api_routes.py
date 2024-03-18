@@ -46,6 +46,7 @@ URL_EXPIRATION_SECONDS = 3600
 
 @api.get("/packages")
 @login_required
+@permission_required("view:package")
 def packages():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('limit', 10, type=int)
@@ -75,6 +76,7 @@ def packages():
 
 @api.get("/package/<identifier>")
 @login_required
+@permission_required("view:package")
 def package(identifier):
     # Use identifier and check if its the id or the package identifier
     if identifier.isdigit():
@@ -88,6 +90,7 @@ def package(identifier):
 
 @api.get("/package/<identifier>/versions")
 @login_required
+@permission_required("view:version")
 def package_versions(identifier):
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
@@ -96,6 +99,7 @@ def package_versions(identifier):
 
 @api.get("/package/<identifier>/version/<version>")
 @login_required
+@permission_required("view:version")
 def package_version(identifier, version):
     version = PackageVersion.query.filter_by(
         identifier=identifier, version_code=version
@@ -106,6 +110,7 @@ def package_version(identifier, version):
 
 @api.get("/package/<identifier>/version/<version>/installers")
 @login_required
+@permission_required("view:installer")
 def package_installers(identifier, version):
     version = PackageVersion.query.filter_by(
         identifier=identifier, version_code=version
@@ -116,6 +121,7 @@ def package_installers(identifier, version):
 
 @api.get("/package/<identifier>/version/<version>/installer/<installer>")
 @login_required
+@permission_required("view:installer")
 def package_installer(identifier, version, installer):
     installer = Installer.query.filter_by(id=installer).first()
     if installer is None:
@@ -124,6 +130,7 @@ def package_installer(identifier, version, installer):
 
 @api.get("/installer/<installer_id>")
 @login_required
+@permission_required("view:installer")
 def get_installer_by_id(installer_id):
     installer = Installer.query.get(installer_id)
     if installer is None:
@@ -132,16 +139,12 @@ def get_installer_by_id(installer_id):
 
 @api.get("/version/<version_id>")
 @login_required
+@permission_required("view:version")
 def get_version_by_id(version_id):
     version = PackageVersion.query.get(version_id)
     if version is None:
         return "Version not found", 404
     return jsonify(version.to_dict())
-
-
-
-
-
 
 
 @api.route("/generate_presigned_url", methods=["POST"])
@@ -574,6 +577,7 @@ def add_user():
 
 @api.route("/update_setting", methods=["POST"])
 @login_required
+@permission_required("edit:settings")
 def update_setting():
     data = request.json
 
@@ -595,6 +599,7 @@ def update_setting():
 
 @api.get("/settings")
 @login_required
+@permission_required("view:settings")
 def settings():
     # Return settings as json
     settings = Setting.query.all()
@@ -607,35 +612,6 @@ def settings():
 def whoami():
     return jsonify(current_user.to_dict())
 
-
-@api.post("/toggle_uplink")
-@login_required
-def toggle_uplink():
-    setting = Setting.query.filter_by(key="enable_uplink").first()
-    if setting is None:
-        return "Setting not found", 404
-    if setting.type != "boolean":
-        return "Setting type is not boolean", 400
-    
-    # Convert the string value to a boolean
-    value = setting.get_value()
-
-    # Toggle the boolean value
-    new_value = not value
-
-    # Convert the boolean back to a string for storage
-    setting.set_value(new_value)
-
-    # Commit the change to the database
-    db.session.commit()
-
-    print("New setting value:", setting.value)
-
-    # Prepare and return the redirect response
-    response = Response()
-    redirect_url = url_for("ui.settings")
-    response.headers["HX-Redirect"] = redirect_url
-    return response
 
 
 @api.route("/add_role", methods=["POST"])
