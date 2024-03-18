@@ -41,14 +41,18 @@
 
         </div>
         <div class="flex-grow"></div>
+        {% if current_user.role.has_permission('view:own_user') %}
         <a href="{{ url_for('ui.users') }}"
             class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ">
             Access 
         </a>
+        {% endif %}
+        {% if current_user.role.has_permission('view:settings') %}
         <a href="{{ url_for('ui.settings') }}"
             class="block mt-2 md:inline-block md:mt-0  hover:text-blue-600 mr-4 transition-colors duration-500 ">
             Settings
         </a>
+        {% endif %}
 
 
         {% if config.IS_CLOUD and current_user.role.id == 1 %}
