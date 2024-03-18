@@ -115,9 +115,10 @@
                             window.dispatchEvent(new CustomEvent('notice', {
                                 detail: {
                                     type: 'error',
-                                    text: resp.text()
+                                    text: response.text()
                                 }
                             }));
+                            this.fetchSettings();
                         }
                     })
             }
