@@ -77,6 +77,11 @@ def create_permissions():
         'edit:own_user',
     ]
 
+    settings_permissions = [
+        'view:settings',
+        'edit:settings',
+    ]
+
     # Combine all permissions to one big list
     permissions = (
         package_permissions +
@@ -86,7 +91,8 @@ def create_permissions():
         role_permissions +
         permission_permissions +
         user_permissions +
-        own_user_permissions
+        own_user_permissions +
+        settings_permissions
     )
     roles = create_default_roles()
 
@@ -97,7 +103,7 @@ def create_permissions():
         if permission not in roles['admin'].permissions:
             roles['admin'].permissions.append(permission)
         
-        if permission_name not in ['add:role', 'edit:role', 'delete:role', 'add:permission', 'edit:permission', 'delete:permission', 'add:user', 'edit:user', 'delete:user'] and \
+        if permission_name not in ['add:role', 'edit:role', 'delete:role', 'add:permission', 'edit:permission', 'delete:permission', 'add:user', 'edit:user', 'delete:user', 'edit:settings'] and \
            permission not in roles['user'].permissions:
             roles['user'].permissions.append(permission)
         
