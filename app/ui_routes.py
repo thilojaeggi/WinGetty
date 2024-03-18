@@ -46,5 +46,8 @@ def users():
 @login_required
 @permission_required('view:package')
 def package(identifier):
-
+    package = Package.query.filter_by(identifier=identifier).first()
+    if not package:
+        return redirect(url_for('ui.packages'))
+    
     return render_template('package.j2', package=package)
