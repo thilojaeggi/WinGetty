@@ -1,15 +1,17 @@
 import hashlib
+import logging
 import os
+import re
 import requests
 from flask import current_app, request
 from werkzeug.utils import secure_filename
 from app.models import Installer, InstallerSwitch, NestedInstallerFile, Setting
 from app.constants import installer_switches
 import boto3
-s3_client = boto3.client('s3')
 URL_EXPIRATION_SECONDS = 3600
 basedir = os.path.abspath(os.path.dirname(__file__))
-
+from botocore.exceptions import ClientError
+logging.basicConfig(level=logging.DEBUG)
 
 def get_file_hash_from_url(url, max_content_length=1024 * 1024 * 1024 * 10):  # Default max content length set to 10GB
     """Download file from the given URL and return its SHA256 hash."""
@@ -46,7 +48,7 @@ def create_installer(publisher, identifier, version, installer_form):
 
     # If file is provided, save the file
     if file:
-        file_name = secure_filename(file.filename)
+        file_name = custom_secure_filename(file.filename)
         file_name = f'{scope}.' + file_name.rsplit('.', 1)[1]
         hash = save_file(file, file_name, publisher, identifier, version, architecture)
         if hash is None:
@@ -58,9 +60,11 @@ def create_installer(publisher, identifier, version, installer_form):
         external_url = None
 
         # Generate a pre-signed URL for S3 uploads
+        s3_client = boto3.client("s3", endpoint_url=Setting.get("S3_ENDPOINT").get_value(), aws_access_key_id=Setting.get("S3_ACCESS_KEY_ID").get_value(), aws_secret_access_key=Setting.get("S3_SECRET_ACCESS_KEY").get_value(), config=boto3.session.Config(signature_version='s3v4'), region_name="eeur")
+
         presigned_url = s3_client.generate_presigned_url(
             'get_object',
-            Params={'Bucket': Setting.get("BUCKET_NAME").get_value(), 'Key': s3_object_key},
+            Params={'Bucket': Setting.get("S3_BUCKET_NAME").get_value(), 'Key': s3_object_key},
             ExpiresIn=URL_EXPIRATION_SECONDS
         )
         current_app.logger.info(f"Getting file hash from presigned URL: {presigned_url}")
@@ -121,8 +125,9 @@ def delete_installer_util(package, installer, version):
         if Setting.get("USE_S3").get_value():
             s3_key = '/'.join(base_path + [installer.file_name])
             current_app.logger.info(f"Deleting file from S3: {s3_key}")
+            s3_client = boto3.client("s3", endpoint_url=Setting.get("S3_ENDPOINT").get_value(), aws_access_key_id=Setting.get("S3_ACCESS_KEY_ID").get_value(), aws_secret_access_key=Setting.get("S3_SECRET_ACCESS_KEY").get_value(), config=boto3.session.Config(signature_version='s3v4'), region_name="eeur")
             s3_client.delete_object(
-                Bucket=Setting.get("BUCKET_NAME").get_value(),
+                Bucket=Setting.get("S3_BUCKET_NAME").get_value(),
                 Key=s3_key
             )
         else:
@@ -134,10 +139,10 @@ def delete_installer_util(package, installer, version):
 
 
 def save_file(file, file_name, publisher, identifier, version, architecture):
-    publisher = secure_filename(publisher)
-    identifier = secure_filename(identifier)
-    version = secure_filename(version)
-    architecture = secure_filename(architecture)
+    publisher = custom_secure_filename(publisher)
+    identifier = custom_secure_filename(identifier)
+    version = custom_secure_filename(version)
+    architecture = custom_secure_filename(architecture)
 
 
     # Create directory if it doesn't exist
@@ -152,3 +157,8 @@ def save_file(file, file_name, publisher, identifier, version, architecture):
     # Get file hash
     hash = calculate_sha256(file_path)
     return hash
+
+# Custom secure filename function to allow for more characters (e.g. '+' in NotePad++ installer)
+def custom_secure_filename(filename):
+    filename = re.sub(r'[^\w\.\+\-]', '_', filename)
+    return filename
