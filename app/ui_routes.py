@@ -1,14 +1,17 @@
-from flask_login import login_required
+from flask_login import current_user, login_required
 from app import db, htmx
 from flask import Blueprint, current_app, jsonify, render_template, request, redirect, url_for
-from app.models import Package, PackageVersion, Installer, Permission, Role, Setting, User
+from app.models import DownloadLog, Package, PackageVersion, Installer, Permission, Role, Setting, User
 from app.decorators import permission_required
 import os
 ui = Blueprint('ui', __name__)
 
 @ui.route('/')
 def index():
-    return redirect(url_for('ui.packages'))
+    # If user is logged in, redirect to packages else redirect to login
+    if current_user.is_authenticated:
+        return redirect(url_for('ui.packages'))
+    return redirect(url_for('auth.login'))
 
 
 @ui.route('/packages')
@@ -51,3 +54,9 @@ def package(identifier):
         return redirect(url_for('ui.packages'))
     
     return render_template('package.j2', package=package)
+
+@ui.route('/logs')
+@login_required
+def logs():
+    return render_template('logs.j2')
+    
