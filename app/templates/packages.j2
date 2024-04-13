@@ -96,7 +96,7 @@
                                 </td>
 
                                 <td class="px-4 py-4 text-md whitespace-nowrap">
-                                    <p class=" hover:font-bold cursor-pointer transition-[font-weight] duration-300 "
+                                    <p class=" cursor-pointer transition-[font-weight] duration-300 " @click="search = package.publisher; fetchPackages();"
                                         x-text="package.publisher"></p>
                                 </td>
 
@@ -243,21 +243,11 @@
                     // Decrease the total packages count
                     this.totalPackages -= 1;
 
-                    window.dispatchEvent(new CustomEvent('notice', {
-                        detail: {
-                            type: 'success',
-                            text: 'Package deleted successfully'
-                        }
-                    }));
+                    window.toast('success', 'Package deleted successfully')
                 } else {
                     this.loading = false;
-
-                    window.dispatchEvent(new CustomEvent('notice', {
-                        detail: {
-                            type: 'error',
-                            text: resp.text()
-                        }
-                    }));
+                    console.error('Failed to delete package');
+                    window.toast('error', 'Failed to delete package', { description: resp.text() });
                 }
                 this.loading = false;
             },
