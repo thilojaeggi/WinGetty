@@ -14,12 +14,7 @@
     <script>
     window.addEventListener('htmx:responseError', function(event) {
         var message = event.detail.xhr.response;
-        window.dispatchEvent(new CustomEvent('notice', {
-            detail: {
-                text: message,
-                type: 'error'
-            }
-        }))
+        window.toast('error', message);
     });
     </script>
 
@@ -32,12 +27,7 @@
     {% for category, message in messages %}
     <script>
         window.addEventListener('load', function () {
-            window.dispatchEvent(new CustomEvent('notice', {
-                detail: {
-                    text: {{ message|tojson }},
-                    type: {{ category|tojson }}
-                }
-            }))
+            window.toast({{ category|tojson }}, {{ message|tojson }});
         });
     </script>
     {% endfor %}
@@ -53,5 +43,17 @@
         }
     </script>
 
+<script>
+    window.toast = function(type = 'default', message, options = {}){
+        let description = '';
+        let position = 'top-right';
+        let html = '';
+        if(typeof options.description !== 'undefined') description = options.description;
+        if(typeof options.position !== 'undefined') position = options.position;
+        if(typeof options.html !== 'undefined') html = options.html;
+        
+        window.dispatchEvent(new CustomEvent('toast-show', { detail : { type: type, message: message, description: description, position : position, html: html }}));
+    }
+</script>
 
 </head>
