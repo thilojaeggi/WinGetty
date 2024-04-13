@@ -53,13 +53,41 @@ def create_settings():
             "position": 2,
         },
         {
-            "name": "S3 bucket",
-            "description": "The name of the S3 bucket to use.",
-            "key": "bucket_name",
+            "name": "S3 Endpoint",
+            "description": "The endpoint of the S3 bucket to use.",
+            "key": "s3_endpoint",
             "type": "string",
             "value": "",
             "depends_on": "use_s3",
             "position": 3,
+        },
+        {
+            "name": "S3 bucket",
+            "description": "The name of the S3 bucket to use.",
+            "key": "s3_bucket_name",
+            "type": "string",
+            "value": "",
+            "depends_on": "use_s3",
+            "position": 4,
+        },
+        {
+            "name": "S3 Access Key ID",
+            "description": "",
+            "key": "s3_access_key_id",
+            "type": "string",
+            "value": "",
+            "depends_on": "use_s3",
+            "position": 5,
+        },
+        {
+            "name": "S3 Secret Access Key",
+            "description": "",
+            "key": "s3_secret_access_key",
+            "type": "string",
+            
+            "value": "",
+            "depends_on": "use_s3",
+            "position": 6,
         },
         {
             "name": "Enable uplink (W.I.P.)",
@@ -67,7 +95,7 @@ def create_settings():
             "key": "enable_uplink",
             "type": "boolean",
             "value": "False",
-            "position": 4,
+            "position": 7,
         },
         {
             "name": "Uplink URL",
@@ -76,7 +104,7 @@ def create_settings():
             "type": "string",
             "value": "",
             "depends_on": "enable_uplink",
-            "position": 5,
+            "position": 8,
         },
     ]
 
