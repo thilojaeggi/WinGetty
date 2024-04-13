@@ -11,7 +11,6 @@ import boto3
 URL_EXPIRATION_SECONDS = 3600
 basedir = os.path.abspath(os.path.dirname(__file__))
 from botocore.exceptions import ClientError
-logging.basicConfig(level=logging.DEBUG)
 
 def get_file_hash_from_url(url, max_content_length=1024 * 1024 * 1024 * 10):  # Default max content length set to 10GB
     """Download file from the given URL and return its SHA256 hash."""
@@ -44,7 +43,6 @@ def create_installer(publisher, identifier, version, installer_form):
     scope = installer_form.installer_scope.data
     nestedinstallertype = installer_form.nestedinstallertype.data
     nestedinstallerpath = installer_form.nestedinstallerpath.data
-
 
     # If file is provided, save the file
     if file:
