@@ -1,3 +1,4 @@
+import logging
 import os
 import boto3
 from flask import (
@@ -21,6 +22,8 @@ from app import db
 from app.decorators import permission_required
 from app.forms import AddInstallerForm, AddPackageForm, AddVersionForm
 from app.models import (
+    AccessLog,
+    DownloadLog,
     InstallerSwitch,
     Package,
     PackageVersion,
@@ -30,11 +33,11 @@ from app.models import (
     Setting,
     User,
 )
-from app.utils import create_installer, save_file, basedir, delete_installer_util
+from app.utils import create_installer, custom_secure_filename, save_file, basedir, delete_installer_util
 from app.constants import installer_switches
+from botocore.exceptions import ClientError
 
 api = Blueprint("api", __name__)
-s3_client = boto3.client("s3")
 
 
 @api.route("/")
@@ -158,29 +161,33 @@ def generate_presigned_url():
         content_type = request.form.get("content_type")
 
         # Specify the S3 object key where the file will be uploaded
-        publisher = secure_filename(request.form.get("publisher"))
-        identifier = secure_filename(request.form.get("identifier"))
+        publisher = custom_secure_filename(request.form.get("publisher"))
+        identifier = custom_secure_filename(request.form.get("identifier"))
         # Get version from db either by id or by name from the request
-        version = secure_filename(request.form.get("installer-version"))
+        version = custom_secure_filename(request.form.get("installer-version"))
 
-        architecture = secure_filename(request.form.get("installer-architecture"))
+        architecture = custom_secure_filename(request.form.get("installer-architecture"))
         scope = request.form.get(
             "installer-installer_scope"
         )  # Add this to the request form
         # Define the S3 object key with the same format as 'scope.file_extension'
         s3_object_key = f"packages/{publisher}/{identifier}/{version}/{architecture}/{scope}.{file_extension}"
 
+        s3_client = boto3.client("s3", endpoint_url=Setting.get("S3_ENDPOINT").get_value(), aws_access_key_id=Setting.get("S3_ACCESS_KEY_ID").get_value(), aws_secret_access_key=Setting.get("S3_SECRET_ACCESS_KEY").get_value(), config=boto3.session.Config(signature_version='s3v4'), region_name="eeur")
+        
         # Generate a pre-signed URL for S3 uploads
         presigned_url = s3_client.generate_presigned_url(
             "put_object",
             Params={
-                "Bucket": Setting.get("bucket_name").get_value(),
+                "Bucket": Setting.get("S3_BUCKET_NAME").get_value(),
                 "Key": s3_object_key,
                 "ContentType": content_type,
             },
             ExpiresIn=URL_EXPIRATION_SECONDS,
         )
-
+        log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"),
+                         action=f"Generated presigned URL for {file_name} with content type {content_type} and S3 object key {s3_object_key} ")
+        db.session.add(log)
         # Return the pre-signed URL and other information in the response
         return jsonify(
             {
@@ -207,7 +214,7 @@ def add_package():
         return str("Form validation error"), 500
 
     name = form.name.data
-    publisher = secure_filename(form.publisher.data)
+    publisher = custom_secure_filename(form.publisher.data)
     identifier = form.identifier.data
     version = installer_form.version.data
     file = installer_form.file.data
@@ -234,7 +241,8 @@ def add_package():
         )
         version_code.installers.append(installer)
         package.versions.append(version_code)
-
+    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Added package {package.identifier}")
+    db.session.add(log)
     try:
         db.session.add(package)
         db.session.commit()
@@ -259,6 +267,8 @@ def update_package(identifier):
     publisher = request.form["publisher"]
     package.name = name
     package.publisher = publisher
+    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Updated package {package.identifier} with name {package.name} and publisher {package.publisher}")
+    db.session.add(log)
     db.session.commit()
     return redirect(request.referrer)
 
@@ -267,11 +277,12 @@ def update_package(identifier):
 @login_required
 @permission_required("delete:package")
 def delete_package(identifier):
-    print("wtfff")
     package = Package.query.filter_by(identifier=identifier).first()
     if package is None:
         return "Package not found", 404
     db.session.delete(package)
+    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Deleted package {package.identifier}")
+    db.session.add(log)
     db.session.commit()
     return "", 204
 
@@ -316,6 +327,8 @@ def add_version(identifier):
         version.installers.append(installer)
 
     package.versions.append(version)
+    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Added version {version.version_code} to package {package.identifier}")
+    db.session.add(log)
     try:
         db.session.commit()
         current_app.logger.info(
@@ -361,6 +374,8 @@ def add_installer(identifier):
             return "Error creating installer", 500
 
         version.installers.append(installer)
+        log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Added installer {installer.file_name} to package {package.identifier}")
+        db.session.add(log)
         db.session.commit()
 
         return redirect(request.referrer)
@@ -401,7 +416,8 @@ def edit_installer(identifier):
             ).first()
             if installer_switch is not None:
                 db.session.delete(installer_switch)
-
+        log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Updated installer {installer.file_name} from package {identifier}")
+        db.session.add(log)
         db.session.commit()
 
     return redirect(request.referrer)
@@ -431,6 +447,8 @@ def delete_installer(identifier, version, installer):
     delete_installer_util(package, installer, version)
 
     db.session.delete(installer)
+    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Deleted installer {installer.file_name} from package {package.identifier}")
+    db.session.add(log)
     db.session.commit()
 
     return "", 200
@@ -444,7 +462,6 @@ def delete_version(identifier, version):
     if package is None:
         current_app.logger.warning("Package not found")
         return "Package not found", 404
-
     version = PackageVersion.query.filter_by(
         identifier=identifier, version_code=version
     ).first()
@@ -455,6 +472,8 @@ def delete_version(identifier, version):
     for installer in version.installers:
         delete_installer_util(package, installer, version)
     db.session.delete(version)
+    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Deleted version {version.version_code} from package {package.identifier}")
+    db.session.add(log)
     try:
         db.session.commit()
         current_app.logger.info(
@@ -496,10 +515,12 @@ def update_user():
         db.session.commit()
         flash("Password changed, please login again.", "success")
         return redirect(url_for("auth.logout"))
-
+    log = AccessLog(user_id=current_user.id, action=f"Updated user {user.username} with email {user.email} and role {user.role.name} ")
+    db.session.add(log)
     try:
         db.session.commit()
         current_app.logger.info(f"User {user.username} updated successfully")
+
     except Exception as error:
         current_app.logger.error(f"Database error: {error}")
         db.session.rollback()
@@ -523,15 +544,19 @@ def change_role(user):
         return "Role not found", 404
     old_role = user.role
     user.role = role
+    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Changed role of user {user.username} from {old_role.name} to {role.name}")
+    db.session.add(log)
     try:
+        
         db.session.commit()
         current_app.logger.info(
             f"Changed role from user {user.username} to {role.name} from {old_role.name}"
         )
+        flash("Role changed successfully.", "success")
     except Exception as error:
         current_app.logger.error(f"Database error: {error}")
         db.session.rollback()
-    flash("Role changed successfully.", "success")
+        flash("Database error", "error")
     response = Response()
     redirect_url = url_for("ui.users")
     response.headers["HX-Redirect"] = redirect_url
@@ -563,6 +588,8 @@ def add_user():
     user = User(username=username, email=email, role=role)
     user.set_password(password)
     db.session.add(user)
+    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Added user {user.username}")
+    db.session.add(log)
     try:
         db.session.commit()
         current_app.logger.info(f"User {user.username} added successfully")
@@ -593,6 +620,8 @@ def update_setting():
 
     # Update the setting's value
     setting.set_value(value)
+    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Updated setting {setting.key} to {setting.value}")
+    db.session.add(log)
     db.session.commit()
 
     return jsonify(setting.to_dict())
@@ -625,7 +654,8 @@ def add_role():
         permission = Permission.query.filter_by(name=permission).first()
         role.permissions.append(permission)
     db.session.add(role)
-
+    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Added role {role.name}")
+    db.session.add(log)
     try:
         db.session.commit()
     except Exception as error:
@@ -650,6 +680,8 @@ def delete_role(id):
     if users:
         return "Role has users assigned to it, please remove them first", 400
     db.session.delete(role)
+    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Deleted role {role.name}")
+    db.session.add(log)
     try:
         db.session.commit()
         current_app.logger.info(f"Role {role.name} deleted successfully")
@@ -669,6 +701,9 @@ def delete_user(id):
     if user is None:
         return "User not found", 404
     db.session.delete(user)
+    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Deleted user {user.username}")
+    db.session.add(log)
+
     try:
         db.session.commit()
         current_app.logger.info(f"User {user.username} deleted")
@@ -701,14 +736,22 @@ def download(identifier, version, architecture, scope):
     if installer is None:
         current_app.logger.warning("Installer not found")
         return "Installer not found", 404
+    
+    # Log the download
+    ip_address = request.remote_addr
+    user_agent = request.headers.get("User-Agent")
+    download_log = DownloadLog(installer=installer, ip_address=ip_address, user_agent=user_agent)
+    db.session.add(download_log)
 
     if Setting.get("USE_S3").get_value() and installer.external_url is None:
         current_app.logger.info("Downloading from S3")
         # Generate a pre-signed URL for the S3 object
+        s3_client = boto3.client("s3", endpoint_url=Setting.get("S3_ENDPOINT").get_value(), aws_access_key_id=Setting.get("S3_ACCESS_KEY_ID").get_value(), aws_secret_access_key=Setting.get("S3_SECRET_ACCESS_KEY").get_value(), config=boto3.session.Config(signature_version='s3v4'), region_name="eeur")
+
         presigned_url = s3_client.generate_presigned_url(
             "get_object",
             Params={
-                "Bucket": Setting.get("BUCKET_NAME").get_value(),
+                "Bucket": Setting.get("S3_BUCKET_NAME").get_value(),
                 "Key": "packages/"
                 + package.publisher
                 + "/"
@@ -781,3 +824,18 @@ def download(identifier, version, architecture, scope):
         db.session.commit()
 
     return send_from_directory(installer_path, installer.file_name, as_attachment=True)
+
+
+@api.route("/downloadLog")
+@login_required
+def download_log():
+    download_logs = DownloadLog.query.all()
+    download_logs = sorted(download_logs, key=lambda x: x.date, reverse=True)
+    return jsonify([download_log.to_dict() for download_log in download_logs])
+
+@api.route("accessLog")
+@login_required
+def access_log():
+    access_logs = AccessLog.query.all()
+    access_logs = sorted(access_logs, key=lambda x: x.date, reverse=True)
+    return jsonify([access_log.to_dict() for access_log in access_logs])

@@ -2,6 +2,10 @@ from functools import wraps
 from flask import abort, flash, redirect, request
 from flask_login import current_user
 
+from app.models import AccessLog
+
+from app import db
+
 def permission_required(permission):
     def decorator(func):
         @wraps(func)
@@ -21,6 +25,11 @@ def permission_required(permission):
                 # flash error message
                 flash("You\'re missing permissions to access this resource.", 'error')
                 return redirect(request.referrer)
+            
+            # If permission is granted log the page access
+            access = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.user_agent.string, action=f"Accessed {request.path} with request method {request.method}")
+            db.session.add(access)
+            db.session.commit()
             return func(*args, **kwargs)
         return wrapper
     return decorator
