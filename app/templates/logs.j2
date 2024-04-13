@@ -1,0 +1,336 @@
+{% extends "base.j2" %}
+{% set title = "Logs" %}
+{% set alpine_data = ""%}
+{% block content %}
+
+<div class="sm:flex sm:items-center sm:justify-between">
+    <div class="flex items-center gap-x-3">
+        <h1 class="text-3xl font-medium text-gray-800 dark:text-gray-200">{{title}}</h1>
+
+
+    </div>
+
+
+</div>
+
+<div>
+    <div class="">
+
+
+        <div class="flex flex-col mt-2 ">
+            <div x-data="{
+    tabSelected: 1,
+    tabId: $id('tabs'),
+    init() {
+        // Check for existing tab parameter in URL and initialize tabSelected
+        const url = new URL(window.location.href);
+        const tabParam = url.searchParams.get('tab');
+        this.tabSelected = tabParam || this.tabSelected;
+        this.$nextTick(() => {
+            const initialTabButton = this.$refs.tabButtons.children[this.tabSelected - 1];
+            if (initialTabButton) {
+                this.tabButtonClicked(initialTabButton);        
+            }
+        });
+    },
+    tabButtonClicked(tabButton) {
+        this.tabSelected = tabButton.id.replace(this.tabId + '-', '');
+        this.tabRepositionMarker(tabButton);
+        addOrOverrideURLParameter('tab', this.tabSelected);  // Update the URL parameter
+    },
+    tabRepositionMarker(tabButton){
+        this.$refs.tabMarker.style.width = tabButton.offsetWidth + 'px';
+        this.$refs.tabMarker.style.height = tabButton.offsetHeight + 'px';
+        this.$refs.tabMarker.style.left = tabButton.offsetLeft + 'px';
+    },
+    tabContentActive(tabContent){
+        return this.tabSelected == tabContent.id.replace(this.tabId + '-content-', '');
+    },
+    tabButtonActive(tabContent){
+        const tabId = tabContent.id.split('-').slice(-1);
+        return this.tabSelected == tabId;
+    }
+}" x-init="init()" class="relative w-full">
+                <div x-ref="tabButtons"
+                    class="relative inline-grid  max-w-sm items-center justify-center w-full h-10 grid-cols-2 p-1 text-gray-500 dark:text-neutral-400 bg-white dark:bg-neutral-950 rounded-lg select-none">
+                    <button :id="$id(tabId)" @click="tabButtonClicked($el);" type="button"
+                        :class="{ 'bg-gray-100 dark:bg-neutral-900 text-gray-700 dark:text-gray-200' : tabButtonActive($el) }"
+                        class="relative z-20 inline-flex items-center justify-center w-full h-8 px-3 text-sm font-medium transition-all rounded-md cursor-pointer whitespace-nowrap">Access</button>
+                    <button :id="$id(tabId)" @click="tabButtonClicked($el);" type="button"
+                        :class="{ 'bg-gray-100 dark:bg-neutral-900 text-gray-700 dark:text-gray-200' : tabButtonActive($el) }"
+                        class="relative z-20 inline-flex items-center justify-center w-full h-8 px-3 text-sm font-medium transition-all rounded-md cursor-pointer whitespace-nowrap">Download</button>
+                    <div x-ref="tabMarker" class="absolute left-0 z-10 w-1/2 h-full duration-300 ease-out" x-cloak>
+                        <div class="w-full h-full bg-gray-100 dark:bg-neutral-900 rounded-md shadow-sm"></div>
+                    </div>
+                </div>
+                <div class="content mt-2">
+                    <div :id="$id(tabId + '-content')" x-show="tabContentActive($el)" class="relative">
+                        <div class="w-full  rounded-lg overflow-y-hidden overflow-x-auto " x-data="accessLogs">
+                            <table x-transition:enter="transition ease-out duration-300"
+                                x-transition:enter-start="opacity-0 transform scale-95"
+                                x-transition:enter-end="opacity-100 transform scale-100"
+                                x-transition:leave="transition ease-in duration-300"
+                                x-transition:leave-start="opacity-100 transform scale-100"
+                                x-transition:leave-end="opacity-0 transform scale-90" x-cloak
+                                class="min-w-full divide-y divide-gray-300 dark:divide-neutral-500  ">
+                                <thead class="bg-gray-50 dark:bg-neutral-950  rounded-md ">
+                                    <tr class="text-gray-500 dark:text-gray-200">
+                                        <th scope="col"
+                                            class="pl-3 py-3.5  text-sm font-normal text-left rtl:text-right ">
+                                            User
+                                        </th>
+
+                                        <th scope="col"
+                                            class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
+                                            IP Address
+                                        </th>
+
+                                        <th scope="col"
+                                            class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
+                                            User Agent
+                                        </th>
+
+                                        <th scope="col"
+                                            class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
+                                            Action
+                                        </th>
+
+                                        <th scope="col"
+                                            class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
+                                            Date
+                                        </th>
+
+
+                                    </tr>
+                                </thead>
+                                <tbody
+                                    class="bg-white dark:bg-neutral-900 divide-y divide-gray-200 dark:divide-neutral-700 text-gray-700 dark:text-gray-300">
+                                    <template x-for="(log, id) in logs" :key="id">
+                                        <tr x-cloak x-show="true" x-transition:enter="transition ease-out duration-1000"
+                                            x-transition:enter-start="opacity-0 transform scale-90"
+                                            x-transition:enter-end="opacity-100 transform scale-100">
+
+                                            <td class="px-4 py-4 text-md whitespace-nowrap">
+                                                <p class=" font-semibold " x-text="log.user"></p>
+                                            </td>
+                                            <td class="px-4 py-4 text-md whitespace-nowrap overflow-x-scroll max-w-xs">
+                                                <p x-text="log.ip_address"></p>
+                                            </td>
+
+                                            <td class="px-4 py-4 text-md whitespace-nowrap overflow-x-scroll max-w-xs">
+                                                <p x-text="log.user_agent"></p>
+                                            </td>
+
+                                            <td class="px-4 py-4 text-md whitespace-nowrap">
+                                                <p x-text="log.action"></p>
+                                            </td>
+
+                                            <td class="px-4 py-4 text-md whitespace-nowrap">
+                                                <p x-text="log.date"></p>
+                                            </td>
+
+
+
+                                        </tr>
+                                    </template>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div :id="$id(tabId + '-content')" x-show="tabContentActive($el)" class="relative" x-cloak>
+                        <div class="w-full  rounded-lg overflow-y-hidden overflow-x-auto " x-data="downloadLogs">
+                            <table id="packages_table" x-transition:enter="transition ease-out duration-300"
+                                x-transition:enter-start="opacity-0 transform scale-95"
+                                x-transition:enter-end="opacity-100 transform scale-100"
+                                x-transition:leave="transition ease-in duration-300"
+                                x-transition:leave-start="opacity-100 transform scale-100"
+                                x-transition:leave-end="opacity-0 transform scale-90" x-cloak
+                                class="min-w-full divide-y divide-gray-300 dark:divide-neutral-500  ">
+                                <thead class="bg-gray-50 dark:bg-neutral-950  rounded-md ">
+                                    <tr class="text-gray-500 dark:text-gray-200">
+                                        <th scope="col"
+                                            class="pl-3 py-3.5  text-sm font-normal text-left rtl:text-right ">
+                                            Client IP
+                                        </th>
+
+                                        <th scope="col"
+                                            class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
+                                            User Agent
+                                        </th>
+
+                                        <th scope="col"
+                                            class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
+                                            Package
+                                        </th>
+
+                                        <th scope="col"
+                                            class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
+                                            Version
+                                        </th>
+
+                                        <th scope="col"
+                                            class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
+                                            Architecture
+                                        </th>
+
+                                        <th scope="col"
+                                            class="px-4 py-3.5 text-sm font-normal text-left rtl:text-right ">
+                                            Date</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody
+                                    class="bg-white dark:bg-neutral-900 divide-y divide-gray-200 dark:divide-neutral-700 text-gray-700 dark:text-gray-300">
+                                    <template x-for="(log, id) in logs" :key="id">
+                                        <tr x-cloak x-show="true" x-transition:enter="transition ease-out duration-1000"
+                                            x-transition:enter-start="opacity-0 transform scale-90"
+                                            x-transition:enter-end="opacity-100 transform scale-100">
+
+
+                                            <td class="px-4 py-4 text-md whitespace-nowrap">
+                                                <p class=" font-semibold " x-text="log.ip_address"></p>
+                                            </td>
+                                            <td class="px-4 py-4 text-md whitespace-nowrap overflow-x-scroll max-w-xs">
+                                                <p x-text="log.user_agent"></p>
+                                            </td>
+
+                                            <td class="px-4 py-4 text-md whitespace-nowrap">
+                                                <a :href="generatePackageUrl(log.package)" x-text="log.package"
+                                                    class="text-blue-500 hover:underline"></a>
+                                            </td>
+
+                                            <td class="px-4 py-4 text-md whitespace-nowrap">
+                                                <p x-text="log.version"></p>
+                                            </td>
+
+                                            <td class="px-4 py-4 text-md whitespace-nowrap">
+                                                <p x-text="log.architecture"></p>
+                                            </td>
+
+                                            <td class="px-4 py-4 text-md whitespace-nowrap">
+                                                <p x-text="log.date"></p>
+                                            </td>
+
+
+
+                                        </tr>
+                                    </template>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mt-6 sm:flex sm:items-center sm:justify-between " x-show="!loading" x-cloak>
+        <div class="text-sm text-gray-500 dark:text-gray-300">
+            Page <span class="font-medium text-gray-700 dark:text-gray-400"><span class="dark:text-gray-300"
+                    x-text="currentPage"></span> of <span x-text="totalPages"></span></span>
+        </div>
+
+        <div class="flex items-center mt-4 gap-x-4 sm:mt-0" x-show="{{pages}} > 1">
+            <button x-show="currentPage > 1" @click="currentPage--; fetchLogs();"
+                class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 dark:text-gray-300  transition-colors duration-300 bg-white dark:bg-neutral-950 dark:hover:bg-neutral-900 rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
+                </svg>
+
+                <span>
+                    previous
+                </span>
+            </button>
+
+            <button x-show="currentPage < totalPages" @click="currentPage++; fetchLogs();"
+                class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 dark:text-gray-300  transition-colors duration-300 bg-white dark:bg-neutral-950 dark:hover:bg-neutral-900 rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
+                <span>
+                    Next
+                </span>
+
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function addOrOverrideURLParameter(paramName, paramValue) {
+        const url = new URL(window.location.href);
+        const searchParams = url.searchParams;
+
+        if (searchParams.has(paramName)) {
+            searchParams.delete(paramName);
+        }
+
+        searchParams.append(paramName, paramValue);
+        window.history.replaceState({}, '', url.toString());
+    }
+
+</script>
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('downloadLogs', () => ({
+            logs: null,
+            totalPackages: 0,
+            currentPage: 1,
+            packagesPerPage: 10,
+            search: '',
+            loading: true,
+            sortCol: null,
+            sortAsc: false,
+            async init() {
+                await this.fetchLogs();
+            },
+            async fetchLogs() {
+                let resp = await fetch(`{{ url_for('api.download_log') }}`);
+                let data = await resp.json();
+                this.logs = data;
+                console.log(data);
+                this.loading = false;
+            },
+            generatePackageUrl(identifier) {
+                let urlTemplate = '{{ url_for('ui.package', identifier='placeholder')}}'; // replace with your actual URL template
+            return urlTemplate.replace('placeholder', identifier);
+        },
+            get totalPages() {
+            return Math.ceil(this.totalPackages / this.packagesPerPage);
+        },
+
+        }))
+    });
+</script>
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('accessLogs', () => ({
+            logs: null,
+            totalPackages: 0,
+            currentPage: 1,
+            packagesPerPage: 10,
+            search: '',
+            loading: true,
+            sortCol: null,
+            sortAsc: false,
+            async init() {
+                await this.fetchLogs();
+            },
+            async fetchLogs() {
+                let resp = await fetch(`{{ url_for('api.access_log') }}`);
+                let data = await resp.json();
+                this.logs = data;
+                console.log(data);
+                this.loading = false;
+            },
+            get totalPages() {
+            return Math.ceil(this.totalPackages / this.packagesPerPage);
+        },
+
+        }))
+    });
+</script>
+{% endblock %}
