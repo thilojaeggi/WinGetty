@@ -363,21 +363,12 @@ selectedInstaller: '', selectedVersion: '' }" %}
                     method: 'DELETE'
                 });
                 if (resp.ok) {
-                    window.dispatchEvent(new CustomEvent('notice', {
-                        detail: {
-                            type: 'success',
-                            text: 'Package deleted successfully'
-                        }
-                    }));
+                    window.toast('success', 'Package deleted successfully');
+                    
                     window.location.href = '{{ url_for('ui.packages') }}';
                 } else {
                     console.error('Failed to delete package');
-                    window.dispatchEvent(new CustomEvent('notice', {
-                        detail: {
-                            type: 'error',
-                            text: resp.text()
-                        }
-                    }));
+                    window.toast('error', 'Failed to delete package', { description: resp.text() });
                 }
             },
             async deleteVersion(package,version) {
@@ -388,21 +379,11 @@ selectedInstaller: '', selectedVersion: '' }" %}
                     method: 'DELETE'
                 });
                 if (resp.ok) {
-                    window.dispatchEvent(new CustomEvent('notice', {
-                        detail: {
-                            type: 'success',
-                            text: 'Version deleted successfully'
-                        }
-                    }));
+                    window.toast('success', 'Version deleted successfully');
                     this.fetchPackage(package.identifier);
                 } else {
                     console.error('Failed to delete version');
-                    window.dispatchEvent(new CustomEvent('notice', {
-                        detail: {
-                            type: 'error',
-                            text: resp.text()
-                        }
-                    }));
+                    window.toast('error', 'Failed to delete version', { description: resp.text() });
                 }
             },
             async deleteInstaller(package, version, installer) {
@@ -413,21 +394,12 @@ selectedInstaller: '', selectedVersion: '' }" %}
                     method: 'DELETE'
                 });
                 if (resp.ok) {
-                    window.dispatchEvent(new CustomEvent('notice', {
-                        detail: {
-                            type: 'success',
-                            text: 'Installer deleted successfully'
-                        }
-                    }));
+                    window.toast('success', 'Installer deleted successfully');
+                    
                     this.fetchPackage(package.identifier);
                 } else {
                     console.error('Failed to delete installer');
-                    window.dispatchEvent(new CustomEvent('notice', {
-                        detail: {
-                            type: 'error',
-                            text: resp.text()
-                        }
-                    }));
+                    window.toast('error', 'Failed to delete installer', { description: resp.text() });
                 }
             },
             getIdentifierFromURL() {
