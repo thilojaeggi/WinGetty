@@ -4,25 +4,45 @@
 {% include "head.j2" %}
 
 <body class="min-h-screen h-full font-poppins flex flex-col bg-slate-200 dark:bg-zinc-800">
-{% if current_user.is_authenticated %}
+    {% if current_user.is_authenticated %}
     {% include "nav.j2" %}
-{% endif %}
-<main class="h-full w-full p-4 flex flex-col max-w-screen-xl mx-auto" x-data="{{ alpine_data }}">
-    {% if current_user.is_authenticated and current_user.role.id == 1 and not error %}
-    <div class="text-lg text-white pb-4  {{ 'hidden' if not global_settings['ENABLE_REGISTRATION'] }}">
-        <p class="p-2 bg-red-500/90 rounded-md">Registration is enabled, this is a potential security risk. Consider
-            disabling it after you've created your users.</p>
-    </div>
     {% endif %}
-    {% block content %}{% endblock %}
-</main>
+    <main class="h-full w-full p-4 flex flex-col max-w-screen-xl mx-auto" x-data="{{ alpine_data }}">
+        {% if current_user.is_authenticated and current_user.role.id == 1 and not error %}
+        {% if config['SECRET_KEY'] == 'secret' %}
+        <div
+            class="  mb-2 relative w-full rounded-lg border border-transparent bg-red-500 p-4 [&>svg]:absolute [&>svg]:text-foreground [&>svg]:left-4 [&>svg]:top-4 [&>svg+div]:translate-y-[-3px] [&:has(svg)]:pl-11 text-white">
+    <svg class="w-5 h-5 -translate-y-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
+
+            <h5 class="mb-1 font-medium leading-none tracking-tight">High Security risk</h5>
+            <div class="text-sm opacity-80">The application is using the default secret key. This is a potential
+                security risk and allows attackers to easily create forged cookies. Change the secret key in the environment variables as soon as possible.</div>
+        </div>
+        </div>
+        {% endif %}
+        <div
+            class="  {{ 'hidden' if not global_settings['ENABLE_REGISTRATION'] }} mb-2 relative w-full rounded-lg border border-transparent bg-orange-500 p-4 [&>svg]:absolute [&>svg]:text-foreground [&>svg]:left-4 [&>svg]:top-4 [&>svg+div]:translate-y-[-3px] [&:has(svg)]:pl-11 text-white">
+            <svg class="w-5 h-5 -translate-y-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+            <h5 class="mb-1 font-medium leading-none tracking-tight">Medium Security risk</h5>
+            <div class="text-sm opacity-80">Public user registration is enabled, this is a potential security risk. Consider
+                disabling it in the <a href="{{ url_for('ui.settings') }}"
+                    class="underline">settings</a> after users have created their accounts or manually create accounts for them under <a class="underline" href="{{ url_for('ui.users') }}">Access</a>.</div>
+        </div>
+
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
 
     <div class="grow"></div>
     <!-- Footer -->
     {% include "footer.j2" %}
     {% include "flash.j2" %}
     {% include "theme_switcher.j2" %}
-    
+
 
 </body>
 
