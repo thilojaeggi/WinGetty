@@ -157,7 +157,7 @@ class PackageVersion(db.Model):
     package_locale = db.Column(db.String(50))
     short_description = db.Column(db.String(50))
     date_added = db.Column(db.DateTime, default=datetime.now())
-    installers = db.relationship("Installer", backref="package_version", lazy=True)
+    installers = db.relationship("Installer", back_populates="package_version", cascade="all, delete-orphan")
 
     def to_dict(self):
         return {
@@ -176,6 +176,8 @@ class PackageVersion(db.Model):
 class Installer(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     version_id = db.Column(db.Integer, db.ForeignKey("package_version.id"))
+    package_version = db.relationship("PackageVersion", back_populates="installers")
+    downloads = db.relationship("DownloadLog", backref="installer", lazy=True, cascade="all, delete-orphan")
     architecture = db.Column(db.String(50))
     installer_type = db.Column(db.String(50))
     file_name = db.Column(db.String(100), nullable=True)
@@ -185,7 +187,7 @@ class Installer(db.Model):
     switches = db.relationship("InstallerSwitch", backref="installer", lazy=True)
     nested_installer_type = db.Column(db.String(50), nullable=True)
     nested_installer_files = db.relationship(
-        "NestedInstallerFile", backref="installer", lazy=True
+        "NestedInstallerFile", backref="installer", lazy=True, cascade="all, delete-orphan"
     )
 
     def to_dict(self):
@@ -217,6 +219,64 @@ class Installer(db.Model):
             "switches": switches,
         }
 
+
+class Log(db.Model):
+    __tablename__ = "log"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    type = db.Column(db.String(50), nullable=False)
+    ip_address = db.Column(db.String(50))
+    user_agent = db.Column(db.String(255))
+    date = db.Column(db.DateTime, default=datetime.now())
+    __mapper_args__ = {"polymorphic_on": type, "polymorphic_identity": "log"}
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "ip_address": self.ip_address,
+            "user_agent": self.user_agent,
+            "date": self.date,
+        }
+
+class DownloadLog(Log):
+    __tablename__ = "download_log"
+    id = db.Column(db.Integer, db.ForeignKey('log.id'), primary_key=True)
+    installer_id = db.Column(db.Integer, db.ForeignKey("installer.id"))
+    __mapper_args__ = {"polymorphic_identity": "download_log"}
+
+
+    def to_dict(self):
+        data = super().to_dict()
+        data.update(
+            {
+                "installer_id": self.installer_id,
+                "installer": self.installer.to_dict(),
+            }
+        )
+        return data
+    
+class AccessLog(Log):
+    __tablename__ = "access_log"
+    id = db.Column(db.Integer, db.ForeignKey('log.id'), primary_key=True)  # Ensures shared primary key
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    user = db.relationship("User", backref="access_logs")
+    action = db.Column(db.String(255))
+    __mapper_args__ = {"polymorphic_identity": "access_log"}
+
+
+    def to_dict(self):
+        data = super().to_dict()
+        data.update(
+            {
+                "user_id": self.user_id,
+                "user": self.user.username,
+                "action": self.action,
+            }
+        )
+        return data
+
+
+
+    
 
 class NestedInstallerFile(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -315,12 +375,12 @@ class Permission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True)
 
-
+                                                    
 class Setting(db.Model):
     key = db.Column(db.String(50), unique=True, primary_key=True)
     name = db.Column(db.String(50), unique=True)
     description = db.Column(db.String(255))
-    type = db.Column(db.Enum("string", "integer", "boolean", "float", "json"))
+    type = db.Column(db.Enum("string", "integer", "boolean", "float", "json", name="setting_type_enum"))
     value = db.Column(db.String(255))
     position = db.Column(db.Integer)
     depends_on = db.Column(db.String(50), db.ForeignKey("setting.key"))
