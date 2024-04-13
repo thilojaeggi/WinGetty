@@ -103,21 +103,11 @@
                 })
                     .then(response => {
                         if (response.ok) {
-                            window.dispatchEvent(new CustomEvent('notice', {
-                                detail: {
-                                    type: 'success',
-                                    text: 'Setting updated successfully'
-                                }
-                            }));
+                            window.toast('success', 'Setting updated successfully')
                             this.fetchSettings();
                         } else {
                             console.error('Error updating setting:', response);
-                            window.dispatchEvent(new CustomEvent('notice', {
-                                detail: {
-                                    type: 'error',
-                                    text: response.text()
-                                }
-                            }));
+                            window.toast('error', 'Failed to update setting', { description: response.text() });
                             this.fetchSettings();
                         }
                     })
