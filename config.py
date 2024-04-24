@@ -28,7 +28,7 @@ class Config:
     SQLALCHEMY_DATABASE_URI = 'sqlite:///database.db'
     VERSION = '1.1.0-alpha'
     IS_CLOUD = False
-    PREFERRED_URL_SCHEME = "https"
+    PREFERRED_URL_SCHEME = 'https'
 
 
     @staticmethod
