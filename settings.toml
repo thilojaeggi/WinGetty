@@ -1,7 +1,0 @@
-SQLALCHEMY_DATABASE_URI = 'sqlite:///database.db'
-SQLALCHEMY_TRACK_MODIFICATIONS = false
-
-
-# Replace with your own secret key or overwrite with environment variable
-SECRET_KEY="ASIOFDIOFSDFIFSIOD2*)"
-IS_CLOUD = false
