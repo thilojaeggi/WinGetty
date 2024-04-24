@@ -74,10 +74,9 @@ selectedInstaller: '', selectedVersion: '' }" %}
 
                     <div class="mt-2">
                         <label for="identifier" class="block  text-gray-700 dark:text-gray-300 ">Identifier</label>
-                        <input required name="identifier" placeholder="" type="text" :value="package.identifier"
+                        <input required name="identifier" placeholder="" type="text" :value="package.identifier" disabled
                             class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 dark:bg-neutral-950  placeholder-gray-400 bg-white border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                     </div>
-
 
 
                     <div class=" grow flex flex-row justify-end mt-4">
@@ -164,7 +163,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                         <div class="grid grid-cols-1 grid-rows-2 gap-2 h-min ">
 
                                             {% if current_user.role.has_permission('edit:version') %}
-                                            <a 
+                                            <a
                                                 class="w-min h-min px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
                                                 <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6"
                                                     fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -267,18 +266,42 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                                         {% endif %}
                                                     </div>
                                                     <div class="grid grid-cols-2 grid-rows-2 gap-2">
-                                                        <a @click="navigator.clipboard.writeText(installer.installer_url)"
-                                                            class="w-min h-min px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
-                                                            <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6"
-                                                                fill="none" stroke="currentColor" stroke-width="1.5"
-                                                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-                                                                aria-hidden="true">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244">
-                                                                </path>
-                                                            </svg>
+                                                        <div x-data="{
+        copyText: installer.installer_url,
+        copyNotification: false,
+        copyToClipboard() {
+            navigator.clipboard.writeText(this.copyText);
+            this.copyNotification = true;
+            let that = this;
+            setTimeout(function(){
+                that.copyNotification = false;
+            }, 3000);
+        }
+    }" class="relative z-20 flex items-center">
 
-                                                        </a>
+                                                            <button @click="copyToClipboard();"
+                                                                class="px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer group">
+                                                                <svg x-show="copyNotification"
+                                                                    class="w-6 h-6 text-green-500 stroke-current"
+                                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                                    viewBox="0 0 24 24" stroke-width="1.5"
+                                                                    stroke="currentColor" x-cloak>
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        d="M4.5 12.75l6 6 9-13.5" />
+                                                                </svg>
+                                                                <svg x-show="!copyNotification" class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6"
+                                                                    fill="none" stroke="currentColor" stroke-width="1.5"
+                                                                    viewBox="0 0 24 24"
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    aria-hidden="true">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244">
+                                                                    </path>
+                                                                </svg>
+
+                                                            </button>
+                                                        </div>
+
                                                         {% if current_user.role.has_permission('edit:installer') %}
                                                         <a x-on:click="selectedInstaller = installer; showEditInstallerModal = true;"
                                                             class="w-min h-min px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
@@ -364,14 +387,14 @@ selectedInstaller: '', selectedVersion: '' }" %}
                 });
                 if (resp.ok) {
                     window.toast('success', 'Package deleted successfully');
-                    
+
                     window.location.href = '{{ url_for('ui.packages') }}';
                 } else {
                     console.error('Failed to delete package');
                     window.toast('error', 'Failed to delete package', { description: resp.text() });
                 }
             },
-            async deleteVersion(package,version) {
+            async deleteVersion(package, version) {
                 if (!confirm(`Are you sure you want to delete version ${version.version_code} and all of its installers?`)) {
                     return;
                 }
@@ -395,7 +418,7 @@ selectedInstaller: '', selectedVersion: '' }" %}
                 });
                 if (resp.ok) {
                     window.toast('success', 'Installer deleted successfully');
-                    
+
                     this.fetchPackage(package.identifier);
                 } else {
                     console.error('Failed to delete installer');
