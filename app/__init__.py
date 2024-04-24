@@ -106,17 +106,7 @@ def create_app():
     cache.init_app(app)
     oauth.init_app(app)
 
-    @app.before_request
-    def setup_oidc():
-        if Setting.get("OIDC_ENABLED").get_value():
-            app.oidc_provider = oauth.register(
-                name='oidc',
-                client_id=Setting.get("OIDC_CLIENT_ID").get_value(),
-                client_secret=Setting.get("OIDC_CLIENT_SECRET").get_value(),
-                server_metadata_url=Setting.get("OIDC_SERVER_METADATA_URL").get_value(),
-                client_kwargs={'scope': 'openid email profile'},
-            )
-            app.extensions['oauth'] = oauth
+
 
     def get_latest_version():
         # Try to get cached version information first
