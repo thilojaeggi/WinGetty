@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY app/ app/
 COPY src/ src/ 
-COPY tailwind.config.js settings.toml package.json package-lock.json ./
+COPY tailwind.config.js package.json package-lock.json ./
 
 # Build the CSS using Tailwind
 RUN apk update && apk add --no-cache nodejs npm && apk add tzdata
