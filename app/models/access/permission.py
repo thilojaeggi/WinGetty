@@ -8,7 +8,7 @@ class ResourceType(str, enum.Enum):
     PACKAGE = "Package"
     VERSION = "Version"
     INSTALLER = "Installer"
-    INSTALLER_SWITCH = "Installer_switch"
+    INSTALLER_SWITCH = "InstallerSwitch"
     USER = "User"
     ROLE = "Role"
     PERMISSION = "Permission"

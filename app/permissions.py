@@ -4,7 +4,9 @@ from app import db
 from sqlalchemy.exc import IntegrityError
 
 from app.models.access.permission import ResourceType
+import logging
 
+logging.basicConfig(level=logging.INFO)
 def get_or_create(model, **kwargs):
     """Get an instance if it exists, otherwise create and return an instance."""
     instance = model.query.filter_by(**kwargs).first()
@@ -16,17 +18,22 @@ def get_or_create(model, **kwargs):
         return instance
     
 def get_or_create_permission(permission):
-    """Get an instance if it exists and update the resource type if provided, otherwise create and return an instance."""
-    instance = Permission.query.filter_by(name=permission.name).first()
-    if instance:
-        if permission.resource_type and instance.resource_type != permission.resource_type:
-            instance.resource_type = permission.resource_type
+    try:
+        instance = Permission.query.filter_by(name=permission.name).first()
+        if instance:
+            if permission.resource_type and instance.resource_type != permission.resource_type:
+                instance.resource_type = permission.resource_type
+                db.session.commit()
+            return instance
+        else:
+            db.session.add(permission)
             db.session.commit()
-        return instance
-    else:
-        db.session.add(permission)
-        db.session.commit()
-        return permission
+            return permission
+    except Exception as e:
+        current_app.logger.error(f'Error managing permission: {str(e)}')
+        db.session.rollback()
+        raise
+
 
 
 def create_default_roles():
@@ -41,32 +48,32 @@ def create_permissions():
     """Create permissions and assign them to roles."""
     print([e.value for e in ResourceType])
     package_permissions = [
-        Permission(name='view:package', resource_type=ResourceType.PACKAGE),
-        Permission(name='add:package', resource_type=ResourceType.PACKAGE),
-        Permission(name='edit:package', resource_type=ResourceType.PACKAGE),
-        Permission(name='delete:package', resource_type=ResourceType.PACKAGE),
+        Permission(name='view:package', resource_type=ResourceType.PACKAGE.value),
+        Permission(name='add:package', resource_type=ResourceType.PACKAGE.value),
+        Permission(name='edit:package', resource_type=ResourceType.PACKAGE.value),
+        Permission(name='delete:package', resource_type=ResourceType.PACKAGE.value),
     ]
 
     version_permissions = [
-        Permission(name='view:version', resource_type=ResourceType.VERSION),
-        Permission(name='add:version', resource_type=ResourceType.VERSION),
-        Permission(name='edit:version', resource_type=ResourceType.VERSION),
-        Permission(name='delete:version', resource_type=ResourceType.VERSION),
+        Permission(name='view:version', resource_type=ResourceType.VERSION.value),
+        Permission(name='add:version', resource_type=ResourceType.VERSION.value),
+        Permission(name='edit:version', resource_type=ResourceType.VERSION.value),
+        Permission(name='delete:version', resource_type=ResourceType.VERSION.value),
 
     ]
 
     installer_permissions = [
-        Permission(name='view:installer', resource_type=ResourceType.INSTALLER),
-        Permission(name='add:installer', resource_type=ResourceType.INSTALLER),
-        Permission(name='edit:installer', resource_type=ResourceType.INSTALLER),
-        Permission(name='delete:installer', resource_type=ResourceType.INSTALLER),
+        Permission(name='view:installer', resource_type=ResourceType.INSTALLER.value),
+        Permission(name='add:installer', resource_type=ResourceType.INSTALLER.value),
+        Permission(name='edit:installer', resource_type=ResourceType.INSTALLER.value),
+        Permission(name='delete:installer', resource_type=ResourceType.INSTALLER.value),
     ]
 
     installer_switch_permissions = [
-        Permission(name='view:installer_switch', resource_type=ResourceType.INSTALLER_SWITCH),
-        Permission(name='add:installer_switch', resource_type=ResourceType.INSTALLER_SWITCH),
-        Permission(name='edit:installer_switch', resource_type=ResourceType.INSTALLER_SWITCH),
-        Permission(name='delete:installer_switch', resource_type=ResourceType.INSTALLER_SWITCH),
+        Permission(name='view:installer_switch', resource_type=ResourceType.INSTALLER_SWITCH.value),
+        Permission(name='add:installer_switch', resource_type=ResourceType.INSTALLER_SWITCH.value),
+        Permission(name='edit:installer_switch', resource_type=ResourceType.INSTALLER_SWITCH.value),
+        Permission(name='delete:installer_switch', resource_type=ResourceType.INSTALLER_SWITCH.value),
     ]
 
     role_permissions = [
@@ -84,10 +91,10 @@ def create_permissions():
     ]
 
     user_permissions = [
-        Permission(name='view:user', resource_type=ResourceType.USER),
-        Permission(name='add:user', resource_type=ResourceType.USER),
-        Permission(name='edit:user', resource_type=ResourceType.USER),
-        Permission(name='delete:user', resource_type=ResourceType.USER),
+        Permission(name='view:user', resource_type=ResourceType.USER.value),
+        Permission(name='add:user', resource_type=ResourceType.USER.value),
+        Permission(name='edit:user', resource_type=ResourceType.USER.value),
+        Permission(name='delete:user', resource_type=ResourceType.USER.value),
     ]
 
     own_user_permissions = [
