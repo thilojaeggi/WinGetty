@@ -1,5 +1,5 @@
 # Create a temporary build image just to generate the style.css file
-FROM python:3.9-alpine as build
+FROM python:3.10.0-alpine as build
 
 WORKDIR /app
 
@@ -13,7 +13,7 @@ RUN npm ci
 RUN npm run build:css
 
 # Use an official Python runtime as the base image
-FROM python:3.9-alpine
+FROM python:3.10.0-alpine
 
 # Set the working directory in the container
 WORKDIR /app
