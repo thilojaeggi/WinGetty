@@ -33,7 +33,13 @@ from app.models import (
     Setting,
     User,
 )
-from app.utils import create_installer, custom_secure_filename, save_file, basedir, delete_installer_util
+from app.utils import (
+    create_installer,
+    custom_secure_filename,
+    save_file,
+    basedir,
+    delete_installer_util,
+)
 from app.constants import installer_switches
 from botocore.exceptions import ClientError
 
@@ -47,13 +53,14 @@ def index():
 
 URL_EXPIRATION_SECONDS = 3600
 
+
 @api.get("/packages")
 @login_required
 @permission_required("view:package")
 def packages():
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('limit', 10, type=int)
-    search_query = request.args.get('search', '', type=str)
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("limit", 10, type=int)
+    search_query = request.args.get("search", "", type=str)
 
     query = Package.query
 
@@ -63,23 +70,26 @@ def packages():
             db.or_(
                 Package.name.ilike(search),
                 Package.identifier.ilike(search),
-                Package.publisher.ilike(search)
+                Package.publisher.ilike(search),
             )
         )
 
-    paginated_packages = query.paginate(page=page,per_page=per_page,error_out=False)
+    paginated_packages = query.paginate(page=page, per_page=per_page, error_out=False)
     packages = paginated_packages.items
 
-    return jsonify({
-        'packages': [package.to_dict() for package in packages],
-        'total': paginated_packages.total,
-        'pages': paginated_packages.pages,
-        'current_page': paginated_packages.page
-    })
+    return jsonify(
+        {
+            "packages": [package.to_dict() for package in packages],
+            "total": paginated_packages.total,
+            "pages": paginated_packages.pages,
+            "current_page": paginated_packages.page,
+        }
+    )
+
 
 @api.get("/package/<identifier>")
 @login_required
-@permission_required("view:package")
+@permission_required("view:package", resource_type="Package", resource_id_key="identifier")
 def package(identifier):
     # Use identifier and check if its the id or the package identifier
     if identifier.isdigit():
@@ -89,7 +99,7 @@ def package(identifier):
     if package is None:
         return "Package not found", 404
     return jsonify(package.to_dict())
-    
+
 
 @api.get("/package/<identifier>/versions")
 @login_required
@@ -99,6 +109,7 @@ def package_versions(identifier):
     if package is None:
         return "Package not found", 404
     return jsonify([version.to_dict() for version in package.versions])
+
 
 @api.get("/package/<identifier>/version/<version>")
 @login_required
@@ -111,6 +122,7 @@ def package_version(identifier, version):
         return "Version not found", 404
     return jsonify(version.to_dict())
 
+
 @api.get("/package/<identifier>/version/<version>/installers")
 @login_required
 @permission_required("view:installer")
@@ -122,6 +134,7 @@ def package_installers(identifier, version):
         return "Version not found", 404
     return jsonify([installer.to_dict() for installer in version.installers])
 
+
 @api.get("/package/<identifier>/version/<version>/installer/<installer>")
 @login_required
 @permission_required("view:installer")
@@ -131,6 +144,7 @@ def package_installer(identifier, version, installer):
         return "Installer not found", 404
     return jsonify(installer.to_dict())
 
+
 @api.get("/installer/<installer_id>")
 @login_required
 @permission_required("view:installer")
@@ -139,6 +153,7 @@ def get_installer_by_id(installer_id):
     if installer is None:
         return "Installer not found", 404
     return jsonify(installer.to_dict())
+
 
 @api.get("/version/<version_id>")
 @login_required
@@ -166,15 +181,24 @@ def generate_presigned_url():
         # Get version from db either by id or by name from the request
         version = custom_secure_filename(request.form.get("installer-version"))
 
-        architecture = custom_secure_filename(request.form.get("installer-architecture"))
+        architecture = custom_secure_filename(
+            request.form.get("installer-architecture")
+        )
         scope = request.form.get(
             "installer-installer_scope"
         )  # Add this to the request form
         # Define the S3 object key with the same format as 'scope.file_extension'
         s3_object_key = f"packages/{publisher}/{identifier}/{version}/{architecture}/{scope}.{file_extension}"
 
-        s3_client = boto3.client("s3", endpoint_url=Setting.get("S3_ENDPOINT").get_value(), aws_access_key_id=Setting.get("S3_ACCESS_KEY_ID").get_value(), aws_secret_access_key=Setting.get("S3_SECRET_ACCESS_KEY").get_value(), config=boto3.session.Config(signature_version='s3v4'), region_name="eeur")
-        
+        s3_client = boto3.client(
+            "s3",
+            endpoint_url=Setting.get("S3_ENDPOINT").get_value(),
+            aws_access_key_id=Setting.get("S3_ACCESS_KEY_ID").get_value(),
+            aws_secret_access_key=Setting.get("S3_SECRET_ACCESS_KEY").get_value(),
+            config=boto3.session.Config(signature_version="s3v4"),
+            region_name=Setting.get("S3_REGION").get_value(),
+        )
+
         # Generate a pre-signed URL for S3 uploads
         presigned_url = s3_client.generate_presigned_url(
             "put_object",
@@ -185,8 +209,12 @@ def generate_presigned_url():
             },
             ExpiresIn=URL_EXPIRATION_SECONDS,
         )
-        log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"),
-                         action=f"Generated presigned URL for {file_name} with content type {content_type} and S3 object key {s3_object_key} ")
+        log = AccessLog(
+            user_id=current_user.id,
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get("User-Agent"),
+            action=f"Generated presigned URL for {file_name} with content type {content_type} and S3 object key {s3_object_key} ",
+        )
         db.session.add(log)
         # Return the pre-signed URL and other information in the response
         return jsonify(
@@ -241,7 +269,12 @@ def add_package():
         )
         version_code.installers.append(installer)
         package.versions.append(version_code)
-    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Added package {package.identifier}")
+    log = AccessLog(
+        user_id=current_user.id,
+        ip_address=request.remote_addr,
+        user_agent=request.headers.get("User-Agent"),
+        action=f"Added package {package.identifier}",
+    )
     db.session.add(log)
     try:
         db.session.add(package)
@@ -267,7 +300,12 @@ def update_package(identifier):
     publisher = request.form["publisher"]
     package.name = name
     package.publisher = publisher
-    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Updated package {package.identifier} with name {package.name} and publisher {package.publisher}")
+    log = AccessLog(
+        user_id=current_user.id,
+        ip_address=request.remote_addr,
+        user_agent=request.headers.get("User-Agent"),
+        action=f"Updated package {package.identifier} with name {package.name} and publisher {package.publisher}",
+    )
     db.session.add(log)
     db.session.commit()
     return redirect(request.referrer)
@@ -281,7 +319,12 @@ def delete_package(identifier):
     if package is None:
         return "Package not found", 404
     db.session.delete(package)
-    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Deleted package {package.identifier}")
+    log = AccessLog(
+        user_id=current_user.id,
+        ip_address=request.remote_addr,
+        user_agent=request.headers.get("User-Agent"),
+        action=f"Deleted package {package.identifier}",
+    )
     db.session.add(log)
     db.session.commit()
     return "", 204
@@ -327,7 +370,12 @@ def add_version(identifier):
         version.installers.append(installer)
 
     package.versions.append(version)
-    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Added version {version.version_code} to package {package.identifier}")
+    log = AccessLog(
+        user_id=current_user.id,
+        ip_address=request.remote_addr,
+        user_agent=request.headers.get("User-Agent"),
+        action=f"Added version {version.version_code} to package {package.identifier}",
+    )
     db.session.add(log)
     try:
         db.session.commit()
@@ -374,7 +422,12 @@ def add_installer(identifier):
             return "Error creating installer", 500
 
         version.installers.append(installer)
-        log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Added installer {installer.file_name} to package {package.identifier}")
+        log = AccessLog(
+            user_id=current_user.id,
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get("User-Agent"),
+            action=f"Added installer {installer.file_name} to package {package.identifier}",
+        )
         db.session.add(log)
         db.session.commit()
 
@@ -416,7 +469,12 @@ def edit_installer(identifier):
             ).first()
             if installer_switch is not None:
                 db.session.delete(installer_switch)
-        log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Updated installer {installer.file_name} from package {identifier}")
+        log = AccessLog(
+            user_id=current_user.id,
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get("User-Agent"),
+            action=f"Updated installer {installer.file_name} from package {identifier}",
+        )
         db.session.add(log)
         db.session.commit()
 
@@ -447,7 +505,12 @@ def delete_installer(identifier, version, installer):
     delete_installer_util(package, installer, version)
 
     db.session.delete(installer)
-    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Deleted installer {installer.file_name} from package {package.identifier}")
+    log = AccessLog(
+        user_id=current_user.id,
+        ip_address=request.remote_addr,
+        user_agent=request.headers.get("User-Agent"),
+        action=f"Deleted installer {installer.file_name} from package {package.identifier}",
+    )
     db.session.add(log)
     db.session.commit()
 
@@ -472,7 +535,12 @@ def delete_version(identifier, version):
     for installer in version.installers:
         delete_installer_util(package, installer, version)
     db.session.delete(version)
-    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Deleted version {version.version_code} from package {package.identifier}")
+    log = AccessLog(
+        user_id=current_user.id,
+        ip_address=request.remote_addr,
+        user_agent=request.headers.get("User-Agent"),
+        action=f"Deleted version {version.version_code} from package {package.identifier}",
+    )
     db.session.add(log)
     try:
         db.session.commit()
@@ -515,7 +583,10 @@ def update_user():
         db.session.commit()
         flash("Password changed, please login again.", "success")
         return redirect(url_for("auth.logout"))
-    log = AccessLog(user_id=current_user.id, action=f"Updated user {user.username} with email {user.email} and role {user.role.name} ")
+    log = AccessLog(
+        user_id=current_user.id,
+        action=f"Updated user {user.username} with email {user.email} and role {user.role.name} ",
+    )
     db.session.add(log)
     try:
         db.session.commit()
@@ -544,10 +615,15 @@ def change_role(user):
         return "Role not found", 404
     old_role = user.role
     user.role = role
-    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Changed role of user {user.username} from {old_role.name} to {role.name}")
+    log = AccessLog(
+        user_id=current_user.id,
+        ip_address=request.remote_addr,
+        user_agent=request.headers.get("User-Agent"),
+        action=f"Changed role of user {user.username} from {old_role.name} to {role.name}",
+    )
     db.session.add(log)
     try:
-        
+
         db.session.commit()
         current_app.logger.info(
             f"Changed role from user {user.username} to {role.name} from {old_role.name}"
@@ -588,7 +664,12 @@ def add_user():
     user = User(username=username, email=email, role=role)
     user.set_password(password)
     db.session.add(user)
-    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Added user {user.username}")
+    log = AccessLog(
+        user_id=current_user.id,
+        ip_address=request.remote_addr,
+        user_agent=request.headers.get("User-Agent"),
+        action=f"Added user {user.username}",
+    )
     db.session.add(log)
     try:
         db.session.commit()
@@ -602,17 +683,18 @@ def add_user():
     flash("User added successfully.", "success")
     return redirect(request.referrer)
 
+
 @api.route("/update_setting", methods=["POST"])
 @login_required
 @permission_required("edit:settings")
 def update_setting():
     data = request.json
 
-    if not data or 'key' not in data:
+    if not data or "key" not in data:
         return jsonify(message="Invalid data"), 400
 
-    key = data['key']
-    value = data.get('value', 'false')
+    key = data["key"]
+    value = data.get("value", "false")
 
     setting = Setting.query.filter_by(key=key).first()
     if setting is None:
@@ -620,11 +702,17 @@ def update_setting():
 
     # Update the setting's value
     setting.set_value(value)
-    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Updated setting {setting.key} to {setting.value}")
+    log = AccessLog(
+        user_id=current_user.id,
+        ip_address=request.remote_addr,
+        user_agent=request.headers.get("User-Agent"),
+        action=f"Updated setting {setting.key} to {setting.value}",
+    )
     db.session.add(log)
     db.session.commit()
 
     return jsonify(setting.to_dict())
+
 
 @api.get("/settings")
 @login_required
@@ -632,15 +720,22 @@ def update_setting():
 def settings():
     # Return settings as json
     settings = Setting.query.all()
+    # If config IS_CLOUD is set to True, remove the S3 settings
+    if current_app.config["IS_CLOUD"]:
+        settings = [
+            setting
+            for setting in settings
+            if "s3" not in setting.key and "uplink" not in setting.key
+        ]
+
     settings = sorted(settings, key=lambda x: x.position)
     return jsonify([setting.to_dict() for setting in settings])
-    
+
 
 @api.get("/whoami")
 @login_required
 def whoami():
     return jsonify(current_user.to_dict())
-
 
 
 @api.route("/add_role", methods=["POST"])
@@ -654,7 +749,12 @@ def add_role():
         permission = Permission.query.filter_by(name=permission).first()
         role.permissions.append(permission)
     db.session.add(role)
-    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Added role {role.name}")
+    log = AccessLog(
+        user_id=current_user.id,
+        ip_address=request.remote_addr,
+        user_agent=request.headers.get("User-Agent"),
+        action=f"Added role {role.name}",
+    )
     db.session.add(log)
     try:
         db.session.commit()
@@ -680,7 +780,12 @@ def delete_role(id):
     if users:
         return "Role has users assigned to it, please remove them first", 400
     db.session.delete(role)
-    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Deleted role {role.name}")
+    log = AccessLog(
+        user_id=current_user.id,
+        ip_address=request.remote_addr,
+        user_agent=request.headers.get("User-Agent"),
+        action=f"Deleted role {role.name}",
+    )
     db.session.add(log)
     try:
         db.session.commit()
@@ -701,7 +806,12 @@ def delete_user(id):
     if user is None:
         return "User not found", 404
     db.session.delete(user)
-    log = AccessLog(user_id=current_user.id, ip_address=request.remote_addr, user_agent=request.headers.get("User-Agent"), action=f"Deleted user {user.username}")
+    log = AccessLog(
+        user_id=current_user.id,
+        ip_address=request.remote_addr,
+        user_agent=request.headers.get("User-Agent"),
+        action=f"Deleted user {user.username}",
+    )
     db.session.add(log)
 
     try:
@@ -736,17 +846,26 @@ def download(identifier, version, architecture, scope):
     if installer is None:
         current_app.logger.warning("Installer not found")
         return "Installer not found", 404
-    
+
     # Log the download
     ip_address = request.remote_addr
     user_agent = request.headers.get("User-Agent")
-    download_log = DownloadLog(installer=installer, ip_address=ip_address, user_agent=user_agent)
+    download_log = DownloadLog(
+        installer=installer, ip_address=ip_address, user_agent=user_agent
+    )
     db.session.add(download_log)
 
     if Setting.get("USE_S3").get_value() and installer.external_url is None:
         current_app.logger.info("Downloading from S3")
         # Generate a pre-signed URL for the S3 object
-        s3_client = boto3.client("s3", endpoint_url=Setting.get("S3_ENDPOINT").get_value(), aws_access_key_id=Setting.get("S3_ACCESS_KEY_ID").get_value(), aws_secret_access_key=Setting.get("S3_SECRET_ACCESS_KEY").get_value(), config=boto3.session.Config(signature_version='s3v4'), region_name="eeur")
+        s3_client = boto3.client(
+            "s3",
+            endpoint_url=Setting.get("S3_ENDPOINT").get_value(),
+            aws_access_key_id=Setting.get("S3_ACCESS_KEY_ID").get_value(),
+            aws_secret_access_key=Setting.get("S3_SECRET_ACCESS_KEY").get_value(),
+            config=boto3.session.Config(signature_version="s3v4"),
+            region_name=Setting.get("S3_REGION").get_value(),
+        )
 
         presigned_url = s3_client.generate_presigned_url(
             "get_object",
@@ -833,9 +952,27 @@ def download_log():
     download_logs = sorted(download_logs, key=lambda x: x.date, reverse=True)
     return jsonify([download_log.to_dict() for download_log in download_logs])
 
+
 @api.route("accessLog")
 @login_required
 def access_log():
     access_logs = AccessLog.query.all()
     access_logs = sorted(access_logs, key=lambda x: x.date, reverse=True)
     return jsonify([access_log.to_dict() for access_log in access_logs])
+
+
+@api.route("/get_latest_version")
+def get_latest_version():
+    # Get the lateest version of the app from GitHub releases
+    response = requests.get(
+        "https://api.github.com/repos/thilojaeggi/WinGetty/releases/latest"
+    )
+    if response.status_code != 200:
+        return "Error fetching latest version", 500
+    data = response.json()
+    # Strip v from the version number
+    version = data["tag_name"].lstrip("v")
+    # Check if the version is newer than the current version
+    if version != current_app.config["VERSION"]:
+        return jsonify({"current_version": current_app.config["VERSION"], "latest_version": version})
+    return "", 204
