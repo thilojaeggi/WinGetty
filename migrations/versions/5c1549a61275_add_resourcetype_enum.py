@@ -25,7 +25,7 @@ def upgrade():
         batch_op.add_column(sa.Column('resource_type', resourcetype_enum, nullable=True))
 
     with op.batch_alter_table('roles_permissions', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('resource_id', sa.Integer(), nullable=True))
+        batch_op.add_column(sa.Column('resource_id', sa.String(50), nullable=True))
 
     # ### end Alembic commands ###
 
