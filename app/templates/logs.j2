@@ -65,13 +65,15 @@
                 </div>
                 <div class="content mt-2">
                     <div :id="$id(tabId + '-content')" x-show="tabContentActive($el)" class="relative">
-                        <div class="w-full  rounded-lg overflow-y-hidden overflow-x-auto " x-data="accessLogs">
-                            <table x-transition:enter="transition ease-out duration-300"
-                                x-transition:enter-start="opacity-0 transform scale-95"
-                                x-transition:enter-end="opacity-100 transform scale-100"
-                                x-transition:leave="transition ease-in duration-300"
-                                x-transition:leave-start="opacity-100 transform scale-100"
-                                x-transition:leave-end="opacity-0 transform scale-90" x-cloak
+                        <div class="w-full  rounded-lg overflow-y-hidden overflow-x-auto " x-data="accessLogs" >
+                            <table  x-show="!loading"
+                             x-transition:enter="transition ease-out duration-300"
+                                x-transition:enter-start="opacity-0 transform translate-y-4"
+                                x-transition:enter-end="opacity-100 transform translate-y-0"
+                                x-transition:leave="transition ease-in duration-300 translate-y-4"
+                                x-transition:leave-start="opacity-100 transform translate-y-0"
+                                x-transition:leave-end="opacity-0 transform  translate-y-4"
+                                x-cloak
                                 class="min-w-full divide-y divide-gray-300 dark:divide-neutral-500  ">
                                 <thead class="bg-gray-50 dark:bg-neutral-950  rounded-md ">
                                     <tr class="text-gray-500 dark:text-gray-200">
@@ -139,13 +141,14 @@
                         </div>
                     </div>
                     <div :id="$id(tabId + '-content')" x-show="tabContentActive($el)" class="relative" x-cloak>
-                        <div class="w-full  rounded-lg overflow-y-hidden overflow-x-auto " x-data="downloadLogs">
-                            <table id="packages_table" x-transition:enter="transition ease-out duration-300"
-                                x-transition:enter-start="opacity-0 transform scale-95"
-                                x-transition:enter-end="opacity-100 transform scale-100"
-                                x-transition:leave="transition ease-in duration-300"
-                                x-transition:leave-start="opacity-100 transform scale-100"
-                                x-transition:leave-end="opacity-0 transform scale-90" x-cloak
+                        <div class="w-full  rounded-lg overflow-y-hidden overflow-x-auto " x-data="downloadLogs" >
+                            <table id="packages_table" x-transition:enter="transition ease-out duration-300"  x-show="!loading"
+                                x-transition:enter-start="opacity-0 transform translate-y-4"
+                                x-transition:enter-end="opacity-100 transform translate-y-0"
+                                x-transition:leave="transition ease-in duration-300 translate-y-4"
+                                x-transition:leave-start="opacity-100 transform translate-y-0"
+                                x-transition:leave-end="opacity-0 transform  translate-y-4"
+                                x-cloak
                                 class="min-w-full divide-y divide-gray-300 dark:divide-neutral-500  ">
                                 <thead class="bg-gray-50 dark:bg-neutral-950  rounded-md ">
                                     <tr class="text-gray-500 dark:text-gray-200">
