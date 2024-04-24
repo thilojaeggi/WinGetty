@@ -45,12 +45,47 @@ def create_settings():
             "position": 1,
         },
         {
+            "name": "Enable OIDC",
+            "description": "Enable this to use OIDC for authentication.",
+            "key": "oidc_enabled",
+            "type": "boolean",
+            "value": "False",
+            "position": 2,
+        },
+        {
+            "name": "OIDC Client ID",
+            "description": "The client ID of your OIDC application",
+            "key": "oidc_client_id",
+            "type": "string",
+            "value": "",
+            "depends_on": "oidc_enabled",
+            "position": 3,
+        },
+        {
+            "name": "OIDC Client Secret",
+            "description": "The client secret of your OIDC application",
+            "key": "oidc_client_secret",
+            "type": "string",
+            "value": "",
+            "depends_on": "oidc_enabled",
+            "position": 4,
+        },
+        {
+            "name": "OIDC Server Metadata URL",
+            "description": "The server metadata URL of your OIDC application",
+            "key": "oidc_server_metadata_url",
+            "type": "string",
+            "value": "",
+            "depends_on": "oidc_enabled",
+            "position": 5,
+        },
+        {
             "name": "Use S3 for storage",
             "description": "This will allow you to use Amazon S3 for storage.",
             "key": "use_s3",
             "type": "boolean",
             "value": "False",
-            "position": 2,
+            "position": 6,
         },
         {
             "name": "S3 Endpoint",
@@ -59,7 +94,7 @@ def create_settings():
             "type": "string",
             "value": "",
             "depends_on": "use_s3",
-            "position": 3,
+            "position": 7,
         },
         {
             "name": "S3 bucket",
@@ -68,7 +103,7 @@ def create_settings():
             "type": "string",
             "value": "",
             "depends_on": "use_s3",
-            "position": 4,
+            "position": 8,
         },
         {
             "name": "S3 Region",
@@ -77,7 +112,7 @@ def create_settings():
             "type": "string",
             "value": "",
             "depends_on": "use_s3",
-            "position": 5,
+            "position": 9,
         },
         {
             "name": "S3 Access Key ID",
@@ -86,7 +121,7 @@ def create_settings():
             "type": "string",
             "value": "",
             "depends_on": "use_s3",
-            "position": 6,
+            "position": 10,
         },
         {
             "name": "S3 Secret Access Key",
@@ -95,7 +130,7 @@ def create_settings():
             "type": "string",
             "value": "",
             "depends_on": "use_s3",
-            "position": 7,
+            "position": 11,
         },
         {
             "name": "Enable uplink (W.I.P.)",
@@ -103,7 +138,7 @@ def create_settings():
             "key": "enable_uplink",
             "type": "boolean",
             "value": "False",
-            "position": 8,
+            "position": 12,
         },
         {
             "name": "Uplink URL",
@@ -112,7 +147,7 @@ def create_settings():
             "type": "string",
             "value": "",
             "depends_on": "enable_uplink",
-            "position": 9,
+            "position": 13,
         },
     ]
 

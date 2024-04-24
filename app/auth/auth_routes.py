@@ -18,7 +18,7 @@ import requests
 
 @auth.route('/login/oidc')
 def oidc_login():
-    if not current_app.config.get('OIDC_ENABLED'):
+    if not Setting.get("OIDC_ENABLED").get_value():
         flash('OIDC login is not enabled.', 'error')
         return redirect(url_for('auth.login'))
     oidc_provider = current_app.oidc_provider
@@ -26,7 +26,8 @@ def oidc_login():
     nonce = os.urandom(16).hex()
     session['oidc_nonce'] = nonce
     # if testing use http, else use https
-    if current_app.config.get('TESTING'):
+    # if flask is running in testing mode, use http
+    if current_app.debug:
         redirect_uri = url_for('auth.oidc_authorize', _external=True)
     else:
         redirect_uri = url_for('auth.oidc_authorize', _external=True, _scheme='https')
@@ -35,7 +36,7 @@ def oidc_login():
 
 @auth.route('/authorize/oidc')
 def oidc_authorize():
-    if not current_app.config.get('OIDC_ENABLED'):
+    if not Setting.get("OIDC_ENABLED").get_value():
         flash('OIDC login is not enabled.', 'error')
         return redirect(url_for('auth.login'))
     
@@ -130,20 +131,26 @@ def signup():
 @login_required
 def logout():
     print(session.get('IS_OIDC_LOGIN'))
-    if current_app.config.get('OIDC_ENABLED') and session.get('IS_OIDC_LOGIN'):
+    if Setting.get("OIDC_ENABLED").get_value() and session.get('IS_OIDC_LOGIN'):
         id_token = session.pop('id_token', None)
         if not id_token:
             flash("Missing ID token, unable to securely logout.", "error")
             return redirect(url_for('auth.login'))
         try:
-            oidc_metadata_url = current_app.config.get('OIDC_SERVER_METADATA_URL')
+            oidc_metadata_url = Setting.get("OIDC_SERVER_METADATA_URL").get_value()
             response = requests.get(oidc_metadata_url)
             if response.ok:
                 print(response.json())
                 oidc_config = response.json()
                 end_session_endpoint = oidc_config.get('end_session_endpoint')
                 if end_session_endpoint:
-                    redirect_uri = url_for('ui.index', _external=True)
+                    if current_app.debug:
+                        redirect_uri = url_for('ui.index', _external=True, _scheme='http')
+                    else:
+                        redirect_uri = url_for('ui.index', _external=True, _scheme='https')
+                    
+                    print(redirect_uri)
+                    
                     params = {
                         'id_token_hint': id_token,
                         'post_logout_redirect_uri': redirect_uri
@@ -151,7 +158,6 @@ def logout():
                     full_logout_url = f"{end_session_endpoint}?{urlencode(params)}"
                     logout_user()
                     flash('Logged out successfully using SSO.', 'success')
-                    
                     return redirect(full_logout_url)
                 else:
                     flash("SSO logout endpoint not found.", "error")

@@ -16,7 +16,7 @@
             class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
     </div>
     <div class="flex justify-end space-x-2 mt-2">
-        {% if config["OIDC_ENABLED"]%}
+        {% if global_settings["OIDC_ENABLED"]%}
         <div class="w-full">
             <!-- Anchor tag doesn't take the full width of the parent div somehow -->
             <a href='{{ url_for("auth.oidc_login") }}'
@@ -31,7 +31,7 @@
         </div>
         {% endif %}
         <button type="submit"
-            class="{% if config['OIDC_ENABLED']%}
+            class="{% if global_settings['OIDC_ENABLED']%}
 w-full{% else %}w-1/2{% endif %}
  px-3 py-2 tracking-wide text-white transition-all duration-300 font-medium transform bg-blue-700 hover:scale-[103%] rounded-md focus:outline-none focus:bg-blue-800 focus:ring shadow-lg focus:ring-blue-300 focus:ring-opacity-50">
             Log in
