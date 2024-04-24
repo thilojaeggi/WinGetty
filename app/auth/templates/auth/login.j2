@@ -1,0 +1,48 @@
+{% set title="Log in" %}
+{% extends "auth/base.j2" %}
+{% block content %}
+<form method="POST" action="{{ url_for('auth.login') }}">
+    <div class="mt-2">
+        <label for="emailorusername" class="block  text-gray-700 dark:text-gray-300 ">E-Mail or
+            Username<span class="text-red-500">*</span></label>
+        <input required name="emailorusername" placeholder="" type="text"
+            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+    </div>
+
+    <div class="mt-2">
+        <label for="password" class="block text-gray-700 dark:text-gray-300 ">Password<span
+                class="text-red-500">*</span></label>
+        <input required name="password" placeholder="" type="password"
+            class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 placeholder-gray-400 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
+    </div>
+    <div class="flex justify-end space-x-2 mt-2">
+        {% if config["OIDC_ENABLED"]%}
+        <div class="w-full">
+            <!-- Anchor tag doesn't take the full width of the parent div somehow -->
+            <a href='{{ url_for("auth.oidc_login") }}'
+                class="w-full px-3 py-2 tracking-wide text-stone-700 font-medium duration-300 transform bg-zinc-200 dark:bg-neutral-200 transition-transform hover:scale-[103%] dark:text-black shadow-lg rounded-md focus:outline-none focus:bg-stone-300 focus:ring focus:ring-stone-400 focus:ring-opacity-50 flex flex-row items-center justify-center space-x-1">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
+                </svg>
+                <p>SSO</p>
+            </a>
+        </div>
+        {% endif %}
+        <button type="submit"
+            class="{% if config['OIDC_ENABLED']%}
+w-full{% else %}w-1/2{% endif %}
+ px-3 py-2 tracking-wide text-white transition-all duration-300 font-medium transform bg-blue-700 hover:scale-[103%] rounded-md focus:outline-none focus:bg-blue-800 focus:ring shadow-lg focus:ring-blue-300 focus:ring-opacity-50">
+            Log in
+        </button>
+    </div>
+
+</form>
+{% if global_settings["ENABLE_REGISTRATION"]%}
+<div class="mt-2">
+    <p class="text-sm text-gray-600 dark:text-gray-300">Don't have an account? <a href="{{ url_for('auth.signup') }}"
+            class="text-blue-600 dark:text-blue-400 hover:underline">Sign up</a></p>
+</div>
+{% endif %}
+{% endblock %}
