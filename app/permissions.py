@@ -3,6 +3,8 @@ from app.models import Permission, Role, User
 from app import db
 from sqlalchemy.exc import IntegrityError
 
+from app.models.access.permission import ResourceType
+
 def get_or_create(model, **kwargs):
     """Get an instance if it exists, otherwise create and return an instance."""
     instance = model.query.filter_by(**kwargs).first()
@@ -12,6 +14,20 @@ def get_or_create(model, **kwargs):
         instance = model(**kwargs)
         db.session.add(instance)
         return instance
+    
+def get_or_create_permission(permission):
+    """Get an instance if it exists and update the resource type if provided, otherwise create and return an instance."""
+    instance = Permission.query.filter_by(name=permission.name).first()
+    if instance:
+        if permission.resource_type and instance.resource_type != permission.resource_type:
+            instance.resource_type = permission.resource_type
+            db.session.commit()
+        return instance
+    else:
+        db.session.add(permission)
+        db.session.commit()
+        return permission
+
 
 def create_default_roles():
     """Create default roles."""
@@ -23,63 +39,66 @@ def create_default_roles():
 
 def create_permissions():
     """Create permissions and assign them to roles."""
+    print([e.value for e in ResourceType])
     package_permissions = [
-        'view:package',
-        'add:package',
-        'edit:package',
-        'delete:package'
+        Permission(name='view:package', resource_type=ResourceType.PACKAGE),
+        Permission(name='add:package', resource_type=ResourceType.PACKAGE),
+        Permission(name='edit:package', resource_type=ResourceType.PACKAGE),
+        Permission(name='delete:package', resource_type=ResourceType.PACKAGE),
     ]
 
     version_permissions = [
-        'view:version',
-        'add:version',
-        'edit:version',
-        'delete:version'
+        Permission(name='view:version', resource_type=ResourceType.VERSION),
+        Permission(name='add:version', resource_type=ResourceType.VERSION),
+        Permission(name='edit:version', resource_type=ResourceType.VERSION),
+        Permission(name='delete:version', resource_type=ResourceType.VERSION),
+
     ]
 
     installer_permissions = [
-        'view:installer',
-        'add:installer',
-        'edit:installer',
-        'delete:installer'
+        Permission(name='view:installer', resource_type=ResourceType.INSTALLER),
+        Permission(name='add:installer', resource_type=ResourceType.INSTALLER),
+        Permission(name='edit:installer', resource_type=ResourceType.INSTALLER),
+        Permission(name='delete:installer', resource_type=ResourceType.INSTALLER),
     ]
 
     installer_switch_permissions = [
-        'view:installer_switch',
-        'add:installer_switch',
-        'edit:installer_switch',
-        'delete:installer_switch'
+        Permission(name='view:installer_switch', resource_type=ResourceType.INSTALLER_SWITCH),
+        Permission(name='add:installer_switch', resource_type=ResourceType.INSTALLER_SWITCH),
+        Permission(name='edit:installer_switch', resource_type=ResourceType.INSTALLER_SWITCH),
+        Permission(name='delete:installer_switch', resource_type=ResourceType.INSTALLER_SWITCH),
     ]
 
     role_permissions = [
-        'view:role',
-        'add:role',
-        'edit:role',
-        'delete:role',
+        Permission(name='view:role'),
+        Permission(name='add:role'),
+        Permission(name='edit:role'),
+        Permission(name='delete:role'),
     ]
 
     permission_permissions = [
-        'view:permission',
-        'add:permission',
-        'edit:permission',
-        'delete:permission',
+        Permission(name='view:permission'),
+        Permission(name='add:permission'),
+        Permission(name='edit:permission'),
+        Permission(name='delete:permission'),
     ]
 
     user_permissions = [
-        'view:user',
-        'add:user',
-        'edit:user',
-        'delete:user',
+        Permission(name='view:user', resource_type=ResourceType.USER),
+        Permission(name='add:user', resource_type=ResourceType.USER),
+        Permission(name='edit:user', resource_type=ResourceType.USER),
+        Permission(name='delete:user', resource_type=ResourceType.USER),
     ]
 
     own_user_permissions = [
-        'view:own_user',
-        'edit:own_user',
+        Permission(name='view:own_user'),
+        Permission(name='edit:own_user'),
+        
     ]
 
     settings_permissions = [
-        'view:settings',
-        'edit:settings',
+        Permission(name='view:settings'),
+        Permission(name='edit:settings'),
     ]
 
     # Combine all permissions to one big list
@@ -96,19 +115,21 @@ def create_permissions():
     )
     roles = create_default_roles()
 
-    for permission_name in permissions:
-        permission = get_or_create(Permission, name=permission_name)
+    for perm in permissions:
+        permission = get_or_create_permission(perm)
+
+
         
         # Assign permissions to roles using your filtering logic:
         if permission not in roles['admin'].permissions:
             roles['admin'].permissions.append(permission)
         
-        if permission_name not in ['add:role', 'edit:role', 'delete:role', 'add:permission', 'edit:permission', 'delete:permission', 'add:user', 'edit:user', 'delete:user', 'edit:settings'] and \
+        if perm.name not in ['add:role', 'edit:role', 'delete:role', 'add:permission', 'edit:permission', 'delete:permission', 'add:user', 'edit:user', 'delete:user', 'edit:settings'] and \
            permission not in roles['user'].permissions:
             roles['user'].permissions.append(permission)
         
-        if permission_name.startswith('view:') and \
-           permission_name not in ['view:role', 'view:permission', 'view:user'] and \
+        if perm.name.startswith('view:') and \
+           perm not in ['view:role', 'view:permission', 'view:user'] and \
            permission not in roles['viewer'].permissions:
             roles['viewer'].permissions.append(permission)
 
