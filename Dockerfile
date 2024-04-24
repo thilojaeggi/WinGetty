@@ -21,7 +21,7 @@ WORKDIR /app
 # Copy the requirements file into the container
 # Copy the Flask app code into the container
 COPY app/ app/
-COPY settings.toml config.py requirements.txt start.sh ./
+COPY config.py requirements.txt start.sh ./
 COPY migrations/ migrations/
 
 # For the build image, we do no longer have a working directory set, therefore include the first app/
