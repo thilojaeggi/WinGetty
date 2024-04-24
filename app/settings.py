@@ -71,23 +71,31 @@ def create_settings():
             "position": 4,
         },
         {
-            "name": "S3 Access Key ID",
+            "name": "S3 Region",
             "description": "",
-            "key": "s3_access_key_id",
+            "key": "s3_region",
             "type": "string",
             "value": "",
             "depends_on": "use_s3",
             "position": 5,
         },
         {
+            "name": "S3 Access Key ID",
+            "description": "",
+            "key": "s3_access_key_id",
+            "type": "string",
+            "value": "",
+            "depends_on": "use_s3",
+            "position": 6,
+        },
+        {
             "name": "S3 Secret Access Key",
             "description": "",
             "key": "s3_secret_access_key",
             "type": "string",
-            
             "value": "",
             "depends_on": "use_s3",
-            "position": 6,
+            "position": 7,
         },
         {
             "name": "Enable uplink (W.I.P.)",
@@ -95,7 +103,7 @@ def create_settings():
             "key": "enable_uplink",
             "type": "boolean",
             "value": "False",
-            "position": 7,
+            "position": 8,
         },
         {
             "name": "Uplink URL",
@@ -104,13 +112,12 @@ def create_settings():
             "type": "string",
             "value": "",
             "depends_on": "enable_uplink",
-            "position": 8,
+            "position": 9,
         },
     ]
 
     for setting in repository_settings:
         get_or_create(Setting, **setting)
-
 
 def create_all():
     """Entry function to create settings."""
