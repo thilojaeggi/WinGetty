@@ -7,6 +7,7 @@ Create Date: 2024-04-23 20:39:06.379849
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 
 # revision identifiers, used by Alembic.
@@ -15,9 +16,12 @@ down_revision = 'c993182bb5ec'
 branch_labels = None
 depends_on = None
 
-
+resource_type_postgres_enum = postgresql.ENUM('Package', 'Version', 'Installer', 'InstallerSwitch', 'User', 'Role', 'Permission', name='resourcetype')
 def upgrade():
-    # Define the enum with proper casing as defined in your Python enum
+    # Create the enum type in the database
+    resource_type_postgres_enum.create(op.get_bind())
+
+    # Define the enum with proper casing as already created in PostgreSQL
     resource_type_enum = sa.Enum('Package', 'Version', 'Installer', 'InstallerSwitch', 'User', 'Role', 'Permission', name='resourcetype')
     
     # Apply the enum to the 'permission' table
@@ -37,4 +41,5 @@ def downgrade():
         batch_op.drop_column('resource_type')
     
     # Drop the enum type if using PostgreSQL
-    op.execute("DROP TYPE resourcetype")
+    resource_type_postgres_enum.drop(op.get_bind())
+
