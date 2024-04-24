@@ -5,13 +5,13 @@ from .associations import roles_permissions
 
 # Define sqlalchemy enum for resource types
 class ResourceType(str, enum.Enum):
-    PACKAGE = "package"
-    VERSION = "version"
-    INSTALLER = "installer"
-    INSTALLER_SWITCH = "installer_switch"
-    USER = "user"
-    ROLE = "role"
-    PERMISSION = "permission"
+    PACKAGE = "Package"
+    VERSION = "Version"
+    INSTALLER = "Installer"
+    INSTALLER_SWITCH = "Installer_switch"
+    USER = "User"
+    ROLE = "Role"
+    PERMISSION = "Permission"
 
 
 
