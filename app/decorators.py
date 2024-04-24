@@ -1,3 +1,4 @@
+import logging
 from app.models.log import AccessLog
 from flask import current_app, jsonify, request, flash, redirect
 from flask_login import current_user
@@ -51,17 +52,30 @@ def permission_required(permission, resource_type=None, resource_id_key=None):
 def oidc_config_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        oidc_settings = {setting.key: setting.get_value() for setting in Setting.query.filter(Setting.key.in_([
-            "OIDC_ENABLED", "OIDC_CLIENT_ID", "OIDC_CLIENT_SECRET", "OIDC_SERVER_METADATA_URL"
-        ])).all()}
+        logging.info("Checking OIDC configuration.")
 
-        if oidc_settings.get("OIDC_ENABLED", False):
-            current_app.oidc_provider = oauth.create_client('oidc')  # Ensure this client is recreated on demand
-            current_app.oidc_provider.update(
-                client_id=oidc_settings["OIDC_CLIENT_ID"],
-                client_secret=oidc_settings["OIDC_CLIENT_SECRET"],
-                server_metadata_url=oidc_settings["OIDC_SERVER_METADATA_URL"],
-                client_kwargs={'scope': 'openid email profile'}
-            )
+        # Ensure OIDC_ENABLED is interpreted correctly
+        
+
+        if Setting.get("OIDC_ENABLED").get_value():
+            if not hasattr(current_app, 'oidc_provider'):
+                logging.info("Registering OIDC provider.")
+                current_app.oidc_provider = oauth.register(
+                    name='oidc',
+                    client_id=Setting.get("OIDC_CLIENT_ID").get_value(),
+                    client_secret=Setting.get("OIDC_CLIENT_SECRET").get_value(),
+                    server_metadata_url=Setting.get("OIDC_SERVER_METADATA_URL").get_value(),
+                    client_kwargs={'scope': 'openid email profile'},
+                    overwrite=True
+                )
+            else:
+                logging.info("OIDC provider already exists.")
+                current_app.oidc_provider.client_id = Setting.get("OIDC_CLIENT_ID").get_value()
+                current_app.oidc_provider.client_secret = Setting.get("OIDC_CLIENT_SECRET").get_value()
+                current_app.oidc_provider.server_metadata_url = Setting.get("OIDC_SERVER_METADATA_URL").get_value()
+        else:
+            logging.info("OIDC is not enabled, setting oidc_provider to None.")
+            current_app.oidc_provider = None
+
         return f(*args, **kwargs)
     return decorated_function
