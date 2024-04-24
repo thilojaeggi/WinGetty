@@ -138,6 +138,7 @@ def logout():
         id_token = session.pop('id_token', None)
         if not id_token:
             flash("Missing ID token, unable to securely logout.", "error")
+            logout_user()
             return redirect(url_for('auth.login'))
         try:
             oidc_metadata_url = Setting.get("OIDC_SERVER_METADATA_URL").get_value()
