@@ -17,6 +17,7 @@ from flask import (
 from flask_login import current_user, login_required
 from werkzeug.http import parse_range_header
 from werkzeug.utils import secure_filename
+from looseversion import LooseVersion
 import requests
 from app import db
 from app.decorators import permission_required
@@ -33,6 +34,9 @@ from app.models import (
     Setting,
     User,
 )
+
+from semver import Version
+
 from app.utils import (
     create_installer,
     custom_secure_filename,
@@ -260,6 +264,12 @@ def add_package():
         installer = create_installer(publisher, identifier, version, installer_form)
         if installer is None:
             return "Error creating installer", 500
+        
+        try:
+            # Check using LooseVersion to see if the version is a valid version number
+            LooseVersion(version)
+        except ValueError:
+            return Response("Invalid version number, please use a valid semver version", 400)
 
         version_code = PackageVersion(
             version_code=version,
@@ -350,6 +360,12 @@ def add_version(identifier):
         return "Package not found", 404
     file = installer_form.file.data
     external_url = installer_form.url.data
+    # Check that version is a valid version number
+    try:
+        LooseVersion(version)
+    except ValueError:
+        return Response("Invalid version number, please use a valid semver version", 400)
+
     version = PackageVersion(
         version_code=version,
         package_locale="en-US",

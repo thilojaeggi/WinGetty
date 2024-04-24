@@ -1,5 +1,5 @@
 from app.models.log import AccessLog
-from flask import request, flash, redirect
+from flask import jsonify, request, flash, redirect
 from flask_login import current_user
 from functools import wraps
 from app import db
@@ -19,6 +19,7 @@ def permission_required(permission, resource_type=None, resource_id_key=None):
             # Retrieve the resource ID if specified
             if resource_id_key:
                 resource_id = kwargs.get(resource_id_key)
+                print(f"Checking permission for resource ID: {resource_id}")  # Debug output
 
             user_role = current_user.role
 
@@ -28,9 +29,11 @@ def permission_required(permission, resource_type=None, resource_id_key=None):
             else:
                 has_perm = user_role.has_permission(permission)
 
+            print(f"Permission check for '{permission}' with resource ID '{resource_id}': {has_perm}")  # Debug output
+
             if not has_perm:
                 if request.content_type == 'application/json':
-                    return "You're missing permissions to access this resource.", 403
+                    return jsonify({"error": "You're missing permissions to access this resource."}), 403
                 flash("You're missing permissions to access this resource.", 'error')
                 return redirect(request.referrer)
 

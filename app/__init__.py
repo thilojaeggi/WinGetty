@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import sys
+from looseversion import LooseVersion
 import semver
 
 from flask_caching import Cache
@@ -55,7 +56,7 @@ oauth = OAuth()
 
 
 def sort_versions(versions):
-    return sorted(versions, key=lambda x: parse_version(x), reverse=True)
+    return sorted(versions, key=lambda x: LooseVersion(x), reverse=True)
 
 def page_not_found(e):
   return render_template('error/404.j2',error=True), 404

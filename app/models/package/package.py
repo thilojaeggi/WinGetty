@@ -1,6 +1,9 @@
 
-from packaging.version import parse as parse_version
+from looseversion import LooseVersion
 from app import db, bcrypt
+from semver import VersionInfo, parse_version_info
+
+from packaging.version import parse as parse_version
 
 class Package(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -21,7 +24,7 @@ class Package(db.Model):
             "download_count": self.download_count,
             "versions": sorted(
                 [version.to_dict() for version in self.versions],
-                key=lambda x: parse_version(x["version_code"]),
+                key=lambda x: LooseVersion(x["version_code"]),
                 reverse=True,
             ),
         }
