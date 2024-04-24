@@ -1,0 +1,31 @@
+version: '3.7'
+services:
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      # Using the default embedded H2 database
+    ports:
+      - "8081:8080"
+    command:
+      - "start-dev"
+
+  mariadb:
+    image: mariadb:latest
+    environment:
+      MARIADB_ROOT_PASSWORD: password
+      MARIADB_DATABASE: testdb
+    ports:
+      - "3307:3306"  # Use a different port to avoid conflicts with development DB
+
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: testdb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"  # Use a different port to avoid conflicts with development DB
