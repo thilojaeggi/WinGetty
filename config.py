@@ -26,7 +26,7 @@ class Config:
     """Base configuration with defaults (can be overridden by environment variables)."""
     SECRET_KEY = 'secret'
     SQLALCHEMY_DATABASE_URI = 'sqlite:///database.db'
-    VERSION = '1.1.0'
+    VERSION = '1.1.0-alpha'
     IS_CLOUD = False
     PREFERRED_URL_SCHEME = "https"
 
