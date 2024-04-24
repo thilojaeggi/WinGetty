@@ -225,7 +225,7 @@ def create_app():
 
     
     # Hacky way to not trigger permissions/settings creation on flask db upgrade or testing as db is not yet initialized
-    if 'run' in sys.argv:
+    if 'db' not in sys.argv:
         with app.app_context():
             from app.permissions import create_all
             create_all()
