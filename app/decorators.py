@@ -1,9 +1,12 @@
 from app.models.log import AccessLog
-from flask import jsonify, request, flash, redirect
+from flask import current_app, jsonify, request, flash, redirect
 from flask_login import current_user
 from functools import wraps
-from app import db
+from app import db, oauth
 from flask import abort
+from authlib.integrations.flask_client import OAuth
+
+from app.models.setting import Setting
 
 # Decorator to check if the user is authenticated
 
@@ -44,3 +47,21 @@ def permission_required(permission, resource_type=None, resource_id_key=None):
             return func(*args, **kwargs)
         return wrapper
     return decorator
+
+def oidc_config_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        oidc_settings = {setting.key: setting.get_value() for setting in Setting.query.filter(Setting.key.in_([
+            "OIDC_ENABLED", "OIDC_CLIENT_ID", "OIDC_CLIENT_SECRET", "OIDC_SERVER_METADATA_URL"
+        ])).all()}
+
+        if oidc_settings.get("OIDC_ENABLED", False):
+            current_app.oidc_provider = oauth.create_client('oidc')  # Ensure this client is recreated on demand
+            current_app.oidc_provider.update(
+                client_id=oidc_settings["OIDC_CLIENT_ID"],
+                client_secret=oidc_settings["OIDC_CLIENT_SECRET"],
+                server_metadata_url=oidc_settings["OIDC_SERVER_METADATA_URL"],
+                client_kwargs={'scope': 'openid email profile'}
+            )
+        return f(*args, **kwargs)
+    return decorated_function
