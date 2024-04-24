@@ -8,25 +8,49 @@
 <p class="mt-4 inline-block dark:text-gray-200">Setting up is easy, just execute the following command in an elevated
     PowerShell Terminal to add WinGetty as a source.</p>
 
-
-<div x-data="{ copyText: function() { navigator.clipboard.writeText(document.getElementById('winget_source_url').innerText).then(function(){ console.log('Copied to clipboard'); }).catch(function(error){ console.error('Unable to copy text: ' + error); }); } }"
+<div
     class="flex justify-between max-w-3xl items-center pl-2 pr-1 py-1 bg-white dark:bg-neutral-950 dark:text-gray-300 rounded-lg">
-    <p id="winget_source_url" @click="navigator.clipboard.writeText($event.target.innerText)">winget source add
+    <p id="winget_source_url" >winget source add
         -n
-        {{ global_settings["REPO_NAME"] }} -t "Microsoft.Rest" -a {{ url_for('winget.index', _external=True,_scheme="https") }}</p>
-    <a x-on:click="copyText"
-        class="px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer">
-        <svg class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6" fill="none" stroke="currentColor"
-            stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round"
-                d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244">
-            </path>
-        </svg>
-    </a>
+        {{ global_settings["REPO_NAME"] }} -t "Microsoft.Rest" -a {{ url_for('winget.index',
+        _external=True,_scheme="https") }}</p>
+    <div x-data="{
+        copyText: document.getElementById('winget_source_url').innerText,
+        copyNotification: false,
+        copyToClipboard() {
+            navigator.clipboard.writeText(this.copyText);
+            this.copyNotification = true;
+            let that = this;
+            setTimeout(function(){
+                that.copyNotification = false;
+            }, 3000);
+        }
+    }" class="relative z-20 flex items-center">
+
+        <button @click="copyToClipboard();"
+            class="px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer group">
+            <svg x-show="copyNotification" class="w-6 h-6 text-green-500 stroke-current"
+                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" x-cloak>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
+            <svg x-show="!copyNotification" class="w-6 h-6 stroke-current group-hover:text-blue-500 transition-colors duration-300" viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
+                <g fill="none" stroke="none">
+                    <path d="M7.75 7.757V6.75a3 3 0 0 1 3-3h6.5a3 3 0 0 1 3 3v6.5a3 3 0 0 1-3 3h-.992"
+                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                    <path d="M3.75 10.75a3 3 0 0 1 3-3h6.5a3 3 0 0 1 3 3v6.5a3 3 0 0 1-3 3h-6.5a3 3 0 0 1-3-3v-6.5z"
+                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                </g>
+            </svg>
+        </button>
+    </div>
 </div>
 <p class="text-sm dark:text-gray-200 mt-6">
-If the above url is localhost or 127.0.0.1 despite being behind a reverse proxy, you should check the headers being sent by the reverse proxy to ensure that the original host is being forwarded.<br>If you are using nginx, you can add the following to your configuration file:
-<code class="text-xs dark:text-gray-300">
+    If the above url is localhost or 127.0.0.1 despite being behind a reverse proxy, you should check the headers being
+    sent by the reverse proxy to ensure that the original host is being forwarded.<br>If you are using nginx, you can
+    add the following to your configuration file:
+    <code class="text-xs dark:text-gray-300">
 <br>
     proxy_set_header Host $host;<br>
     proxy_set_header X-Real-IP $remote_addr;<br>
