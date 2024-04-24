@@ -30,8 +30,7 @@
 <h1>WinGetty</h1>
 
 WinGetty is a self-hosted winget package source. It's portable and can run on Linux, Windows, in Docker, locally and in any cloud.
-It is currently in [pre-1.0](https://semver.org/#spec-item-4) development so configuration options, output, database and behavior may change at any time, I'm trying my best though to avoid breaking things.
-
+It is currently in version 1.0.0 and is under active development
 
 ## 🚀 Features
 
@@ -42,6 +41,7 @@ It is currently in [pre-1.0](https://semver.org/#spec-item-4) development so con
 - Easy updating of package metadata
 - Package download counter
 - Support for multiple users and authentication
+- Support for multiple roles and permissions
 - Runs on Windows, Linux etc. using Docker
 
 ## 🚧 Not Yet Working or Complete
