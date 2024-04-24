@@ -8,5 +8,5 @@ roles_permissions = db.Table(
     db.Column(
         "permission_id", db.Integer, db.ForeignKey("permission.id"), primary_key=True
     ),
-    db.Column("resource_id", db.Integer, nullable=True),
+    db.Column("resource_id", db.String(50), nullable=True),
 )
