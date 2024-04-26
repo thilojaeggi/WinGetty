@@ -123,16 +123,13 @@
                             let newFormData = new FormData();
                             newFormData.append('file', file, `${formData.get('installer-installer_scope')}.${extension}`);
                             this.uploadFile(response.data, newFormData.get('file'));
+                        } else {
+                            window.toast('error', 'Failed to generate upload URL', { description: response.text() });
                         }
                     })
                     .catch(error => {
                         console.error(error);
-                        window.dispatchEvent(new CustomEvent('notice', {
-                            detail: {
-                                text: error.response.data.error,
-                                type: 'error'
-                            }
-                        }));
+                        window.toast('error', 'Failed to generate upload URL', { description: error.response.data });
                     });
             },
 
@@ -153,16 +150,13 @@
                     .then(response => {
                         if (response.status === 200) {
                             this.addToPackages(file);
+                        } else {
+                            window.toast('error', 'Failed to upload installer', { description: response.text() });
                         }
                     })
                     .catch(error => {
                         console.error(error);
-                        window.dispatchEvent(new CustomEvent('notice', {
-                            detail: {
-                                text: 'Error uploading the file.',
-                                type: 'error'
-                            }
-                        }));
+                        window.toast('error', 'Failed to upload installer', { description: error.response.data });
                     });
             },
 
@@ -182,16 +176,13 @@
                             this.showAddVersionModal = false;
                             this.$refs.addVersionForm.reset();
                             location.reload();
+                        } else {
+                            window.toast('error', 'Failed to add package.', { description: response.text() });
                         }
                     })
                     .catch(error => {
+                        window.toast('error', 'Failed to add package.', { description: error.response.data });
                         console.error(error);
-                        window.dispatchEvent(new CustomEvent('notice', {
-                            detail: {
-                                text: 'Error adding the package.',
-                                type: 'error'
-                            }
-                        }));
                     })
                     .finally(() => {
                         this.showUploadButton = true;
@@ -239,16 +230,12 @@
                             this.showAddVersionModal = false;
                             this.$refs.addVersionForm.reset();
                             location.reload();
+                        } else {
+                            window.toast('error', 'Failed to add version.', { description: response.text() });
                         }
                     })
                     .catch(error => {
-                        console.error(error);
-                        window.dispatchEvent(new CustomEvent('notice', {
-                            detail: {
-                                text: error.response.data,
-                                type: 'error'
-                            }
-                        }));
+                        window.toast('error', 'Failed to add version.', { description: error.response.data });
                     })
                     .finally(() => {
                         this.showUploadButton = true;
