@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import sys
+from looseversion import LooseVersion
 import semver
 
 from flask_caching import Cache
@@ -55,7 +56,7 @@ oauth = OAuth()
 
 
 def sort_versions(versions):
-    return sorted(versions, key=lambda x: parse_version(x), reverse=True)
+    return sorted(versions, key=lambda x: LooseVersion(x), reverse=True)
 
 def page_not_found(e):
   return render_template('error/404.j2',error=True), 404
@@ -105,17 +106,7 @@ def create_app():
     cache.init_app(app)
     oauth.init_app(app)
 
-    @app.before_request
-    def setup_oidc():
-        if Setting.get("OIDC_ENABLED").get_value():
-            app.oidc_provider = oauth.register(
-                name='oidc',
-                client_id=Setting.get("OIDC_CLIENT_ID").get_value(),
-                client_secret=Setting.get("OIDC_CLIENT_SECRET").get_value(),
-                server_metadata_url=Setting.get("OIDC_SERVER_METADATA_URL").get_value(),
-                client_kwargs={'scope': 'openid email profile'},
-            )
-            app.extensions['oauth'] = oauth
+
 
     def get_latest_version():
         # Try to get cached version information first
