@@ -4,6 +4,7 @@ from flask import Blueprint, config, render_template, redirect, session, url_for
 from flask_login import login_required, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_bcrypt import Bcrypt
+from app.decorators import oidc_config_required
 
 from app.models import Role, Setting, User
 from app import db, bcrypt, permissions
@@ -17,6 +18,7 @@ import requests
 
 
 @auth.route('/login/oidc')
+@oidc_config_required
 def oidc_login():
     if not Setting.get("OIDC_ENABLED").get_value():
         flash('OIDC login is not enabled.', 'error')
@@ -35,6 +37,7 @@ def oidc_login():
     return oidc_provider.authorize_redirect(redirect_uri, nonce=nonce)
 
 @auth.route('/authorize/oidc')
+@oidc_config_required
 def oidc_authorize():
     if not Setting.get("OIDC_ENABLED").get_value():
         flash('OIDC login is not enabled.', 'error')
@@ -135,6 +138,7 @@ def logout():
         id_token = session.pop('id_token', None)
         if not id_token:
             flash("Missing ID token, unable to securely logout.", "error")
+            logout_user()
             return redirect(url_for('auth.login'))
         try:
             oidc_metadata_url = Setting.get("OIDC_SERVER_METADATA_URL").get_value()
