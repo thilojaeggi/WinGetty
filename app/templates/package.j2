@@ -74,7 +74,8 @@ selectedInstaller: '', selectedVersion: '' }" %}
 
                     <div class="mt-2">
                         <label for="identifier" class="block  text-gray-700 dark:text-gray-300 ">Identifier</label>
-                        <input required name="identifier" placeholder="" type="text" :value="package.identifier" disabled
+                        <input required name="identifier" placeholder="" type="text" :value="package.identifier"
+                            disabled
                             class="block w-full px-3 py-2 mt-1 text-gray-600 dark:text-gray-200 dark:bg-neutral-950  placeholder-gray-400 bg-white border border-gray-200 dark:border-gray-50/30 rounded-md focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40">
                     </div>
 
@@ -267,19 +268,18 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                                     </div>
                                                     <div class="grid grid-cols-2 grid-rows-2 gap-2">
                                                         <div x-data="{
-        copyText: installer.installer_url,
-        copyNotification: false,
-        copyToClipboard() {
-            navigator.clipboard.writeText(this.copyText);
-            this.copyNotification = true;
-            let that = this;
-            setTimeout(function(){
-                that.copyNotification = false;
-            }, 3000);
-        }
-    }" class="relative z-20 flex items-center">
-
-                                                            <button @click="copyToClipboard();"
+                                                                        copyText: installer.installer_url,
+                                                                        copyNotification: false,
+                                                                        copyToClipboard() {
+                                                                            navigator.clipboard.writeText(this.copyText);
+                                                                            this.copyNotification = true;
+                                                                            let that = this;
+                                                                            setTimeout(function(){
+                                                                                that.copyNotification = false;
+                                                                            }, 3000);
+                                                                        }
+                                                                    }" class="relative z-20 flex items-center">
+                                                            <button @click="copyToClipboard();" :class="{'outline outline-1 outline-green-500': copyNotification}"
                                                                 class="px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer group">
                                                                 <svg x-show="copyNotification"
                                                                     class="w-6 h-6 text-green-500 stroke-current"
@@ -289,7 +289,8 @@ selectedInstaller: '', selectedVersion: '' }" %}
                                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                                         d="M4.5 12.75l6 6 9-13.5" />
                                                                 </svg>
-                                                                <svg x-show="!copyNotification" class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6"
+                                                                <svg x-show="!copyNotification"
+                                                                    class="group-hover:stroke-blue-500 transition-color duration-300 h-6 w-6"
                                                                     fill="none" stroke="currentColor" stroke-width="1.5"
                                                                     viewBox="0 0 24 24"
                                                                     xmlns="http://www.w3.org/2000/svg"
