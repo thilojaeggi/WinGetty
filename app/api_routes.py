@@ -992,3 +992,9 @@ def get_latest_version():
     if version != current_app.config["VERSION"]:
         return jsonify({"current_version": current_app.config["VERSION"], "latest_version": version})
     return "", 204
+
+@api.route("/permissions")
+@login_required
+def permissions():
+    permissions = Permission.query.all()
+    return jsonify([permission.to_dict() for permission in permissions])
