@@ -9,13 +9,13 @@
 
     <script defer src="{{ url_for('static', filename='js/collapse.min.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/alpine.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/htmx.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/axios.min.js') }}"></script>
+    <script async src="{{ url_for('static', filename='js/htmx.js') }}"></script>
+    <script async src="{{ url_for('static', filename='js/axios.min.js') }}"></script>
     <script>
-    window.addEventListener('htmx:responseError', function(event) {
-        var message = event.detail.xhr.response;
-        window.toast('error', message);
-    });
+        window.addEventListener('htmx:responseError', function (event) {
+            var message = event.detail.xhr.response;
+            window.toast('error', message);
+        });
     </script>
 
     <!-- This is to load fonts asap -->
@@ -27,12 +27,27 @@
     {% for category, message in messages %}
     <script>
         window.addEventListener('load', function () {
-            window.toast({{ category|tojson }}, {{ message|tojson }});
+            window.toast({{ category| tojson }}, {{ message| tojson }});
+        
         });
     </script>
     {% endfor %}
     {% endif %}
     {% endwith %}
+
+    <script>
+        window.addEventListener('load', function () {
+
+            {% if version_info['update_available'] %}
+            window.addNotification({
+                id: 'update-notification-{{ version_info['latest_version'] }}', // Unique ID
+                message: 'There\'s a new version available, {{ version_info['latest_version'] }}.You are currently on version {{ version_info['current_version'] }}.',
+                type: 'info'
+            });
+            {% endif %}
+
+        });
+    </script>
 
     <script>
         // On page load or when changing themes, best to add inline in `head` to avoid FOUC
@@ -43,17 +58,17 @@
         }
     </script>
 
-<script>
-    window.toast = function(type = 'default', message, options = {}){
-        let description = '';
-        let position = 'top-right';
-        let html = '';
-        if(typeof options.description !== 'undefined') description = options.description;
-        if(typeof options.position !== 'undefined') position = options.position;
-        if(typeof options.html !== 'undefined') html = options.html;
-        
-        window.dispatchEvent(new CustomEvent('toast-show', { detail : { type: type, message: message, description: description, position : position, html: html }}));
-    }
-</script>
+    <script>
+        window.toast = function (type = 'default', message, options = {}) {
+            let description = '';
+            let position = 'top-right';
+            let html = '';
+            if (typeof options.description !== 'undefined') description = options.description;
+            if (typeof options.position !== 'undefined') position = options.position;
+            if (typeof options.html !== 'undefined') html = options.html;
+
+            window.dispatchEvent(new CustomEvent('toast-show', { detail: { type: type, message: message, description: description, position: position, html: html } }));
+        }
+    </script>
 
 </head>
