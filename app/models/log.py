@@ -7,7 +7,7 @@ class Log(db.Model):
     type = db.Column(db.String(50), nullable=False)
     ip_address = db.Column(db.String(50))
     user_agent = db.Column(db.String(255))
-    date = db.Column(db.DateTime, default=datetime.now())
+    date = db.Column(db.DateTime, default=datetime.now)
     __mapper_args__ = {"polymorphic_on": type, "polymorphic_identity": "log"}
 
     def to_dict(self):
