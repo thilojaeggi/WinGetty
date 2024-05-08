@@ -27,7 +27,7 @@
         }
     }" class="relative z-20 flex items-center">
 
-        <button @click="copyToClipboard();"
+        <button @click="copyToClipboard();" :class="{'outline outline-1 outline-green-500': copyNotification}"
             class="px-1 group py-1 text-gray-500 transition-colors hover:bg-gray-100 dark:bg-neutral-900  duration-300 rounded-md cursor-pointer group">
             <svg x-show="copyNotification" class="w-6 h-6 text-green-500 stroke-current"
                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
