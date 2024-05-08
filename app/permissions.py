@@ -21,7 +21,8 @@ def get_or_create_permission(permission):
     try:
         instance = Permission.query.filter_by(name=permission.name).first()
         if instance:
-            if permission.resource_type and instance.resource_type != permission.resource_type:
+            # also update if new value is None
+            if permission.resource_type and instance.resource_type != permission.resource_type or permission.resource_type is None:
                 instance.resource_type = permission.resource_type
                 db.session.commit()
             return instance
@@ -49,7 +50,7 @@ def create_permissions():
     print([e.value for e in ResourceType])
     package_permissions = [
         Permission(name='view:package', resource_type=ResourceType.PACKAGE.value),
-        Permission(name='add:package', resource_type=ResourceType.PACKAGE.value),
+        Permission(name='add:package'),
         Permission(name='edit:package', resource_type=ResourceType.PACKAGE.value),
         Permission(name='delete:package', resource_type=ResourceType.PACKAGE.value),
     ]
@@ -70,10 +71,10 @@ def create_permissions():
     ]
 
     installer_switch_permissions = [
-        Permission(name='view:installer_switch', resource_type=ResourceType.INSTALLER_SWITCH.value),
-        Permission(name='add:installer_switch', resource_type=ResourceType.INSTALLER_SWITCH.value),
-        Permission(name='edit:installer_switch', resource_type=ResourceType.INSTALLER_SWITCH.value),
-        Permission(name='delete:installer_switch', resource_type=ResourceType.INSTALLER_SWITCH.value),
+        Permission(name='view:installer_switch', resource_type=ResourceType.INSTALLER.value),
+        Permission(name='add:installer_switch', resource_type=ResourceType.INSTALLER.value),
+        Permission(name='edit:installer_switch', resource_type=ResourceType.INSTALLER.value),
+        Permission(name='delete:installer_switch', resource_type=ResourceType.INSTALLER.value),
     ]
 
     role_permissions = [
