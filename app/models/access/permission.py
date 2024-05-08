@@ -24,4 +24,11 @@ class Permission(db.Model):
     # Define relationship with Role through the association table
     roles = db.relationship("Role", secondary=roles_permissions, back_populates="permissions")
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "resource_type": self.resource_type.value if self.resource_type else None,
+        }
+
     
