@@ -132,27 +132,25 @@ def create_settings():
             "depends_on": "use_s3",
             "position": 11,
         },
-        {
-            "name": "Enable uplink (W.I.P.)",
-            "description": "Enable this to use a public WinGet repository as an uplink.",
-            "key": "enable_uplink",
-            "type": "boolean",
-            "value": "False",
-            "position": 12,
-        },
-        {
-            "name": "Uplink URL",
-            "description": "The URL of a public WinGet repository to use as an uplink.",
-            "key": "uplink_url",
-            "type": "string",
-            "value": "",
-            "depends_on": "enable_uplink",
-            "position": 13,
-        },
+
     ]
 
     for setting in repository_settings:
         get_or_create(Setting, **setting)
+
+    json_keys = {setting['key'] for setting in repository_settings}
+
+    # Fetch all settings from the database
+    all_settings = Setting.query.all()
+
+    # Delete settings not found in the JSON configuration
+    for setting in all_settings:
+        if setting.key not in json_keys:
+            db.session.delete(setting)
+
+    
+
+    
 
 def create_all():
     """Entry function to create settings."""
