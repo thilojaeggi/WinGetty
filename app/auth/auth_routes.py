@@ -55,7 +55,7 @@ def oidc_authorize():
         username = user_info.get('preferred_username')
 
         # Check that email is verified
-        if not user_info.get('email_verified'):
+        if not user_info.get('email_verified', False) and not user_info.get('verified_primary_email', False):
             flash('Email address not verified.', 'error')
             return redirect(url_for('auth.login'))
         
