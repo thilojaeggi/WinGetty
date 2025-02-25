@@ -28,6 +28,9 @@
   </a>
 
 <h1>WinGetty</h1>
+<h2>
+⚠️ Note: I’m aware that some large companies are using WinGetty, but without funding, there’s little motivation to actively develop and maintain it.  
+If you find WinGetty useful and want to support ongoing development, consider sponsoring me on <a href="https://github.com/sponsors/thilojaeggi">Github Sponsors</a>. Any support is greatly appreciated!</h2>
 
 WinGetty is a self-hosted winget package source. It's portable and can run on Linux, Windows, in Docker, locally and in any cloud.
 It is currently in [pre-1.0](https://semver.org/#spec-item-4) development so configuration options, output, database and behavior may change at any time, I'm trying my best though to avoid breaking things.
